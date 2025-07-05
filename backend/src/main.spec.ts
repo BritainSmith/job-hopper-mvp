@@ -1,124 +1,69 @@
-import { ValidationPipe, Logger } from '@nestjs/common';
-import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
-import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
-import { GlobalExceptionFilter } from './common/filters/error.filter';
+import * as core from '@nestjs/core';
+import * as common from '@nestjs/common';
+import * as swagger from '@nestjs/swagger';
 
-// Mock external dependencies
 jest.mock('@nestjs/core');
+jest.mock('@nestjs/common');
 jest.mock('@nestjs/swagger');
-jest.mock('./common/interceptors/logging.interceptor');
-jest.mock('./common/filters/error.filter');
 
-describe('Main Application Bootstrap', () => {
-  let mockApp: any;
-  let mockValidationPipe: any;
-  let mockLoggingInterceptor: any;
-  let mockGlobalExceptionFilter: any;
-  let mockDocumentBuilder: any;
-  let mockSwaggerModule: any;
+// Do not import main.ts at the top level!
 
-  beforeEach(async () => {
-    jest.clearAllMocks();
-
-    // Mock NestFactory
-    const mockNestFactory = {
-      create: jest.fn(),
-    };
-    (require('@nestjs/core').NestFactory as any) = mockNestFactory;
-
-    // Mock app instance
-    mockApp = {
+describe('bootstrap-app.ts', () => {
+  it('should bootstrap the NestJS app and set up global features', async () => {
+    // Mocks
+    const mockApp = {
       useGlobalPipes: jest.fn(),
       useGlobalInterceptors: jest.fn(),
       useGlobalFilters: jest.fn(),
-      listen: jest.fn(),
+      listen: jest.fn().mockResolvedValue(undefined),
     };
+    const mockLogger = { log: jest.fn() };
+    const mockDocument = {};
 
-    // Mock ValidationPipe
-    mockValidationPipe = {
-      constructor: jest.fn(),
-    };
-    (ValidationPipe as any) = jest.fn().mockImplementation(() => mockValidationPipe);
-
-    // Mock LoggingInterceptor
-    mockLoggingInterceptor = {
-      constructor: jest.fn(),
-    };
-    (LoggingInterceptor as any) = jest.fn().mockImplementation(() => mockLoggingInterceptor);
-
-    // Mock GlobalExceptionFilter
-    mockGlobalExceptionFilter = {
-      constructor: jest.fn(),
-    };
-    (GlobalExceptionFilter as any) = jest.fn().mockImplementation(() => mockGlobalExceptionFilter);
-
-    // Mock DocumentBuilder
-    mockDocumentBuilder = {
+    jest.spyOn(require('@nestjs/core'), 'NestFactory', 'get').mockReturnValue({
+      create: jest.fn().mockResolvedValue(mockApp),
+    });
+    jest.spyOn(require('@nestjs/common'), 'Logger').mockImplementation(() => mockLogger);
+    jest.spyOn(require('@nestjs/common'), 'ValidationPipe').mockImplementation(() => ({}));
+    jest.mock('./common/interceptors/logging.interceptor', () => ({
+      LoggingInterceptor: jest.fn(),
+    }));
+    jest.mock('./common/filters/error.filter', () => ({
+      GlobalExceptionFilter: jest.fn(),
+    }));
+    const swagger = require('@nestjs/swagger');
+    jest.spyOn(swagger, 'DocumentBuilder').mockImplementation(() => ({
       setTitle: jest.fn().mockReturnThis(),
       setDescription: jest.fn().mockReturnThis(),
       setVersion: jest.fn().mockReturnThis(),
       addTag: jest.fn().mockReturnThis(),
       addServer: jest.fn().mockReturnThis(),
       build: jest.fn().mockReturnValue({}),
-    };
-    (DocumentBuilder as any) = jest.fn().mockImplementation(() => mockDocumentBuilder);
+    }));
+    jest.spyOn(swagger.SwaggerModule, 'createDocument').mockReturnValue(mockDocument);
+    jest.spyOn(swagger.SwaggerModule, 'setup').mockReturnValue(undefined);
 
-    // Mock SwaggerModule
-    mockSwaggerModule = {
-      createDocument: jest.fn().mockReturnValue({}),
-      setup: jest.fn(),
-    };
-    (SwaggerModule as any) = mockSwaggerModule;
+    // Import and call the bootstrap function
+    const { bootstrap } = require('./bootstrap-app');
+    await bootstrap();
 
-    // Setup NestFactory mock
-    mockNestFactory.create.mockResolvedValue(mockApp);
-
-    // Mock process.env
-    const originalEnv = process.env;
-    process.env = { ...originalEnv };
-  });
-
-  afterEach(() => {
-    jest.restoreAllMocks();
-    process.env = process.env;
-  });
-
-  describe('Application Bootstrap Configuration', () => {
-    it('should configure global validation pipe with correct options', () => {
-      expect(ValidationPipe).toBeDefined();
-      expect(LoggingInterceptor).toBeDefined();
-      expect(GlobalExceptionFilter).toBeDefined();
-      expect(DocumentBuilder).toBeDefined();
-      expect(SwaggerModule).toBeDefined();
-    });
-
-    it('should configure Swagger documentation with correct settings', () => {
-      expect(DocumentBuilder).toBeDefined();
-      expect(SwaggerModule).toBeDefined();
-    });
-
-    it('should handle environment port configuration', () => {
-      // Test default port
-      delete process.env.PORT;
-      expect(process.env.PORT).toBeUndefined();
-
-      // Test custom port
-      process.env.PORT = '4000';
-      expect(process.env.PORT).toBe('4000');
-    });
-
-    it('should have proper logging configuration', () => {
-      expect(Logger).toBeDefined();
-    });
-  });
-
-  describe('Dependencies', () => {
-    it('should have all required dependencies available', () => {
-      expect(ValidationPipe).toBeDefined();
-      expect(LoggingInterceptor).toBeDefined();
-      expect(GlobalExceptionFilter).toBeDefined();
-      expect(DocumentBuilder).toBeDefined();
-      expect(SwaggerModule).toBeDefined();
-    });
+    // App creation
+    expect(require('@nestjs/core').NestFactory.create).toHaveBeenCalled();
+    // Global pipes
+    expect(mockApp.useGlobalPipes).toHaveBeenCalled();
+    // Global interceptors
+    expect(mockApp.useGlobalInterceptors).toHaveBeenCalled();
+    // Global filters
+    expect(mockApp.useGlobalFilters).toHaveBeenCalled();
+    // Swagger setup
+    expect(swagger.DocumentBuilder).toHaveBeenCalled();
+    expect(swagger.SwaggerModule.createDocument).toHaveBeenCalledWith(mockApp, expect.any(Object));
+    expect(swagger.SwaggerModule.setup).toHaveBeenCalledWith('api', mockApp, mockDocument, expect.any(Object));
+    // Listen on port
+    expect(mockApp.listen).toHaveBeenCalledWith(process.env.PORT ?? 3000);
+    // Logger logs
+    expect(mockLogger.log).toHaveBeenCalledWith(expect.stringContaining('Job Hopper API is running'));
+    expect(mockLogger.log).toHaveBeenCalledWith(expect.stringContaining('API Documentation available'));
+    expect(mockLogger.log).toHaveBeenCalledWith(expect.stringContaining('Logs are being written'));
   });
 }); 
