@@ -9,16 +9,14 @@ describe('JobsController', () => {
   const mockJobService = {
     getJobsByStatus: jest.fn().mockResolvedValue([]),
     searchJobs: jest.fn().mockResolvedValue([]),
-    getJobStats: jest
-      .fn()
-      .mockResolvedValue({
-        total: 0,
-        applied: 0,
-        active: 0,
-        byStatus: {},
-        byCompany: {},
-        byLocation: {},
-      }),
+    getJobStats: jest.fn().mockResolvedValue({
+      total: 0,
+      applied: 0,
+      active: 0,
+      byStatus: {},
+      byCompany: {},
+      byLocation: {},
+    }),
     scrapeAndSaveJobs: jest.fn().mockResolvedValue({ scraped: 0, saved: 0 }),
     getJobById: jest.fn().mockResolvedValue(null),
     createJob: jest.fn().mockResolvedValue({ id: 1 }),
@@ -43,16 +41,13 @@ describe('JobsController', () => {
   });
 
   it('/jobs/stats (GET) should return job stats', () => {
-    return request(app.getHttpServer())
-      .get('/jobs/stats')
-      .expect(200)
-      .expect({
-        total: 0,
-        applied: 0,
-        active: 0,
-        byStatus: {},
-        byCompany: {},
-        byLocation: {},
-      });
+    return request(app.getHttpServer()).get('/jobs/stats').expect(200).expect({
+      total: 0,
+      applied: 0,
+      active: 0,
+      byStatus: {},
+      byCompany: {},
+      byLocation: {},
+    });
   });
 });
