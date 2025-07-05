@@ -22,8 +22,11 @@ A TypeScript-based web scraper using Puppeteer to extract software developer job
 npm install
 
 # Install backend dependencies
-cd backend
-npm install
+cd backend && npm install
+
+# Setup environment
+cp .env.example .env
+# Edit .env with your configuration
 ```
 
 ## Environment Setup
@@ -59,31 +62,42 @@ npm install
 
 ## Usage
 
-### Backend Development
+### Development
 
 Start the NestJS development server:
 
 ```bash
-cd backend
-npm run start:dev
+npm run dev
+# or
+cd backend && npm run start:dev
 ```
 
 The API will be available at `http://localhost:3000`
 
-### Scraping Jobs
-
-Run the scraper with default settings (3 pages, 3-second delays, non-headless mode):
+### Database Management
 
 ```bash
-npm run scrape
+# Open Prisma Studio (database GUI)
+npm run db:studio
+
+# Generate Prisma client
+npm run db:generate
+
+# Run database migrations
+npm run db:migrate
+
+# Reset database (development only)
+npm run db:reset
 ```
 
-### Headless Mode (Recommended for Production)
-
-Run the scraper in headless mode for faster execution:
+### Production
 
 ```bash
-npm run scrape:headless
+# Build the application
+npm run build
+
+# Start production server
+npm run start
 ```
 
 ### Programmatic Usage
@@ -205,20 +219,19 @@ const jobs = await scrapeRemoteOKJobs({
 ```
 job-hopper/
 ├── prisma/                    # Database schema & migrations
-├── src/                       # Original scrapers & services
-│   ├── scrapers/             # Job scraping modules
-│   ├── config/               # Configuration files
-│   ├── services/             # Business logic services
-│   └── db/                   # Database utilities
 ├── backend/                   # NestJS application
 │   ├── src/
+│   │   ├── config/           # Configuration modules
+│   │   ├── repositories/     # Data access layer
+│   │   ├── services/         # Business logic services
+│   │   ├── scrapers/         # Job scraping services
 │   │   ├── prisma/           # NestJS Prisma integration
 │   │   ├── app.module.ts     # Main application module
 │   │   └── main.ts           # Application entry point
 │   ├── prisma -> ../prisma   # Symlink to shared schema
 │   └── .env -> ../.env       # Symlink to shared env
-├── scripts/                   # Utility scripts
-└── assets/                    # Static assets
+├── assets/                    # Static assets
+└── .env.example              # Environment template
 ```
 
 ## Security

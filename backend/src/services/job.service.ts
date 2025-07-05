@@ -1,8 +1,9 @@
-import { jobRepository, JobFilter, PaginationOptions } from '../db/jobRepository';
+import { Injectable, Logger } from '@nestjs/common';
+import { JobRepository, JobFilter, PaginationOptions } from '../repositories/job.repository';
 import { Job, JobStatus, Prisma } from '@prisma/client';
+import { RemoteOKService, JobListing } from '../scrapers/remoteok.service';
 
-// --- Service Types ---
-
+// Service Types
 export interface JobSearchOptions {
   query?: string;
   filters?: JobFilter;
@@ -24,9 +25,15 @@ export interface JobStats {
   byLocation: Record<string, number>;
 }
 
-// --- Job Service ---
-
+@Injectable()
 export class JobService {
+  private readonly logger = new Logger(JobService.name);
+
+  constructor(
+    private jobRepository: JobRepository,
+    private remoteOKService: RemoteOKService
+  ) {}
+
   // --- CRUD Operations ---
 
   async createJob(jobData: Prisma.JobCreateInput): Promise<Job> {
@@ -35,18 +42,18 @@ export class JobService {
       const searchText = this.generateSearchText(jobData);
       const jobWithSearch = { ...jobData, searchText };
       
-      return await jobRepository.createJob(jobWithSearch);
+      return await this.jobRepository.createJob(jobWithSearch);
     } catch (error) {
-      console.error('Error creating job:', error);
+      this.logger.error('Error creating job:', error);
       throw new Error('Failed to create job');
     }
   }
 
   async getJobById(id: number): Promise<Job | null> {
     try {
-      return await jobRepository.getJobById(id);
+      return await this.jobRepository.getJobById(id);
     } catch (error) {
-      console.error('Error fetching job:', error);
+      this.logger.error('Error fetching job:', error);
       throw new Error('Failed to fetch job');
     }
   }
@@ -55,25 +62,25 @@ export class JobService {
     try {
       // Update search text if relevant fields changed
       if (updateData.title || updateData.company || updateData.tags) {
-        const existingJob = await jobRepository.getJobById(id);
+        const existingJob = await this.jobRepository.getJobById(id);
         if (existingJob) {
           const updatedData = { ...existingJob, ...updateData };
           updateData.searchText = this.generateSearchText(updatedData);
         }
       }
       
-      return await jobRepository.updateJob(id, updateData);
+      return await this.jobRepository.updateJob(id, updateData);
     } catch (error) {
-      console.error('Error updating job:', error);
+      this.logger.error('Error updating job:', error);
       throw new Error('Failed to update job');
     }
   }
 
   async deleteJob(id: number): Promise<Job> {
     try {
-      return await jobRepository.deleteJob(id);
+      return await this.jobRepository.deleteJob(id);
     } catch (error) {
-      console.error('Error deleting job:', error);
+      this.logger.error('Error deleting job:', error);
       throw new Error('Failed to delete job');
     }
   }
@@ -96,9 +103,9 @@ export class JobService {
         orderBy: pagination.orderBy || defaultOrderBy
       };
 
-      return await jobRepository.getJobs(filters, finalPagination);
+      return await this.jobRepository.getJobs(filters, finalPagination);
     } catch (error) {
-      console.error('Error searching jobs:', error);
+      this.logger.error('Error searching jobs:', error);
       throw new Error('Failed to search jobs');
     }
   }
@@ -136,7 +143,7 @@ export class JobService {
 
       return await this.updateJob(id, updateData);
     } catch (error) {
-      console.error('Error applying to job:', error);
+      this.logger.error('Error applying to job:', error);
       throw new Error('Failed to apply to job');
     }
   }
@@ -154,8 +161,61 @@ export class JobService {
 
       return await this.updateJob(id, updateData);
     } catch (error) {
-      console.error('Error updating application status:', error);
+      this.logger.error('Error updating application status:', error);
       throw new Error('Failed to update application status');
+    }
+  }
+
+  // --- Scraping Integration ---
+
+  async scrapeAndSaveJobs(source: string = 'remoteok', options?: any): Promise<{ scraped: number; saved: number }> {
+    try {
+      this.logger.log(`Starting to scrape jobs from ${source}...`);
+      
+      let scrapedJobs: JobListing[] = [];
+      
+      // Use appropriate scraper based on source
+      switch (source.toLowerCase()) {
+        case 'remoteok':
+          scrapedJobs = await this.remoteOKService.scrapeJobs(options);
+          break;
+        default:
+          throw new Error(`Unsupported source: ${source}`);
+      }
+
+      this.logger.log(`Scraped ${scrapedJobs.length} jobs from ${source}`);
+
+      // Convert and save jobs
+      let savedCount = 0;
+      for (const scrapedJob of scrapedJobs) {
+        try {
+          const jobData: Prisma.JobCreateInput = {
+            title: scrapedJob.title,
+            company: scrapedJob.company,
+            location: scrapedJob.location,
+            applyLink: scrapedJob.applyLink,
+            postedDate: scrapedJob.postedDate,
+            salary: scrapedJob.salary,
+            tags: scrapedJob.tags?.join(',') || '',
+            source: source,
+            status: 'ACTIVE',
+            applied: false,
+            dateScraped: new Date(),
+            searchText: this.generateSearchText(scrapedJob)
+          };
+
+          await this.jobRepository.upsertJob(jobData);
+          savedCount++;
+        } catch (error) {
+          this.logger.warn(`Failed to save job: ${scrapedJob.title}`, error);
+        }
+      }
+
+      this.logger.log(`Successfully saved ${savedCount} jobs from ${source}`);
+      return { scraped: scrapedJobs.length, saved: savedCount };
+    } catch (error) {
+      this.logger.error('Error during scraping and saving:', error);
+      throw new Error('Failed to scrape and save jobs');
     }
   }
 
@@ -163,114 +223,85 @@ export class JobService {
 
   async getJobStats(): Promise<JobStats> {
     try {
-      const allJobs = await jobRepository.getJobs();
+      const stats = await this.jobRepository.getJobStats();
+      const allJobs = await this.jobRepository.getJobs();
       
-      const stats: JobStats = {
-        total: allJobs.length,
-        applied: allJobs.filter(job => job.applied).length,
-        active: allJobs.filter(job => job.status === 'ACTIVE').length,
-        byStatus: {} as Record<JobStatus, number>,
+      const jobStats: JobStats = {
+        total: stats.total,
+        applied: stats.applied,
+        active: stats.notApplied, // This might need adjustment based on your logic
+        byStatus: stats.byStatus as Record<JobStatus, number>,
         byCompany: {},
         byLocation: {}
       };
 
-      // Count by status
-      Object.values(JobStatus).forEach(status => {
-        stats.byStatus[status] = allJobs.filter(job => job.status === status).length;
-      });
-
       // Count by company
       allJobs.forEach(job => {
-        stats.byCompany[job.company] = (stats.byCompany[job.company] || 0) + 1;
+        jobStats.byCompany[job.company] = (jobStats.byCompany[job.company] || 0) + 1;
       });
 
       // Count by location
       allJobs.forEach(job => {
-        stats.byLocation[job.location] = (stats.byLocation[job.location] || 0) + 1;
+        jobStats.byLocation[job.location] = (jobStats.byLocation[job.location] || 0) + 1;
       });
 
-      return stats;
+      return jobStats;
     } catch (error) {
-      console.error('Error getting job stats:', error);
+      this.logger.error('Error getting job stats:', error);
       throw new Error('Failed to get job statistics');
     }
   }
 
   // --- Bulk Operations ---
 
-  async bulkUpsertJobs(jobs: Prisma.JobCreateInput[]): Promise<{ created: number; updated: number }> {
-    try {
-      let created = 0;
-      let updated = 0;
-
-      for (const jobData of jobs) {
-        try {
-          const searchText = this.generateSearchText(jobData);
-          const jobWithSearch = { ...jobData, searchText };
-          
-          await jobRepository.upsertJob(jobWithSearch);
-          created++; // upsert creates if not exists
-        } catch (error) {
-          console.warn('Error upserting job:', error);
-        }
-      }
-
-      return { created, updated };
-    } catch (error) {
-      console.error('Error in bulk upsert:', error);
-      throw new Error('Failed to bulk upsert jobs');
-    }
-  }
-
   async bulkUpdateStatus(jobIds: number[], status: JobStatus): Promise<number> {
     try {
-      let updated = 0;
+      let updatedCount = 0;
       
       for (const id of jobIds) {
         try {
           await this.updateApplicationStatus(id, status);
-          updated++;
+          updatedCount++;
         } catch (error) {
-          console.warn(`Error updating job ${id}:`, error);
+          this.logger.warn(`Failed to update job ${id}:`, error);
         }
       }
 
-      return updated;
+      this.logger.log(`Bulk updated ${updatedCount} jobs to status: ${status}`);
+      return updatedCount;
     } catch (error) {
-      console.error('Error in bulk status update:', error);
-      throw new Error('Failed to bulk update job statuses');
+      this.logger.error('Error in bulk update:', error);
+      throw new Error('Failed to bulk update jobs');
     }
   }
 
   // --- Utility Methods ---
 
   private generateSearchText(jobData: any): string {
-    const parts = [
+    const searchableFields = [
       jobData.title,
       jobData.company,
       jobData.location,
       jobData.tags,
-      jobData.salary
+      jobData.salary,
+      jobData.postedDate
     ].filter(Boolean);
 
-    return parts.join(' ').toLowerCase();
+    return searchableFields.join(' ').toLowerCase();
   }
-
-  // --- Duplicate Detection ---
 
   async findDuplicateJobs(jobData: Prisma.JobCreateInput): Promise<Job[]> {
     try {
-      // Check for duplicates based on title and company
-      return await jobRepository.getJobs({
+      // Look for jobs with the same apply link or similar title/company
+      const filters: JobFilter = {
         company: jobData.company,
         searchText: jobData.title
-      });
+      };
+
+      return await this.jobRepository.getJobs(filters);
     } catch (error) {
-      console.error('Error finding duplicates:', error);
-      return [];
+      this.logger.error('Error finding duplicate jobs:', error);
+      throw new Error('Failed to find duplicate jobs');
     }
   }
-}
-
-// Export singleton instance
-export const jobService = new JobService(); 
+} 

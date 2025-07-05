@@ -1,4 +1,5 @@
-// Scraper configuration for different job sites
+import { registerAs } from '@nestjs/config';
+
 export interface ScraperConfig {
   name: string;
   baseUrl: string;
@@ -31,8 +32,7 @@ export interface ScraperConfig {
   };
 }
 
-// Configuration for different job sites
-export const scraperConfigs: Record<string, ScraperConfig> = {
+export const scrapersConfig = registerAs('scrapers', () => ({
   remoteok: {
     name: 'RemoteOK',
     baseUrl: 'https://remoteok.com',
@@ -56,10 +56,7 @@ export const scraperConfigs: Record<string, ScraperConfig> = {
     },
     dataTransformers: {
       company: (text: string) => {
-        // Fix the company name extraction issue
-        // If it's a short abbreviation (1-3 chars), try to find the real company name
         if (text.length <= 3) {
-          // This will be handled in the scraper logic
           return text;
         }
         return text;
@@ -73,7 +70,6 @@ export const scraperConfigs: Record<string, ScraperConfig> = {
     }
   },
   
-  // Example configuration for LinkedIn (for future use)
   linkedin: {
     name: 'LinkedIn',
     baseUrl: 'https://www.linkedin.com',
@@ -101,7 +97,6 @@ export const scraperConfigs: Record<string, ScraperConfig> = {
     }
   },
 
-  // Example configuration for Indeed (for future use)
   indeed: {
     name: 'Indeed',
     baseUrl: 'https://www.indeed.com',
@@ -128,28 +123,4 @@ export const scraperConfigs: Record<string, ScraperConfig> = {
       }
     }
   }
-};
-
-// Get scraper configuration by name
-export function getScraperConfig(name: string): ScraperConfig | null {
-  return scraperConfigs[name] || null;
-}
-
-// Get all available scraper names
-export function getAvailableScrapers(): string[] {
-  return Object.keys(scraperConfigs);
-}
-
-// Validate scraper configuration
-export function validateScraperConfig(config: ScraperConfig): string[] {
-  const errors: string[] = [];
-  
-  if (!config.name) errors.push('Missing scraper name');
-  if (!config.baseUrl) errors.push('Missing base URL');
-  if (!config.jobListUrl) errors.push('Missing job list URL');
-  if (!config.selectors.jobContainer.length) errors.push('Missing job container selectors');
-  if (!config.selectors.title.length) errors.push('Missing title selectors');
-  if (!config.selectors.company.length) errors.push('Missing company selectors');
-  
-  return errors;
-} 
+})); 

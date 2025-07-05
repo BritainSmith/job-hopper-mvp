@@ -1,5 +1,6 @@
+import { Injectable, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import puppeteer, { Browser, Page } from 'puppeteer';
-import { scraperConfig } from '../config/env';
 
 // Types for job data
 export interface JobListing {
@@ -19,24 +20,37 @@ export interface ScrapingOptions {
   userAgent?: string;
 }
 
-export class RemoteOKScraper {
+@Injectable()
+export class RemoteOKService {
+  private readonly logger = new Logger(RemoteOKService.name);
   private browser: Browser | null = null;
   private page: Page | null = null;
 
-  constructor(private options: ScrapingOptions = {}) {
-    this.options = {
+  constructor(private configService: ConfigService) {}
+
+  async scrapeJobs(options: ScrapingOptions = {}): Promise<JobListing[]> {
+    const scraperConfig = this.configService.get('scraper');
+    const defaultOptions: ScrapingOptions = {
       maxPages: scraperConfig.maxPages,
       delay: scraperConfig.delay,
       headless: scraperConfig.headless,
       userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
       ...options
     };
+
+    try {
+      await this.initialize(defaultOptions);
+      const jobs = await this.performScraping(defaultOptions);
+      return jobs;
+    } finally {
+      await this.close();
+    }
   }
 
-  async initialize(): Promise<void> {
+  private async initialize(options: ScrapingOptions): Promise<void> {
     try {
       this.browser = await puppeteer.launch({
-        headless: this.options.headless,
+        headless: options.headless,
         args: [
           '--no-sandbox',
           '--disable-setuid-sandbox',
@@ -51,7 +65,7 @@ export class RemoteOKScraper {
       this.page = await this.browser.newPage();
       
       // Set user agent
-      await this.page.setUserAgent(this.options.userAgent!);
+      await this.page.setUserAgent(options.userAgent!);
       
       // Set viewport
       await this.page.setViewport({ width: 1920, height: 1080 });
@@ -66,14 +80,14 @@ export class RemoteOKScraper {
         }
       });
 
-      console.log('✅ Browser initialized successfully');
+      this.logger.log('✅ Browser initialized successfully');
     } catch (error) {
-      console.error('❌ Failed to initialize browser:', error);
+      this.logger.error('❌ Failed to initialize browser:', error);
       throw error;
     }
   }
 
-  async scrapeJobs(): Promise<JobListing[]> {
+  private async performScraping(options: ScrapingOptions): Promise<JobListing[]> {
     if (!this.page) {
       throw new Error('Browser not initialized. Call initialize() first.');
     }
@@ -82,10 +96,10 @@ export class RemoteOKScraper {
     let currentPage = 1;
 
     try {
-      console.log('🚀 Starting to scrape RemoteOK for software developer jobs...');
+      this.logger.log('🚀 Starting to scrape RemoteOK for software developer jobs...');
 
-      while (currentPage <= this.options.maxPages!) {
-        console.log(`📄 Scraping page ${currentPage}...`);
+      while (currentPage <= options.maxPages!) {
+        this.logger.log(`📄 Scraping page ${currentPage}...`);
         
         const url = currentPage === 1 
           ? 'https://remoteok.com/remote-dev-jobs'
@@ -100,43 +114,44 @@ export class RemoteOKScraper {
         await this.delay(3000);
         
         // Take a screenshot for debugging (only in development)
-        if (process.env.NODE_ENV === 'development' && process.env.DEBUG_SCREENSHOTS === 'true') {
+        if (this.configService.get('app.nodeEnv') === 'development' && 
+            this.configService.get('app.debugScreenshots') === 'true') {
           await this.page.screenshot({ path: `debug-page-${currentPage}.png` });
-          console.log(`📸 Screenshot saved as debug-page-${currentPage}.png`);
+          this.logger.log(`📸 Screenshot saved as debug-page-${currentPage}.png`);
         }
 
         // Extract jobs from current page
         const pageJobs = await this.extractJobsFromPage();
         
         if (pageJobs.length === 0) {
-          console.log('No more jobs found, stopping pagination');
+          this.logger.log('No more jobs found, stopping pagination');
           break;
         }
 
         allJobs.push(...pageJobs);
-        console.log(`✅ Found ${pageJobs.length} jobs on page ${currentPage}`);
+        this.logger.log(`✅ Found ${pageJobs.length} jobs on page ${currentPage}`);
 
         // Check if there are more pages
         const hasNextPage = await this.checkForNextPage();
         if (!hasNextPage) {
-          console.log('No next page found, stopping pagination');
+          this.logger.log('No next page found, stopping pagination');
           break;
         }
 
         currentPage++;
         
         // Add delay between requests to be respectful
-        if (currentPage <= this.options.maxPages!) {
-          console.log(`⏳ Waiting ${this.options.delay}ms before next page...`);
-          await this.delay(this.options.delay!);
+        if (currentPage <= options.maxPages!) {
+          this.logger.log(`⏳ Waiting ${options.delay}ms before next page...`);
+          await this.delay(options.delay!);
         }
       }
 
-      console.log(`🎉 Scraping completed! Total jobs found: ${allJobs.length}`);
+      this.logger.log(`🎉 Scraping completed! Total jobs found: ${allJobs.length}`);
       return allJobs;
 
     } catch (error) {
-      console.error('❌ Error during scraping:', error);
+      this.logger.error('❌ Error during scraping:', error);
       throw error;
     }
   }
@@ -260,66 +275,12 @@ export class RemoteOKScraper {
     return new Promise(resolve => setTimeout(resolve, ms));
   }
 
-  async close(): Promise<void> {
+  private async close(): Promise<void> {
     if (this.browser) {
       await this.browser.close();
       this.browser = null;
       this.page = null;
-      console.log('🔒 Browser closed');
+      this.logger.log('🔒 Browser closed');
     }
   }
-
-  // Utility method to save results to JSON file
-  async saveToFile(jobs: JobListing[], filename: string = 'remoteok-jobs.json'): Promise<void> {
-    const fs = require('fs').promises;
-    const path = require('path');
-    
-    const outputPath = path.join(process.cwd(), filename);
-    await fs.writeFile(outputPath, JSON.stringify(jobs, null, 2), 'utf8');
-    console.log(`💾 Jobs saved to ${outputPath}`);
-  }
-}
-
-// Main execution function
-export async function scrapeRemoteOKJobs(options?: ScrapingOptions): Promise<JobListing[]> {
-  const scraper = new RemoteOKScraper(options);
-  
-  try {
-    await scraper.initialize();
-    const jobs = await scraper.scrapeJobs();
-    
-    // Save results to file
-    await scraper.saveToFile(jobs);
-    
-    return jobs;
-  } finally {
-    await scraper.close();
-  }
-}
-
-// Example usage
-if (require.main === module) {
-  scrapeRemoteOKJobs({
-    maxPages: 2,
-    delay: 3000,
-    headless: false // Set to true for production
-  })
-  .then(jobs => {
-    console.log('\n📊 Scraping Summary:');
-    console.log(`Total jobs found: ${jobs.length}`);
-    if (jobs.length > 0) {
-      console.log('\n🏢 Companies found:');
-      const companies = [...new Set(jobs.map(job => job.company))];
-      companies.forEach(company => console.log(`- ${company}`));
-      
-      console.log('\n📋 Sample jobs:');
-      jobs.slice(0, 3).forEach((job, index) => {
-        console.log(`${index + 1}. ${job.title} at ${job.company}`);
-      });
-    }
-  })
-  .catch(error => {
-    console.error('❌ Scraping failed:', error);
-    process.exit(1);
-  });
-}
+} 

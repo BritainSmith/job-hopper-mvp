@@ -1,16 +1,11 @@
-import { PrismaClient, Job, Prisma } from '@prisma/client';
+import { Injectable } from '@nestjs/common';
+import { PrismaService } from '../prisma/prisma.service';
+import { Job, Prisma } from '@prisma/client';
 
-const prisma = new PrismaClient();
-
-// --- Type Definitions ---
-
-// Input for creating a job
+// Type Definitions
 export type JobCreateInput = Prisma.JobCreateInput;
-
-// Input for updating a job
 export type JobUpdateInput = Prisma.JobUpdateInput;
 
-// Filtering options for querying jobs
 export interface JobFilter {
   company?: string;
   location?: string;
@@ -21,25 +16,25 @@ export interface JobFilter {
   searchText?: string;
 }
 
-// Pagination options
 export interface PaginationOptions {
   skip?: number;
   take?: number;
   orderBy?: Prisma.JobOrderByWithRelationInput;
 }
 
-// --- Repository Functions ---
+@Injectable()
+export class JobRepository {
+  constructor(private prisma: PrismaService) {}
 
-export const jobRepository = {
   // Create a new job
   async createJob(data: JobCreateInput): Promise<Job> {
-    return prisma.job.create({ data });
-  },
+    return this.prisma.job.create({ data });
+  }
 
   // Get a job by ID
   async getJobById(id: number): Promise<Job | null> {
-    return prisma.job.findUnique({ where: { id } });
-  },
+    return this.prisma.job.findUnique({ where: { id } });
+  }
 
   // Get jobs with optional filtering and pagination
   async getJobs(filter: JobFilter = {}, options: PaginationOptions = {}): Promise<Job[]> {
@@ -52,30 +47,56 @@ export const jobRepository = {
       tags: filter.tags ? { contains: filter.tags.join(',') } : undefined,
       searchText: filter.searchText ? { contains: filter.searchText } : undefined,
     };
-    return prisma.job.findMany({
+    
+    return this.prisma.job.findMany({
       where,
       skip: options.skip,
       take: options.take,
       orderBy: options.orderBy,
     });
-  },
+  }
 
   // Update a job by ID
   async updateJob(id: number, data: JobUpdateInput): Promise<Job> {
-    return prisma.job.update({ where: { id }, data });
-  },
+    return this.prisma.job.update({ where: { id }, data });
+  }
 
   // Delete a job by ID
   async deleteJob(id: number): Promise<Job> {
-    return prisma.job.delete({ where: { id } });
-  },
+    return this.prisma.job.delete({ where: { id } });
+  }
 
   // Upsert a job (create if not exists, update if exists by unique applyLink)
   async upsertJob(data: JobCreateInput): Promise<Job> {
-    return prisma.job.upsert({
+    return this.prisma.job.upsert({
       where: { applyLink: data.applyLink },
       update: data,
       create: data,
     });
-  },
-}; 
+  }
+
+  // Get job statistics
+  async getJobStats(): Promise<{
+    total: number;
+    applied: number;
+    notApplied: number;
+    byStatus: Record<string, number>;
+  }> {
+    const [total, applied, notApplied, statusStats] = await Promise.all([
+      this.prisma.job.count(),
+      this.prisma.job.count({ where: { applied: true } }),
+      this.prisma.job.count({ where: { applied: false } }),
+      this.prisma.job.groupBy({
+        by: ['status'],
+        _count: { status: true },
+      }),
+    ]);
+
+    const byStatus = statusStats.reduce((acc, stat) => {
+      acc[stat.status || 'unknown'] = stat._count.status;
+      return acc;
+    }, {} as Record<string, number>);
+
+    return { total, applied, notApplied, byStatus };
+  }
+} 
