@@ -6,42 +6,33 @@
 
 A TypeScript-based web scraper using Puppeteer to extract software developer job listings from multiple sources, with a NestJS backend for scalable API development.
 
-## 🚀 Recent Major Updates (v2.0)
+## 🚀 Recent Major Updates (v2.1)
 
-### ✅ **Architecture Overhaul**
-- **Dependency Injection**: All scrapers now use proper NestJS dependency injection
-- **Test Suite Cleanup**: Fixed all 124 tests across 11 test suites
-- **Mocking Strategy**: Comprehensive HTTP request mocking to prevent real network calls
-- **Error Handling**: Robust error handling with proper test coverage
-- **Rate Limiting**: Enhanced rate limiting with configurable delays
-
-### ✅ **Scraper Improvements**
-- **LinkedIn Scraper**: Fixed dependency injection and parser integration
-- **Arbeitnow Scraper**: Enhanced German job support with proper testing
-- **Relocate.me Scraper**: Improved international job handling
-- **Base Scraper**: Enhanced HTTP error handling and test setup
+### ✅ **Architecture & Scraper Improvements**
+- **Unified Date Parsing**: All scrapers now use a shared `parseFlexibleDate` utility, supporting ISO, US/EU, German, and relative date formats for robust, consistent date handling.
+- **Legacy Code Cleanup**: Removed all unused/legacy scrapers, including the old RemoteOKService. Only the modular `RemoteOKScraper` is used for RemoteOK jobs.
+- **Modular Scraper System**: Each scraper is versioned and isolated, making it easy to add or update scrapers as sites change.
+- **How to Add a Scraper**: See `NEW_SCRAPERS.md` for a step-by-step guide to adding new scrapers using the modular, versioned approach.
 
 ### ✅ **Testing Enhancements**
-- **Comprehensive Test Coverage**: 226/226 tests passing across 15 test suites
-- **50.79% Overall Coverage**: Up from 47.06% with 49 new tests added
-- **Infrastructure Testing**: 100% coverage for error handling, logging, and config
-- **Mock Infrastructure**: Proper mocking for HTTP requests, delays, and parsers
-- **Error Scenario Coverage**: Comprehensive testing of error conditions
-- **Performance**: Tests run quickly without real network calls
+- **Comprehensive Test Coverage**: Over 470 tests across 26 suites, with >96% coverage for all active scrapers and utilities.
+- **Test Enforcement**: All new code must include unit tests. CI/CD blocks merges if coverage drops below 80%.
+- **Legacy Test Cleanup**: Removed tests for deleted/unused code. All tests now reflect the current implementation.
+- **Scraper Test Expansion**: RemoteOKScraper, LinkedIn, Arbeitnow, and Relocate scrapers all have robust, scenario-driven unit tests.
 
 ### 🎯 **Production Readiness**
-- **100% Test Coverage**: All scrapers and components thoroughly tested
-- **Proper Architecture**: Clean dependency injection patterns
-- **Error Resilience**: Comprehensive error handling throughout
-- **Maintainable Code**: Well-structured, testable, and documented
+- **100% Test Coverage for Core Modules**: Controllers, services, repositories, filters, interceptors, and config are fully covered.
+- **Maintainable Codebase**: Regularly delete unused code and keep documentation up to date.
+- **Error Resilience**: Comprehensive error handling and logging throughout.
 
 ## Features
 
 - 🚀 Scrapes software developer job listings from multiple sources:
-  - **RemoteOK** - Remote job board
+  - **RemoteOK** - Remote job board (via RemoteOKScraper only)
   - **LinkedIn** - Professional job listings
   - **Arbeitnow** - German job board with visa sponsorship
   - **Relocate.me** - International relocation-focused jobs
+- 📅 **Flexible Date Parsing**: All scrapers use a shared utility to handle ISO, US/EU, German, and relative date formats.
 - 📊 Extracts job title, company, location, apply link, and additional metadata
 - 🔄 Supports pagination to scrape multiple pages
 - 💾 Saves results to JSON file and database
@@ -52,82 +43,27 @@ A TypeScript-based web scraper using Puppeteer to extract software developer job
 - 🗄️ Prisma ORM for database management
 - 🔧 Dynamic scraper configuration for multiple job sites
 - 🌍 International job support with visa sponsorship detection
-- 🧪 **Comprehensive test coverage with 226 passing tests (50.79% coverage)**
-- 🔄 **Proper dependency injection throughout the system**
+- 🧪 **Comprehensive test coverage with >96% for all active scrapers**
+- 🔄 **Proper dependency injection and modular architecture**
 - 🎯 **Production-ready architecture with robust error handling**
 
-## Installation
+## 🧩 Shared Date Parsing Utility
 
-```bash
-# Install root dependencies
-npm install
+All scrapers use the `parseFlexibleDate` utility (`src/common/utils/date.util.ts`) to robustly handle:
+- ISO dates (YYYY-MM-DD)
+- US/EU slash dates (MM/DD/YYYY, DD/MM/YYYY)
+- German dates (DD.MM.YYYY, DD.MM.YY)
+- Relative dates (e.g., "2d ago", "3 hours ago")
+- Falls back to the current date on error
 
-# Install backend dependencies
-cd backend && npm install
+This ensures consistent, reliable date handling across all job sources.
 
-# Setup environment
-cp .env.example .env
-# Edit .env with your configuration
-```
+## 🧪 Testing & Coverage
 
-## Environment Setup
-
-1. **Initial Setup:**
-   ```bash
-   npm run setup
-   ```
-   This will create a `.env` file from `.env.example` if it doesn't exist.
-
-2. **Configure Environment Variables:**
-   Edit the `.env` file with your actual values:
-   ```bash
-   # Database
-   DATABASE_URL="file:./dev.db"
-   
-   # Scraping settings
-   SCRAPER_DELAY=2000
-   SCRAPER_MAX_PAGES=5
-   SCRAPER_HEADLESS=true
-   
-   # Security (change these!)
-   JWT_SECRET="your_secure_jwt_secret_here"
-   SESSION_SECRET="your_secure_session_secret_here"
-   
-   # Logging
-   LOG_LEVEL=info
-   ```
-
-3. **Check Configuration:**
-   ```bash
-   npm run config
-   ```
-
-**⚠️ Security Note:** Never commit your `.env` file to version control. It's already included in `.gitignore`.
-
-## Scripts & Usage
-
-You can run all major commands from the project root. The root scripts delegate to the backend as needed.
-
-| Script         | Description                                 | Usage (from root)         |
-| --------------|---------------------------------------------|---------------------------|
-| `dev`         | Start backend in development mode (hot reload) | `npm run dev`             |
-| `start`       | Start backend in production mode               | `npm start`               |
-| `build`       | Build the backend app                          | `npm run build`           |
-| `test`        | Run all unit tests                             | `npm test`                |
-| `test:watch`  | Run tests in watch mode                        | `npm run test:watch`      |
-| `test:cov`    | Run tests with coverage report                 | `npm run test:cov`        |
-| `test:e2e`    | Run end-to-end tests                           | `npm run test:e2e`        |
-| `lint`        | Lint the codebase                              | `npm run lint`            |
-| `format`      | Format the codebase                            | `npm run format`          |
-| `db:studio`   | Open Prisma Studio (DB browser)                | `npm run db:studio`       |
-| `db:generate` | Generate Prisma client                         | `npm run db:generate`     |
-| `db:migrate`  | Run DB migrations (dev)                        | `npm run db:migrate`      |
-| `db:reset`    | Reset the DB (dev)                             | `npm run db:reset`        |
-| `setup`       | Show environment setup instructions            | `npm run setup`           |
-
-**Note:**
-- All scripts can be run from the root directory for convenience.
-- For advanced workflows, you can also run scripts directly in `backend/` (e.g., `npm run start:dev`).
+- **All new code must include unit tests.**
+- **Test coverage is strictly enforced** (80% minimum, >96% for scrapers/utilities).
+- **Legacy/unused code is regularly deleted** to keep the codebase clean and maintainable.
+- **See `TEST_SUITES.md` for a breakdown of test coverage and requirements.**
 
 ## Usage
 
@@ -152,38 +88,21 @@ npm run build
 npm run start
 ```
 
-### Programmatic Usage
+## Programmatic Usage
 
 ```typescript
-import { scrapeRemoteOKJobs, RemoteOKScraper } from './src/scrapers/remoteok';
+import { RemoteOKScraper } from './src/scrapers/remoteok/remoteok-scraper';
 
-// Using the main function
-const jobs = await scrapeRemoteOKJobs({
-  maxPages: 5,
-  delay: 2000,
-  headless: true
-});
-
-// Or using the class directly
-const scraper = new RemoteOKScraper({
-  maxPages: 3,
-  delay: 3000,
-  headless: false
-});
-
-await scraper.initialize();
-const jobs = await scraper.scrapeJobs();
-await scraper.close();
+const scraper = new RemoteOKScraper();
+const jobs = await scraper.scrapeJobs({ maxPages: 3, maxJobs: 50 });
 ```
 
-## Configuration Options
+## Adding a New Scraper
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `maxPages` | number | 5 | Maximum number of pages to scrape |
-| `delay` | number | 2000 | Delay between page requests (ms) |
-| `headless` | boolean | true | Run browser in headless mode |
-| `userAgent` | string | Chrome UA | Custom user agent string |
+- See `NEW_SCRAPERS.md` for a step-by-step guide.
+- Use the modular, versioned approach: create a new directory under `src/scrapers/` and implement a parser and scraper class.
+- Use the shared `parseFlexibleDate` utility for all date fields.
+- Add comprehensive unit tests for all new code.
 
 ## Output Format
 
@@ -195,7 +114,7 @@ interface JobListing {
   company: string;      // Company name
   location: string;     // Job location (usually "Remote")
   applyLink: string;    // Direct link to apply
-  postedDate?: string;  // When the job was posted
+  postedDate?: string;  // When the job was posted (parsed with parseFlexibleDate)
   salary?: string;      // Salary information (if available)
   tags?: string[];      // Job tags/skills
 }
@@ -215,7 +134,7 @@ interface JobListing {
     "company": "TechCorp",
     "location": "Remote",
     "applyLink": "https://remoteok.com/remote-jobs/123456",
-    "postedDate": "2d ago",
+    "postedDate": "2023-07-01T00:00:00.000Z",
     "salary": "$80k - $120k",
     "tags": ["React", "Node.js", "TypeScript"]
   }
@@ -224,7 +143,7 @@ interface JobListing {
 
 ## Ethical Considerations
 
-- The scraper includes built-in delays to be respectful to RemoteOK's servers
+- The scraper includes built-in delays to be respectful to job board servers
 - It blocks unnecessary resources (images, stylesheets) to reduce bandwidth
 - Consider the website's robots.txt and terms of service
 - Use responsibly and don't overload their servers
@@ -243,28 +162,9 @@ interface JobListing {
 To see the browser in action, set `headless: false` in the options:
 
 ```typescript
-const jobs = await scrapeRemoteOKJobs({
-  headless: false,
-  maxPages: 1
-});
+const scraper = new RemoteOKScraper();
+const jobs = await scraper.scrapeJobs({ headless: false, maxPages: 1 });
 ```
-
-## Dependencies
-
-### Root Dependencies
-- `puppeteer` - Browser automation
-- `typescript` - Type safety
-- `ts-node` - TypeScript execution
-- `@types/node` - Node.js type definitions
-- `dotenv` - Environment variable management
-- `@prisma/client` - Database ORM
-- `prisma` - Database schema management
-
-### Backend Dependencies
-- `@nestjs/common` - NestJS core framework
-- `@nestjs/core` - NestJS core functionality
-- `@nestjs/platform-express` - Express adapter for NestJS
-- `reflect-metadata` - Metadata reflection for decorators
 
 ## Project Structure
 
@@ -276,7 +176,8 @@ job-hopper/
 │   │   ├── config/           # Configuration modules
 │   │   ├── repositories/     # Data access layer
 │   │   ├── services/         # Business logic services
-│   │   ├── scrapers/         # Job scraping services
+│   │   ├── scrapers/         # Job scraping services (modular, versioned)
+│   │   ├── common/utils/     # Shared utilities (e.g., date parsing)
 │   │   ├── prisma/           # NestJS Prisma service & module
 │   │   ├── app.module.ts     # Main application module
 │   │   └── main.ts           # Application entry point
@@ -286,19 +187,7 @@ job-hopper/
 └── README.md                 # Project documentation
 ```
 
-**📁 Prisma Setup:**
-- **Root `prisma/`**: Single source of truth for database schema and migrations
-- **Backend `prisma/`**: Symlink to root prisma folder for NestJS integration
-- **Database**: SQLite file stored in root `prisma/dev.db`
-- **All Prisma commands**: Run from root directory using `npm run db:*` scripts
-
-**🧹 Clean Architecture:**
-- **Single TypeScript config**: Backend-specific configuration only
-- **Consolidated dependencies**: No duplicate packages between root and backend
-- **Unified gitignore**: Single `.gitignore` file for the entire project
-- **Minimal root package.json**: Only contains scripts and essential metadata
-
-## 🚀 CI/CD Pipeline
+## CI/CD, Security, and More
 
 ### GitHub Actions Workflows
 
