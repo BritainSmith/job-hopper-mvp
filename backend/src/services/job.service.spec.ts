@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { JobService } from './job.service';
 import { JobRepository } from '../repositories/job.repository';
 import { RemoteOKService } from '../scrapers/remoteok.service';
+import { LoggingService } from '../common/services/logging.service';
 
 describe('JobService', () => {
   let service: JobService;
@@ -22,12 +23,20 @@ describe('JobService', () => {
     scrapeJobs: jest.fn(),
   };
 
+  const mockLoggingService = {
+    log: jest.fn(),
+    error: jest.fn(),
+    warn: jest.fn(),
+    debug: jest.fn(),
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         JobService,
         { provide: JobRepository, useValue: mockJobRepository },
         { provide: RemoteOKService, useValue: mockRemoteOKService },
+        { provide: LoggingService, useValue: mockLoggingService },
       ],
     }).compile();
 
