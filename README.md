@@ -1,20 +1,28 @@
 # Job Hopper - RemoteOK Scraper
 
-A TypeScript-based web scraper using Puppeteer to extract software developer job listings from RemoteOK.
+A TypeScript-based web scraper using Puppeteer to extract software developer job listings from RemoteOK, with a NestJS backend for scalable API development.
 
 ## Features
 
 - 🚀 Scrapes software developer job listings from RemoteOK
 - 📊 Extracts job title, company, location, apply link, and additional metadata
 - 🔄 Supports pagination to scrape multiple pages
-- 💾 Saves results to JSON file
+- 💾 Saves results to JSON file and database
 - ⚡ Configurable scraping options (pages, delays, headless mode)
 - 🛡️ Built-in error handling and rate limiting
 - 📝 TypeScript support with proper type definitions
+- 🏗️ NestJS backend for scalable API development
+- 🗄️ Prisma ORM for database management
+- 🔧 Dynamic scraper configuration for multiple job sites
 
 ## Installation
 
 ```bash
+# Install root dependencies
+npm install
+
+# Install backend dependencies
+cd backend
 npm install
 ```
 
@@ -51,7 +59,18 @@ npm install
 
 ## Usage
 
-### Basic Usage
+### Backend Development
+
+Start the NestJS development server:
+
+```bash
+cd backend
+npm run start:dev
+```
+
+The API will be available at `http://localhost:3000`
+
+### Scraping Jobs
 
 Run the scraper with default settings (3 pages, 3-second delays, non-headless mode):
 
@@ -166,6 +185,7 @@ const jobs = await scrapeRemoteOKJobs({
 
 ## Dependencies
 
+### Root Dependencies
 - `puppeteer` - Browser automation
 - `typescript` - Type safety
 - `ts-node` - TypeScript execution
@@ -173,6 +193,33 @@ const jobs = await scrapeRemoteOKJobs({
 - `dotenv` - Environment variable management
 - `@prisma/client` - Database ORM
 - `prisma` - Database schema management
+
+### Backend Dependencies
+- `@nestjs/common` - NestJS core framework
+- `@nestjs/core` - NestJS core functionality
+- `@nestjs/platform-express` - Express adapter for NestJS
+- `reflect-metadata` - Metadata reflection for decorators
+
+## Project Structure
+
+```
+job-hopper/
+├── prisma/                    # Database schema & migrations
+├── src/                       # Original scrapers & services
+│   ├── scrapers/             # Job scraping modules
+│   ├── config/               # Configuration files
+│   ├── services/             # Business logic services
+│   └── db/                   # Database utilities
+├── backend/                   # NestJS application
+│   ├── src/
+│   │   ├── prisma/           # NestJS Prisma integration
+│   │   ├── app.module.ts     # Main application module
+│   │   └── main.ts           # Application entry point
+│   ├── prisma -> ../prisma   # Symlink to shared schema
+│   └── .env -> ../.env       # Symlink to shared env
+├── scripts/                   # Utility scripts
+└── assets/                    # Static assets
+```
 
 ## Security
 

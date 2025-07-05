@@ -1,4 +1,6 @@
 import { scrapeRemoteOKJobs, JobListing as ScrapedJob } from '../scrapers/remoteok';
+import { scrapeJobs as scrapeDynamicJobs } from '../scrapers/dynamicScraper';
+import { getAvailableScrapers } from '../config/scrapers';
 import { jobService } from './jobService';
 import { Job, JobStatus, Prisma } from '@prisma/client';
 
@@ -67,14 +69,18 @@ export class ScraperService {
   }
 
   private async scrapeRemoteOK(options: ScrapingOptions): Promise<ScrapingResult> {
+    return this.scrapeWithDynamicScraper('remoteok', options);
+  }
+
+  private async scrapeWithDynamicScraper(scraperName: string, options: ScrapingOptions): Promise<ScrapingResult> {
     const startTime = Date.now();
     const errors: string[] = [];
 
     try {
-      console.log('📄 Scraping RemoteOK...');
+      console.log(`📄 Scraping ${scraperName}...`);
 
-      // Scrape jobs from RemoteOK
-      const scrapedJobs = await scrapeRemoteOKJobs({
+      // Use dynamic scraper
+      const scrapedJobs = await scrapeDynamicJobs(scraperName, {
         maxPages: options.maxPages,
         delay: options.delay,
         headless: options.headless
@@ -85,7 +91,7 @@ export class ScraperService {
 
       // Save to database if requested
       if (options.saveToDatabase !== false) {
-        const result = await this.saveScrapedJobs(scrapedJobs, 'remoteok');
+        const result = await this.saveScrapedJobs(scrapedJobs, scraperName);
         newJobs = result.created;
         updatedJobs = result.updated;
       }
@@ -93,7 +99,7 @@ export class ScraperService {
       const duration = Date.now() - startTime;
 
       return {
-        source: 'remoteok',
+        source: scraperName,
         totalFound: scrapedJobs.length,
         newJobs,
         updatedJobs,
@@ -101,9 +107,9 @@ export class ScraperService {
         duration
       };
     } catch (error) {
-      console.error('❌ RemoteOK scraping failed:', error);
+      console.error(`❌ ${scraperName} scraping failed:`, error);
       return {
-        source: 'remoteok',
+        source: scraperName,
         totalFound: 0,
         newJobs: 0,
         updatedJobs: 0,

@@ -11,7 +11,8 @@
     "test:services": "ts-node scripts/test-services.ts",
     "scrape:save": "ts-node -e \"import('./src/services').then(s => s.scraperService.scrapeJobs({saveToDatabase: true, headless: true}))\"",
     "save:jobs": "ts-node scripts/save-scraped-jobs.ts",
-    "inspect:db": "ts-node scripts/inspect-db.ts"
+    "inspect:db": "ts-node scripts/inspect-db.ts",
+    "test:dynamic": "ts-node scripts/test-dynamic-scraper.ts"
   },
   "keywords": [],
   "author": "",
