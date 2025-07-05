@@ -3,33 +3,23 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "setup": "echo \"Environment setup: Copy .env.example to .env and configure your variables\"",
     "dev": "cd backend && npm run start:dev",
-    "build": "cd backend && npm run build",
     "start": "cd backend && npm run start:prod",
+    "build": "cd backend && npm run build",
+    "test": "cd backend && npm test",
+    "test:watch": "cd backend && npm run test:watch",
+    "test:cov": "cd backend && npm run test:cov",
+    "test:e2e": "cd backend && npm run test:e2e",
+    "lint": "cd backend && npm run lint",
+    "format": "cd backend && npm run format",
     "db:studio": "npx prisma studio",
     "db:generate": "npx prisma generate",
     "db:migrate": "npx prisma migrate dev",
-    "db:reset": "npx prisma migrate reset"
+    "db:reset": "npx prisma migrate reset",
+    "setup": "echo \"Environment setup: Copy .env.example to .env and configure your variables\""
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": "",
-  "dependencies": {
-    "@prisma/client": "^6.11.1",
-    "axios": "^1.10.0",
-    "dotenv": "^17.0.1",
-    "puppeteer": "^24.11.2",
-    "puppeteer-extra": "^3.3.6",
-    "puppeteer-extra-plugin-stealth": "^2.11.2",
-    "sqlite3": "^5.1.7"
-  },
-  "devDependencies": {
-    "@types/node": "^24.0.10",
-    "prisma": "^6.11.1",
-    "ts-node": "^10.9.2",
-    "typescript": "^5.8.3"
-  }
+  "description": ""
 }

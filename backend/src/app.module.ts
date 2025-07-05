@@ -3,9 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { PrismaModule } from './prisma/prisma.module';
-import { JobRepository } from './repositories/job.repository';
-import { JobService } from './services/job.service';
-import { RemoteOKService } from './scrapers/remoteok.service';
+import { JobsModule } from './jobs/jobs.module';
 import { 
   databaseConfig, 
   appConfig, 
@@ -33,13 +31,9 @@ import { scrapersConfig } from './config/scrapers.config';
       ],
     }),
     PrismaModule,
+    JobsModule,
   ],
   controllers: [AppController],
-  providers: [
-    AppService,
-    JobRepository,
-    JobService,
-    RemoteOKService,
-  ],
+  providers: [AppService],
 })
 export class AppModule {}

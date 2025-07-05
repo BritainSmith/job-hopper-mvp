@@ -60,6 +60,44 @@ cp .env.example .env
 
 **⚠️ Security Note:** Never commit your `.env` file to version control. It's already included in `.gitignore`.
 
+## Available Scripts
+
+All scripts are run from the **root directory** for consistency:
+
+### 🚀 Development & Server
+```bash
+npm run dev          # Start development server with hot reload
+npm run start        # Start production server
+npm run build        # Build the application for production
+```
+
+### 🧪 Testing
+```bash
+npm test             # Run all tests
+npm run test:watch   # Run tests in watch mode
+npm run test:cov     # Run tests with coverage report
+npm run test:e2e     # Run end-to-end tests
+```
+
+### 🗄️ Database Management
+```bash
+npm run db:studio    # Open Prisma Studio (database GUI)
+npm run db:generate  # Generate Prisma client
+npm run db:migrate   # Run database migrations
+npm run db:reset     # Reset database (development only)
+```
+
+### 🔧 Code Quality
+```bash
+npm run lint         # Run ESLint to check code quality
+npm run format       # Format code with Prettier
+```
+
+### 📋 Setup
+```bash
+npm run setup        # Display environment setup instructions
+```
+
 ## Usage
 
 ### Development
@@ -68,27 +106,10 @@ Start the NestJS development server:
 
 ```bash
 npm run dev
-# or
-cd backend && npm run start:dev
 ```
 
 The API will be available at `http://localhost:3000`
-
-### Database Management
-
-```bash
-# Open Prisma Studio (database GUI)
-npm run db:studio
-
-# Generate Prisma client
-npm run db:generate
-
-# Run database migrations
-npm run db:migrate
-
-# Reset database (development only)
-npm run db:reset
-```
+Swagger documentation at `http://localhost:3000/api`
 
 ### Production
 
@@ -218,21 +239,33 @@ const jobs = await scrapeRemoteOKJobs({
 
 ```
 job-hopper/
-├── prisma/                    # Database schema & migrations
+├── prisma/                    # Database schema & migrations (single source of truth)
 ├── backend/                   # NestJS application
 │   ├── src/
 │   │   ├── config/           # Configuration modules
 │   │   ├── repositories/     # Data access layer
 │   │   ├── services/         # Business logic services
 │   │   ├── scrapers/         # Job scraping services
-│   │   ├── prisma/           # NestJS Prisma integration
+│   │   ├── prisma/           # NestJS Prisma service & module
 │   │   ├── app.module.ts     # Main application module
 │   │   └── main.ts           # Application entry point
 │   ├── prisma -> ../prisma   # Symlink to shared schema
 │   └── .env -> ../.env       # Symlink to shared env
-├── assets/                    # Static assets
-└── .env.example              # Environment template
+├── .env.example              # Environment template
+└── README.md                 # Project documentation
 ```
+
+**📁 Prisma Setup:**
+- **Root `prisma/`**: Single source of truth for database schema and migrations
+- **Backend `prisma/`**: Symlink to root prisma folder for NestJS integration
+- **Database**: SQLite file stored in root `prisma/dev.db`
+- **All Prisma commands**: Run from root directory using `npm run db:*` scripts
+
+**🧹 Clean Architecture:**
+- **Single TypeScript config**: Backend-specific configuration only
+- **Consolidated dependencies**: No duplicate packages between root and backend
+- **Unified gitignore**: Single `.gitignore` file for the entire project
+- **Minimal root package.json**: Only contains scripts and essential metadata
 
 ## Security
 

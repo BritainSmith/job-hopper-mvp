@@ -132,3 +132,10 @@ outputs/
 # Prisma generated files
 /src/generated/prisma
 prisma/migrations/
+
+# NestJS specific
+dist/
+build/
+*.tsbuildinfo
+coverage/
+.nyc_output
