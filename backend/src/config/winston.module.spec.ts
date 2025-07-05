@@ -100,10 +100,11 @@ describe('WinstonConfigModule', () => {
 
   describe('Configuration Integration', () => {
     it('should integrate with ConfigService for logger configuration', () => {
-      const mockConfigService = { 
-        get: jest.fn()
+      const mockConfigService = {
+        get: jest
+          .fn()
           .mockReturnValueOnce('development') // NODE_ENV
-          .mockReturnValueOnce('debug') // LOG_LEVEL
+          .mockReturnValueOnce('debug'), // LOG_LEVEL
       };
 
       mockCreateLoggerConfig(mockConfigService);
@@ -117,4 +118,4 @@ describe('WinstonConfigModule', () => {
       expect(mockWinstonModule.forRootAsync).toBeDefined();
     });
   });
-}); 
+});

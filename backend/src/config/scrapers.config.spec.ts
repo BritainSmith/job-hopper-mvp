@@ -46,7 +46,9 @@ describe('Scrapers Configuration', () => {
     it('should have correct RemoteOK basic properties', () => {
       expect(config.remoteok.name).toBe('RemoteOK');
       expect(config.remoteok.baseUrl).toBe('https://remoteok.com');
-      expect(config.remoteok.jobListUrl).toBe('https://remoteok.com/remote-dev-jobs');
+      expect(config.remoteok.jobListUrl).toBe(
+        'https://remoteok.com/remote-dev-jobs',
+      );
     });
 
     it('should have comprehensive selectors', () => {
@@ -82,8 +84,12 @@ describe('Scrapers Configuration', () => {
       expect(dataTransformers.company('ABC')).toBe('ABC');
 
       // Test applyLink transformer
-      expect(dataTransformers.applyLink('https://example.com')).toBe('https://example.com');
-      expect(dataTransformers.applyLink('/remote-jobs/123')).toBe('https://remoteok.com/remote-jobs/123');
+      expect(dataTransformers.applyLink('https://example.com')).toBe(
+        'https://example.com',
+      );
+      expect(dataTransformers.applyLink('/remote-jobs/123')).toBe(
+        'https://remoteok.com/remote-jobs/123',
+      );
 
       // Test location transformer
       expect(dataTransformers.location('New York')).toBe('New York');
@@ -127,8 +133,12 @@ describe('Scrapers Configuration', () => {
       const { dataTransformers } = config.linkedin;
 
       // Test applyLink transformer
-      expect(dataTransformers.applyLink('https://example.com')).toBe('https://example.com');
-      expect(dataTransformers.applyLink('/jobs/view/123')).toBe('https://www.linkedin.com/jobs/view/123');
+      expect(dataTransformers.applyLink('https://example.com')).toBe(
+        'https://example.com',
+      );
+      expect(dataTransformers.applyLink('/jobs/view/123')).toBe(
+        'https://www.linkedin.com/jobs/view/123',
+      );
     });
   });
 
@@ -167,8 +177,12 @@ describe('Scrapers Configuration', () => {
       const { dataTransformers } = config.indeed;
 
       // Test applyLink transformer
-      expect(dataTransformers.applyLink('https://example.com')).toBe('https://example.com');
-      expect(dataTransformers.applyLink('/jobs/view/123')).toBe('https://www.indeed.com/jobs/view/123');
+      expect(dataTransformers.applyLink('https://example.com')).toBe(
+        'https://example.com',
+      );
+      expect(dataTransformers.applyLink('/jobs/view/123')).toBe(
+        'https://www.indeed.com/jobs/view/123',
+      );
     });
   });
 
@@ -226,4 +240,4 @@ describe('Scrapers Configuration', () => {
       expect(config.indeed.options.maxPages).toBeGreaterThan(0);
     });
   });
-}); 
+});

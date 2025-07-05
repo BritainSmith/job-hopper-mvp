@@ -120,7 +120,9 @@ describe('ArbeitnowV1Parser', () => {
 
   describe('extractTags', () => {
     it('should extract tags', () => {
-      const dom = new JSDOM('<div><span class="tag">A</span><span class="tag">B</span></div>');
+      const dom = new JSDOM(
+        '<div><span class="tag">A</span><span class="tag">B</span></div>',
+      );
       const card = dom.window.document.querySelector('div');
       Object.assign(ArbeitnowV1Selectors, { tags: '.tag' });
       expect((parser as any).extractTags(card)).toEqual(['A', 'B']);
@@ -132,9 +134,14 @@ describe('ArbeitnowV1Parser', () => {
 
   describe('extractBenefits', () => {
     it('should extract benefits and perks', () => {
-      const dom = new JSDOM('<div><span class="benefit">A</span><span class="perk">B</span></div>');
+      const dom = new JSDOM(
+        '<div><span class="benefit">A</span><span class="perk">B</span></div>',
+      );
       const card = dom.window.document.querySelector('div');
-      Object.assign(ArbeitnowV1Selectors, { benefits: '.benefit', perks: '.perk' });
+      Object.assign(ArbeitnowV1Selectors, {
+        benefits: '.benefit',
+        perks: '.perk',
+      });
       expect((parser as any).extractBenefits(card)).toEqual(['A', 'B']);
     });
     it('should handle error and return []', () => {
@@ -146,24 +153,38 @@ describe('ArbeitnowV1Parser', () => {
     it('should detect Remote, Full-time, Part-time, Contract', () => {
       const dom = new JSDOM('<div><span class="remote"></span></div>');
       let card = dom.window.document.querySelector('div');
-      Object.assign(ArbeitnowV1Selectors, { remote: '.remote', fullTime: '.fulltime', partTime: '.parttime', contract: '.contract', visaSponsorship: '.visa', relocation: '.relocation' });
+      Object.assign(ArbeitnowV1Selectors, {
+        remote: '.remote',
+        fullTime: '.fulltime',
+        partTime: '.parttime',
+        contract: '.contract',
+        visaSponsorship: '.visa',
+        relocation: '.relocation',
+      });
       expect((parser as any).extractJobType(card)).toBe('Remote');
-      dom.window.document.body.innerHTML = '<div><span class="fulltime"></span></div>';
+      dom.window.document.body.innerHTML =
+        '<div><span class="fulltime"></span></div>';
       card = dom.window.document.querySelector('div');
       expect((parser as any).extractJobType(card)).toBe('Full-time');
-      dom.window.document.body.innerHTML = '<div><span class="parttime"></span></div>';
+      dom.window.document.body.innerHTML =
+        '<div><span class="parttime"></span></div>';
       card = dom.window.document.querySelector('div');
       expect((parser as any).extractJobType(card)).toBe('Part-time');
-      dom.window.document.body.innerHTML = '<div><span class="contract"></span></div>';
+      dom.window.document.body.innerHTML =
+        '<div><span class="contract"></span></div>';
       card = dom.window.document.querySelector('div');
       expect((parser as any).extractJobType(card)).toBe('Contract');
     });
     it('should detect Visa Sponsorship and Relocation', () => {
       const dom = new JSDOM('<div><span class="visa"></span></div>');
       let card = dom.window.document.querySelector('div');
-      Object.assign(ArbeitnowV1Selectors, { visaSponsorship: '.visa', relocation: '.relocation' });
+      Object.assign(ArbeitnowV1Selectors, {
+        visaSponsorship: '.visa',
+        relocation: '.relocation',
+      });
       expect((parser as any).extractJobType(card)).toBe('Visa Sponsorship');
-      dom.window.document.body.innerHTML = '<div><span class="relocation"></span></div>';
+      dom.window.document.body.innerHTML =
+        '<div><span class="relocation"></span></div>';
       card = dom.window.document.querySelector('div');
       expect((parser as any).extractJobType(card)).toBe('Relocation Package');
     });
@@ -202,19 +223,27 @@ describe('ArbeitnowV1Parser', () => {
       expect((parser as any).normalizeUrl('')).toBe('');
     });
     it('should handle relative url', () => {
-      expect((parser as any).normalizeUrl('/jobs/123')).toBe('https://www.arbeitnow.com/jobs/123');
+      expect((parser as any).normalizeUrl('/jobs/123')).toBe(
+        'https://www.arbeitnow.com/jobs/123',
+      );
     });
     it('should handle non-http url', () => {
-      expect((parser as any).normalizeUrl('jobs/123')).toBe('https://www.arbeitnow.com/jobs/123');
+      expect((parser as any).normalizeUrl('jobs/123')).toBe(
+        'https://www.arbeitnow.com/jobs/123',
+      );
     });
     it('should handle absolute url', () => {
-      expect((parser as any).normalizeUrl('https://foo.com/bar')).toBe('https://foo.com/bar');
+      expect((parser as any).normalizeUrl('https://foo.com/bar')).toBe(
+        'https://foo.com/bar',
+      );
     });
   });
 
   describe('generateSourceId', () => {
     it('should generate a normalized source id', () => {
-      expect((parser as any).generateSourceId('Foo Bar', 'Acme!')).toBe('foo-bar-acme-');
+      expect((parser as any).generateSourceId('Foo Bar', 'Acme!')).toBe(
+        'foo-bar-acme-',
+      );
     });
   });
 
@@ -249,4 +278,4 @@ describe('ArbeitnowV1Parser', () => {
       expect(parser.getCurrentPage(undefined as any)).toBe(1);
     });
   });
-}); 
+});

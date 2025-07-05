@@ -42,8 +42,12 @@ describe('Logger Configuration', () => {
       constructor: jest.fn(),
     };
 
-    (winston.transports.Console as any) = jest.fn().mockImplementation(() => mockConsoleTransport);
-    (winston.transports.File as any) = jest.fn().mockImplementation(() => mockFileTransport);
+    (winston.transports.Console as any) = jest
+      .fn()
+      .mockImplementation(() => mockConsoleTransport);
+    (winston.transports.File as any) = jest
+      .fn()
+      .mockImplementation(() => mockFileTransport);
 
     // Mock winston.createLogger
     mockWinstonLogger = {
@@ -53,7 +57,9 @@ describe('Logger Configuration', () => {
       info: jest.fn(),
       debug: jest.fn(),
     };
-    (winston.createLogger as any) = jest.fn().mockReturnValue(mockWinstonLogger);
+    (winston.createLogger as any) = jest
+      .fn()
+      .mockReturnValue(mockWinstonLogger);
 
     // Mock printf function
     mockPrintf = jest.fn().mockImplementation((fn) => {
@@ -99,11 +105,13 @@ describe('Logger Configuration', () => {
 
     it('should use default log level when not provided', () => {
       // Mock ConfigService to return undefined for LOG_LEVEL, which should trigger default
-      mockConfigService.get.mockImplementation((key: string, defaultValue?: any) => {
-        if (key === 'NODE_ENV') return 'development';
-        if (key === 'LOG_LEVEL') return defaultValue; // Return the default value when key is undefined
-        return undefined;
-      });
+      mockConfigService.get.mockImplementation(
+        (key: string, defaultValue?: any) => {
+          if (key === 'NODE_ENV') return 'development';
+          if (key === 'LOG_LEVEL') return defaultValue; // Return the default value when key is undefined
+          return undefined;
+        },
+      );
 
       const config = createLoggerConfig(mockConfigService);
 
@@ -136,7 +144,7 @@ describe('Logger Configuration', () => {
           level: 'error',
           maxsize: 5242880, // 5MB
           maxFiles: 5,
-        })
+        }),
       );
 
       // Check combined log file transport
@@ -145,7 +153,7 @@ describe('Logger Configuration', () => {
           filename: 'logs/combined.log',
           maxsize: 5242880, // 5MB
           maxFiles: 5,
-        })
+        }),
       );
 
       // Check debug log file transport (development only)
@@ -155,7 +163,7 @@ describe('Logger Configuration', () => {
           level: 'debug',
           maxsize: 5242880, // 5MB
           maxFiles: 3,
-        })
+        }),
       );
     });
 
@@ -169,10 +177,10 @@ describe('Logger Configuration', () => {
       // Should only have 2 file transports (error + combined)
       const fileTransportCalls = (winston.transports.File as any).mock.calls;
       expect(fileTransportCalls).toHaveLength(2);
-      
+
       // Check that debug transport is not included
-      const debugTransportCall = fileTransportCalls.find(call => 
-        call[0].filename === 'logs/debug.log'
+      const debugTransportCall = fileTransportCalls.find(
+        (call) => call[0].filename === 'logs/debug.log',
       );
       expect(debugTransportCall).toBeUndefined();
     });
@@ -210,7 +218,7 @@ describe('Logger Configuration', () => {
         message: 'Test error',
         stack: 'Error: Test error\n    at test.js:1:1',
         userId: 123,
-        requestId: 'req-123'
+        requestId: 'req-123',
       };
 
       const result = logFormatPrintf(logInfo);
@@ -237,7 +245,7 @@ describe('Logger Configuration', () => {
         level: 'info',
         message: 'Test info',
         userId: 123,
-        requestId: 'req-123'
+        requestId: 'req-123',
       };
 
       const result = logFormatPrintf(logInfo);
@@ -264,7 +272,7 @@ describe('Logger Configuration', () => {
         level: 'info',
         message: 'Test message',
         userId: 123,
-        requestId: 'req-123'
+        requestId: 'req-123',
       };
 
       const result = consolePrintf(logInfo);
@@ -288,7 +296,7 @@ describe('Logger Configuration', () => {
         level: 'error',
         message: 'Test error',
         stack: 'Error: Test error\n    at test.js:1:1',
-        userId: 123
+        userId: 123,
       };
 
       const result = consolePrintf(logInfo);
@@ -310,7 +318,7 @@ describe('Logger Configuration', () => {
       const logInfo = {
         timestamp: '2023-01-01T00:00:00.000Z',
         level: 'info',
-        message: 'Test message'
+        message: 'Test message',
       };
 
       const result = consolePrintf(logInfo);
@@ -330,10 +338,7 @@ describe('Logger Configuration', () => {
       expect(winston.createLogger).toHaveBeenCalledWith({
         format: 'combined-format',
         defaultMeta: { service: serviceName },
-        transports: [
-          mockConsoleTransport,
-          mockFileTransport,
-        ],
+        transports: [mockConsoleTransport, mockFileTransport],
       });
     });
 
@@ -363,7 +368,7 @@ describe('Logger Configuration', () => {
       expect(winston.createLogger).toHaveBeenCalledWith(
         expect.objectContaining({
           defaultMeta: { service: serviceName },
-        })
+        }),
       );
     });
 
@@ -402,7 +407,7 @@ describe('Logger Configuration', () => {
         level: 'info',
         message: 'Test message',
         service: serviceName,
-        userId: 123
+        userId: 123,
       };
 
       const result = serviceConsolePrintf(logInfo);
@@ -424,7 +429,7 @@ describe('Logger Configuration', () => {
         level: 'error',
         message: 'Test error',
         service: serviceName,
-        stack: 'Error: Test error\n    at test.js:1:1'
+        stack: 'Error: Test error\n    at test.js:1:1',
       };
 
       const result = serviceConsolePrintf(logInfo);
@@ -445,7 +450,7 @@ describe('Logger Configuration', () => {
         timestamp: '2023-01-01T00:00:00.000Z',
         level: 'info',
         message: 'Test message',
-        service: serviceName
+        service: serviceName,
       };
 
       const result = serviceConsolePrintf(logInfo);
@@ -555,4 +560,4 @@ describe('Logger Configuration', () => {
       expect(config.level).toBe('silly');
     });
   });
-}); 
+});

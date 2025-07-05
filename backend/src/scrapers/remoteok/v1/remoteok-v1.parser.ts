@@ -102,8 +102,6 @@ export class RemoteOKV1Parser {
     }
   }
 
-
-
   private normalizeUrl(url: string): string {
     if (!url) return '';
 

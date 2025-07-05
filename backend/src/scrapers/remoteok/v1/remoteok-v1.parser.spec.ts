@@ -105,7 +105,9 @@ describe('RemoteOKV1Parser', () => {
 
   describe('extractTags', () => {
     it('should extract tags', () => {
-      const dom = new JSDOM('<div><span class="tag">A</span><span class="tag">B</span></div>');
+      const dom = new JSDOM(
+        '<div><span class="tag">A</span><span class="tag">B</span></div>',
+      );
       const card = dom.window.document.querySelector('div');
       Object.assign(RemoteOKV1Selectors, { tags: '.tag' });
       expect((parser as any).extractTags(card)).toEqual(['A', 'B']);
@@ -138,19 +140,25 @@ describe('RemoteOKV1Parser', () => {
       expect((parser as any).normalizeUrl('')).toBe('');
     });
     it('should handle relative url', () => {
-      expect((parser as any).normalizeUrl('/jobs/456')).toBe('https://remoteok.com/jobs/456');
+      expect((parser as any).normalizeUrl('/jobs/456')).toBe(
+        'https://remoteok.com/jobs/456',
+      );
     });
     it('should handle non-http url', () => {
       expect((parser as any).normalizeUrl('jobs/456')).toBe('https://jobs/456');
     });
     it('should handle absolute url', () => {
-      expect((parser as any).normalizeUrl('https://foo.com/bar')).toBe('https://foo.com/bar');
+      expect((parser as any).normalizeUrl('https://foo.com/bar')).toBe(
+        'https://foo.com/bar',
+      );
     });
   });
 
   describe('generateSourceId', () => {
     it('should generate a normalized source id', () => {
-      expect((parser as any).generateSourceId('Foo Bar', 'Globex!')).toBe('foo-bar-globex-');
+      expect((parser as any).generateSourceId('Foo Bar', 'Globex!')).toBe(
+        'foo-bar-globex-',
+      );
     });
   });
 
@@ -185,4 +193,4 @@ describe('RemoteOKV1Parser', () => {
       expect(parser.getCurrentPage(undefined as any)).toBe(1);
     });
   });
-}); 
+});

@@ -104,7 +104,9 @@ describe('JobRepository', () => {
       const error = new Error('Database error');
       mockPrismaService.job.create.mockRejectedValue(error);
 
-      await expect(repository.createJob(jobData)).rejects.toThrow('Database error');
+      await expect(repository.createJob(jobData)).rejects.toThrow(
+        'Database error',
+      );
       expect(prisma.job.create).toHaveBeenCalledWith({ data: jobData });
     });
   });
@@ -124,7 +126,9 @@ describe('JobRepository', () => {
 
       const result = await repository.getJobById(999);
 
-      expect(prisma.job.findUnique).toHaveBeenCalledWith({ where: { id: 999 } });
+      expect(prisma.job.findUnique).toHaveBeenCalledWith({
+        where: { id: 999 },
+      });
       expect(result).toBeNull();
     });
 
@@ -280,7 +284,9 @@ describe('JobRepository', () => {
       const mockJobs = [mockJob];
       mockPrismaService.job.findMany.mockResolvedValue(mockJobs);
 
-      const result = await repository.getJobs({ tags: ['typescript', 'react'] });
+      const result = await repository.getJobs({
+        tags: ['typescript', 'react'],
+      });
 
       expect(prisma.job.findMany).toHaveBeenCalledWith({
         where: {
@@ -303,7 +309,9 @@ describe('JobRepository', () => {
       const mockJobs = [mockJob];
       mockPrismaService.job.findMany.mockResolvedValue(mockJobs);
 
-      const result = await repository.getJobs({ searchText: 'software engineer' });
+      const result = await repository.getJobs({
+        searchText: 'software engineer',
+      });
 
       expect(prisma.job.findMany).toHaveBeenCalledWith({
         where: {
@@ -328,7 +336,7 @@ describe('JobRepository', () => {
 
       const result = await repository.getJobs(
         {},
-        { skip: 10, take: 20, orderBy: { dateScraped: 'desc' } }
+        { skip: 10, take: 20, orderBy: { dateScraped: 'desc' } },
       );
 
       expect(prisma.job.findMany).toHaveBeenCalledWith({
@@ -362,7 +370,7 @@ describe('JobRepository', () => {
           tags: ['typescript'],
           searchText: 'engineer',
         },
-        { skip: 0, take: 10 }
+        { skip: 0, take: 10 },
       );
 
       expect(prisma.job.findMany).toHaveBeenCalledWith({
@@ -410,7 +418,9 @@ describe('JobRepository', () => {
       const error = new Error('Database error');
       mockPrismaService.job.update.mockRejectedValue(error);
 
-      await expect(repository.updateJob(1, updateData)).rejects.toThrow('Database error');
+      await expect(repository.updateJob(1, updateData)).rejects.toThrow(
+        'Database error',
+      );
       expect(prisma.job.update).toHaveBeenCalledWith({
         where: { id: 1 },
         data: updateData,
@@ -496,7 +506,9 @@ describe('JobRepository', () => {
       const error = new Error('Database error');
       mockPrismaService.job.upsert.mockRejectedValue(error);
 
-      await expect(repository.upsertJob(jobData)).rejects.toThrow('Database error');
+      await expect(repository.upsertJob(jobData)).rejects.toThrow(
+        'Database error',
+      );
       expect(prisma.job.upsert).toHaveBeenCalledWith({
         where: { applyLink: jobData.applyLink },
         update: jobData,
@@ -520,7 +532,7 @@ describe('JobRepository', () => {
 
       mockPrismaService.job.count
         .mockResolvedValueOnce(100) // total
-        .mockResolvedValueOnce(25)  // applied
+        .mockResolvedValueOnce(25) // applied
         .mockResolvedValueOnce(75); // not applied
 
       mockPrismaService.job.groupBy.mockResolvedValue([
@@ -547,7 +559,7 @@ describe('JobRepository', () => {
     it('should handle job statistics with null status values', async () => {
       mockPrismaService.job.count
         .mockResolvedValueOnce(50) // total
-        .mockResolvedValueOnce(10)  // applied
+        .mockResolvedValueOnce(10) // applied
         .mockResolvedValueOnce(40); // not applied
 
       mockPrismaService.job.groupBy.mockResolvedValue([
@@ -571,7 +583,7 @@ describe('JobRepository', () => {
     it('should handle empty job statistics', async () => {
       mockPrismaService.job.count
         .mockResolvedValueOnce(0) // total
-        .mockResolvedValueOnce(0)  // applied
+        .mockResolvedValueOnce(0) // applied
         .mockResolvedValueOnce(0); // not applied
 
       mockPrismaService.job.groupBy.mockResolvedValue([]);

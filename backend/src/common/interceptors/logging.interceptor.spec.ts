@@ -11,7 +11,7 @@ describe('LoggingInterceptor', () => {
 
   beforeEach(() => {
     interceptor = new LoggingInterceptor();
-    
+
     mockRequest = {
       method: 'GET',
       url: '/api/test',
@@ -45,13 +45,13 @@ describe('LoggingInterceptor', () => {
     it('should log incoming request and successful response', (done) => {
       const loggerSpy = jest.spyOn(interceptor['logger'], 'log');
       const responseData = { message: 'Success' };
-      
+
       mockCallHandler.handle = jest.fn().mockReturnValue(of(responseData));
 
       interceptor.intercept(mockContext, mockCallHandler).subscribe({
         next: (data) => {
           expect(data).toEqual(responseData);
-          
+
           // Check that request was logged
           expect(loggerSpy).toHaveBeenNthCalledWith(1, {
             message: 'Incoming request',
@@ -82,14 +82,16 @@ describe('LoggingInterceptor', () => {
       const loggerSpy = jest.spyOn(interceptor['logger'], 'error');
       const error = new Error('Test error');
       error.stack = 'Error stack trace';
-      
-      mockCallHandler.handle = jest.fn().mockReturnValue(throwError(() => error));
+
+      mockCallHandler.handle = jest
+        .fn()
+        .mockReturnValue(throwError(() => error));
 
       interceptor.intercept(mockContext, mockCallHandler).subscribe({
         next: () => done(new Error('Should have thrown error')),
         error: (thrownError) => {
           expect(thrownError).toBe(error);
-          
+
           // Check that error was logged
           expect(loggerSpy).toHaveBeenCalledWith({
             message: 'Request failed',
@@ -109,7 +111,7 @@ describe('LoggingInterceptor', () => {
     it('should handle request without user-agent header', (done) => {
       const loggerSpy = jest.spyOn(interceptor['logger'], 'log');
       mockRequest.headers = {};
-      
+
       mockCallHandler.handle = jest.fn().mockReturnValue(of({}));
 
       interceptor.intercept(mockContext, mockCallHandler).subscribe({
@@ -131,7 +133,7 @@ describe('LoggingInterceptor', () => {
 
     it('should calculate duration for successful request', (done) => {
       const loggerSpy = jest.spyOn(interceptor['logger'], 'log');
-      
+
       mockCallHandler.handle = jest.fn().mockReturnValue(of({}));
 
       interceptor.intercept(mockContext, mockCallHandler).subscribe({
@@ -153,9 +155,11 @@ describe('LoggingInterceptor', () => {
 
     it('should calculate duration for failed request', (done) => {
       const loggerSpy = jest.spyOn(interceptor['logger'], 'error');
-      
+
       const error = new Error('Test error');
-      mockCallHandler.handle = jest.fn().mockReturnValue(throwError(() => error));
+      mockCallHandler.handle = jest
+        .fn()
+        .mockReturnValue(throwError(() => error));
 
       interceptor.intercept(mockContext, mockCallHandler).subscribe({
         next: () => done(new Error('Should have thrown error')),
@@ -179,7 +183,7 @@ describe('LoggingInterceptor', () => {
       const loggerSpy = jest.spyOn(interceptor['logger'], 'log');
       mockRequest.method = 'POST';
       mockRequest.url = '/api/users';
-      
+
       mockCallHandler.handle = jest.fn().mockReturnValue(of({}));
 
       interceptor.intercept(mockContext, mockCallHandler).subscribe({
@@ -202,7 +206,7 @@ describe('LoggingInterceptor', () => {
     it('should handle different response status codes', (done) => {
       const loggerSpy = jest.spyOn(interceptor['logger'], 'log');
       mockResponse.statusCode = 201;
-      
+
       mockCallHandler.handle = jest.fn().mockReturnValue(of({}));
 
       interceptor.intercept(mockContext, mockCallHandler).subscribe({
@@ -224,18 +228,22 @@ describe('LoggingInterceptor', () => {
 
     it('should generate valid ISO timestamps', (done) => {
       const loggerSpy = jest.spyOn(interceptor['logger'], 'log');
-      
+
       mockCallHandler.handle = jest.fn().mockReturnValue(of({}));
 
       interceptor.intercept(mockContext, mockCallHandler).subscribe({
         next: () => {
           const requestLog = loggerSpy.mock.calls[0][0];
           const responseLog = loggerSpy.mock.calls[1][0];
-          
+
           // Verify timestamps are valid ISO strings
-          expect(new Date(requestLog.timestamp).toISOString()).toBe(requestLog.timestamp);
-          expect(new Date(responseLog.timestamp).toISOString()).toBe(responseLog.timestamp);
-          
+          expect(new Date(requestLog.timestamp).toISOString()).toBe(
+            requestLog.timestamp,
+          );
+          expect(new Date(responseLog.timestamp).toISOString()).toBe(
+            responseLog.timestamp,
+          );
+
           done();
         },
         error: done,
@@ -246,8 +254,10 @@ describe('LoggingInterceptor', () => {
       const loggerSpy = jest.spyOn(interceptor['logger'], 'error');
       const error = new Error('Test error');
       delete error.stack;
-      
-      mockCallHandler.handle = jest.fn().mockReturnValue(throwError(() => error));
+
+      mockCallHandler.handle = jest
+        .fn()
+        .mockReturnValue(throwError(() => error));
 
       interceptor.intercept(mockContext, mockCallHandler).subscribe({
         next: () => done(new Error('Should have thrown error')),
@@ -267,4 +277,4 @@ describe('LoggingInterceptor', () => {
       });
     });
   });
-}); 
+});

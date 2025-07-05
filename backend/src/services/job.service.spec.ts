@@ -97,7 +97,9 @@ describe('JobService', () => {
     });
     it('should handle errors', async () => {
       mockJobRepository.createJob.mockRejectedValue(new Error('fail'));
-      await expect(service.createJob({} as any)).rejects.toThrow('Failed to create job');
+      await expect(service.createJob({} as any)).rejects.toThrow(
+        'Failed to create job',
+      );
     });
   });
 
@@ -110,7 +112,9 @@ describe('JobService', () => {
     });
     it('should handle errors', async () => {
       mockJobRepository.getJobById.mockRejectedValue(new Error('fail'));
-      await expect(service.getJobById(1)).rejects.toThrow('Failed to fetch job');
+      await expect(service.getJobById(1)).rejects.toThrow(
+        'Failed to fetch job',
+      );
     });
   });
 
@@ -124,7 +128,9 @@ describe('JobService', () => {
     });
     it('should handle errors', async () => {
       mockJobRepository.updateJob.mockRejectedValue(new Error('fail'));
-      await expect(service.updateJob(1, {})).rejects.toThrow('Failed to update job');
+      await expect(service.updateJob(1, {})).rejects.toThrow(
+        'Failed to update job',
+      );
     });
   });
 
@@ -137,7 +143,9 @@ describe('JobService', () => {
     });
     it('should handle errors', async () => {
       mockJobRepository.deleteJob.mockRejectedValue(new Error('fail'));
-      await expect(service.deleteJob(1)).rejects.toThrow('Failed to delete job');
+      await expect(service.deleteJob(1)).rejects.toThrow(
+        'Failed to delete job',
+      );
     });
   });
 
@@ -150,7 +158,9 @@ describe('JobService', () => {
     });
     it('should handle errors', async () => {
       mockJobRepository.getJobs.mockRejectedValue(new Error('fail'));
-      await expect(service.searchJobs({})).rejects.toThrow('Failed to search jobs');
+      await expect(service.searchJobs({})).rejects.toThrow(
+        'Failed to search jobs',
+      );
     });
   });
 
@@ -158,7 +168,10 @@ describe('JobService', () => {
     it('should call searchJobs with status filter', async () => {
       jest.spyOn(service, 'searchJobs').mockResolvedValue([mockJob]);
       const result = await service.getJobsByStatus('ACTIVE');
-      expect(service.searchJobs).toHaveBeenCalledWith({ filters: { status: 'ACTIVE' }, pagination: undefined });
+      expect(service.searchJobs).toHaveBeenCalledWith({
+        filters: { status: 'ACTIVE' },
+        pagination: undefined,
+      });
       expect(result).toEqual([mockJob]);
     });
   });
@@ -167,7 +180,10 @@ describe('JobService', () => {
     it('should call searchJobs with applied filter', async () => {
       jest.spyOn(service, 'searchJobs').mockResolvedValue([mockJob]);
       const result = await service.getAppliedJobs();
-      expect(service.searchJobs).toHaveBeenCalledWith({ filters: { applied: true }, pagination: undefined });
+      expect(service.searchJobs).toHaveBeenCalledWith({
+        filters: { applied: true },
+        pagination: undefined,
+      });
       expect(result).toEqual([mockJob]);
     });
   });
@@ -176,7 +192,10 @@ describe('JobService', () => {
     it('should call searchJobs with status ACTIVE', async () => {
       jest.spyOn(service, 'searchJobs').mockResolvedValue([mockJob]);
       const result = await service.getActiveJobs();
-      expect(service.searchJobs).toHaveBeenCalledWith({ filters: { status: 'ACTIVE' }, pagination: undefined });
+      expect(service.searchJobs).toHaveBeenCalledWith({
+        filters: { status: 'ACTIVE' },
+        pagination: undefined,
+      });
       expect(result).toEqual([mockJob]);
     });
   });
@@ -190,7 +209,9 @@ describe('JobService', () => {
     });
     it('should handle errors', async () => {
       jest.spyOn(service, 'updateJob').mockRejectedValue(new Error('fail'));
-      await expect(service.applyToJob(1, { status: 'APPLIED' })).rejects.toThrow('Failed to apply to job');
+      await expect(
+        service.applyToJob(1, { status: 'APPLIED' }),
+      ).rejects.toThrow('Failed to apply to job');
     });
   });
 
@@ -203,7 +224,9 @@ describe('JobService', () => {
     });
     it('should handle errors', async () => {
       jest.spyOn(service, 'updateJob').mockRejectedValue(new Error('fail'));
-      await expect(service.updateApplicationStatus(1, 'APPLIED')).rejects.toThrow('Failed to update application status');
+      await expect(
+        service.updateApplicationStatus(1, 'APPLIED'),
+      ).rejects.toThrow('Failed to update application status');
     });
   });
 
@@ -212,7 +235,10 @@ describe('JobService', () => {
       mockScraperFactory.scrapeSpecific.mockResolvedValue([mockJob]);
       mockJobRepository.upsertJob.mockResolvedValue(mockJob);
       const result = await service.scrapeAndSaveJobs('remoteok');
-      expect(scraperFactory.scrapeSpecific).toHaveBeenCalledWith(['remoteok'], undefined);
+      expect(scraperFactory.scrapeSpecific).toHaveBeenCalledWith(
+        ['remoteok'],
+        undefined,
+      );
       expect(repository.upsertJob).toHaveBeenCalled();
       expect(result).toEqual({ scraped: 1, saved: 1 });
     });
@@ -226,7 +252,9 @@ describe('JobService', () => {
     });
     it('should handle errors during scraping', async () => {
       mockScraperFactory.scrapeSpecific.mockRejectedValue(new Error('fail'));
-      await expect(service.scrapeAndSaveJobs('remoteok')).rejects.toThrow('Failed to scrape and save jobs');
+      await expect(service.scrapeAndSaveJobs('remoteok')).rejects.toThrow(
+        'Failed to scrape and save jobs',
+      );
     });
   });
 
@@ -251,7 +279,9 @@ describe('JobService', () => {
     });
     it('should handle errors', async () => {
       mockJobRepository.getJobStats.mockRejectedValue(new Error('fail'));
-      await expect(service.getJobStats()).rejects.toThrow('Failed to get job statistics');
+      await expect(service.getJobStats()).rejects.toThrow(
+        'Failed to get job statistics',
+      );
     });
   });
 
@@ -263,7 +293,8 @@ describe('JobService', () => {
       expect(result).toBe(3);
     });
     it('should handle errors and continue updating', async () => {
-      jest.spyOn(service, 'updateApplicationStatus')
+      jest
+        .spyOn(service, 'updateApplicationStatus')
         .mockResolvedValueOnce(mockJob)
         .mockRejectedValueOnce(new Error('fail'))
         .mockResolvedValueOnce(mockJob);
@@ -272,7 +303,9 @@ describe('JobService', () => {
       expect(result).toBe(2);
     });
     it('should handle bulk update errors', async () => {
-      jest.spyOn(service, 'updateApplicationStatus').mockRejectedValue(new Error('fail'));
+      jest
+        .spyOn(service, 'updateApplicationStatus')
+        .mockRejectedValue(new Error('fail'));
       const result = await service.bulkUpdateStatus([1, 2, 3], 'APPLIED');
       expect(result).toBe(0);
     });
@@ -287,7 +320,9 @@ describe('JobService', () => {
     });
     it('should handle errors', async () => {
       mockJobRepository.getJobs.mockRejectedValue(new Error('fail'));
-      await expect(service.findDuplicateJobs(mockJob as any)).rejects.toThrow('Failed to find duplicate jobs');
+      await expect(service.findDuplicateJobs(mockJob as any)).rejects.toThrow(
+        'Failed to find duplicate jobs',
+      );
     });
   });
 });

@@ -24,8 +24,12 @@ describe('bootstrap-app.ts', () => {
     jest.spyOn(require('@nestjs/core'), 'NestFactory', 'get').mockReturnValue({
       create: jest.fn().mockResolvedValue(mockApp),
     });
-    jest.spyOn(require('@nestjs/common'), 'Logger').mockImplementation(() => mockLogger);
-    jest.spyOn(require('@nestjs/common'), 'ValidationPipe').mockImplementation(() => ({}));
+    jest
+      .spyOn(require('@nestjs/common'), 'Logger')
+      .mockImplementation(() => mockLogger);
+    jest
+      .spyOn(require('@nestjs/common'), 'ValidationPipe')
+      .mockImplementation(() => ({}));
     jest.mock('./common/interceptors/logging.interceptor', () => ({
       LoggingInterceptor: jest.fn(),
     }));
@@ -41,7 +45,9 @@ describe('bootstrap-app.ts', () => {
       addServer: jest.fn().mockReturnThis(),
       build: jest.fn().mockReturnValue({}),
     }));
-    jest.spyOn(swagger.SwaggerModule, 'createDocument').mockReturnValue(mockDocument);
+    jest
+      .spyOn(swagger.SwaggerModule, 'createDocument')
+      .mockReturnValue(mockDocument);
     jest.spyOn(swagger.SwaggerModule, 'setup').mockReturnValue(undefined);
 
     // Import and call the bootstrap function
@@ -58,13 +64,27 @@ describe('bootstrap-app.ts', () => {
     expect(mockApp.useGlobalFilters).toHaveBeenCalled();
     // Swagger setup
     expect(swagger.DocumentBuilder).toHaveBeenCalled();
-    expect(swagger.SwaggerModule.createDocument).toHaveBeenCalledWith(mockApp, expect.any(Object));
-    expect(swagger.SwaggerModule.setup).toHaveBeenCalledWith('api', mockApp, mockDocument, expect.any(Object));
+    expect(swagger.SwaggerModule.createDocument).toHaveBeenCalledWith(
+      mockApp,
+      expect.any(Object),
+    );
+    expect(swagger.SwaggerModule.setup).toHaveBeenCalledWith(
+      'api',
+      mockApp,
+      mockDocument,
+      expect.any(Object),
+    );
     // Listen on port
     expect(mockApp.listen).toHaveBeenCalledWith(process.env.PORT ?? 3000);
     // Logger logs
-    expect(mockLogger.log).toHaveBeenCalledWith(expect.stringContaining('Job Hopper API is running'));
-    expect(mockLogger.log).toHaveBeenCalledWith(expect.stringContaining('API Documentation available'));
-    expect(mockLogger.log).toHaveBeenCalledWith(expect.stringContaining('Logs are being written'));
+    expect(mockLogger.log).toHaveBeenCalledWith(
+      expect.stringContaining('Job Hopper API is running'),
+    );
+    expect(mockLogger.log).toHaveBeenCalledWith(
+      expect.stringContaining('API Documentation available'),
+    );
+    expect(mockLogger.log).toHaveBeenCalledWith(
+      expect.stringContaining('Logs are being written'),
+    );
   });
-}); 
+});

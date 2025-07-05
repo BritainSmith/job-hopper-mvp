@@ -39,7 +39,9 @@ export function parseFlexibleDate(dateString: string | undefined | null): Date {
 
 function parseRelativeDate(relativeDate: string): Date {
   const now = new Date();
-  const match = relativeDate.match(/(\d+)\s+(day|days|hour|hours|minute|minutes|second|seconds)\s+ago/);
+  const match = relativeDate.match(
+    /(\d+)\s+(day|days|hour|hours|minute|minutes|second|seconds)\s+ago/,
+  );
   if (match) {
     const amount = parseInt(match[1]);
     const unit = match[2];
@@ -67,14 +69,17 @@ function parseGermanDate(dateString: string): Date | null {
     const match = dateString.match(/(\d{1,2})\.(\d{1,2})\.(\d{4})/);
     if (match) {
       const [, day, month, year] = match;
-      return new Date(Date.UTC(parseInt(year), parseInt(month) - 1, parseInt(day)));
+      return new Date(
+        Date.UTC(parseInt(year), parseInt(month) - 1, parseInt(day)),
+      );
     }
 
     // Handle German date format: DD.MM.YY
     const matchShort = dateString.match(/(\d{1,2})\.(\d{1,2})\.(\d{2})/);
     if (matchShort) {
       const [, day, month, year] = matchShort;
-      const fullYear = parseInt(year) < 50 ? 2000 + parseInt(year) : 1900 + parseInt(year);
+      const fullYear =
+        parseInt(year) < 50 ? 2000 + parseInt(year) : 1900 + parseInt(year);
       return new Date(Date.UTC(fullYear, parseInt(month) - 1, parseInt(day)));
     }
 
@@ -99,4 +104,4 @@ function parseSlashDate(dateString: string): Date | null {
   } else {
     return new Date(yearNum, firstNum - 1, secondNum);
   }
-} 
+}

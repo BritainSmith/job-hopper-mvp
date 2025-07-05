@@ -80,4 +80,4 @@ describe('parseFlexibleDate', () => {
   it('returns now for invalid date', () => {
     expect(parseFlexibleDate('not a date')).toBeInstanceOf(Date);
   });
-}); 
+});

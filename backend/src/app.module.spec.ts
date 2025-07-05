@@ -68,7 +68,7 @@ describe('AppModule', () => {
     const appController = module.get<AppController>(AppController);
     const appService = module.get<AppService>(AppService);
     const configService = module.get<ConfigService>(ConfigService);
-    
+
     expect(appController).toBeDefined();
     expect(appService).toBeDefined();
     expect(configService).toBeDefined();
@@ -109,4 +109,4 @@ describe('AppModule', () => {
       expect(typeof module.get).toBe('function');
     });
   });
-}); 
+});

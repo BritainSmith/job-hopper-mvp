@@ -169,7 +169,9 @@ describe('RemoteOKScraper', () => {
     it('should stop when no jobs are found on a page', async () => {
       mockParser.parseJobs.mockReturnValue([]);
 
-      await expect(scraper.scrapeJobs()).rejects.toThrow('All RemoteOK scraper versions failed');
+      await expect(scraper.scrapeJobs()).rejects.toThrow(
+        'All RemoteOK scraper versions failed',
+      );
       expect(mockParser.parseJobs).toHaveBeenCalledTimes(1);
     });
 
@@ -183,9 +185,9 @@ describe('RemoteOKScraper', () => {
 
     it('should handle HTTP errors gracefully', async () => {
       // Mock makeRequest to throw an error
-      jest.spyOn(scraper as any, 'makeRequest').mockRejectedValue(
-        new Error('HTTP 500: Internal Server Error'),
-      );
+      jest
+        .spyOn(scraper as any, 'makeRequest')
+        .mockRejectedValue(new Error('HTTP 500: Internal Server Error'));
 
       await expect(scraper.scrapeJobs()).rejects.toThrow(
         'All RemoteOK scraper versions failed',
@@ -198,11 +200,15 @@ describe('RemoteOKScraper', () => {
       // Mock makeRequest to return v2 HTML
       jest.spyOn(scraper as any, 'makeRequest').mockResolvedValue({
         ok: true,
-        text: () => Promise.resolve('<html><div class="job-listing">v2 content</div></html>'),
+        text: () =>
+          Promise.resolve(
+            '<html><div class="job-listing">v2 content</div></html>',
+          ),
       } as any);
 
       // Mock scrapeWithVersion to succeed with v2
-      jest.spyOn(scraper as any, 'scrapeWithVersion')
+      jest
+        .spyOn(scraper as any, 'scrapeWithVersion')
         .mockRejectedValueOnce(new Error('v1 failed'))
         .mockResolvedValueOnce(mockJobs);
 
@@ -223,11 +229,13 @@ describe('RemoteOKScraper', () => {
       // Mock makeRequest to return v1 HTML
       jest.spyOn(scraper as any, 'makeRequest').mockResolvedValue({
         ok: true,
-        text: () => Promise.resolve('<html><div class="job">v1 content</div></html>'),
+        text: () =>
+          Promise.resolve('<html><div class="job">v1 content</div></html>'),
       } as any);
 
       // Mock scrapeWithVersion to fail with v1 but succeed with v2
-      jest.spyOn(scraper as any, 'scrapeWithVersion')
+      jest
+        .spyOn(scraper as any, 'scrapeWithVersion')
         .mockRejectedValueOnce(new Error('v1 failed'))
         .mockResolvedValueOnce(mockJobs);
 
@@ -240,13 +248,14 @@ describe('RemoteOKScraper', () => {
       // Mock makeRequest to return v1 HTML
       jest.spyOn(scraper as any, 'makeRequest').mockResolvedValue({
         ok: true,
-        text: () => Promise.resolve('<html><div class="job">v1 content</div></html>'),
+        text: () =>
+          Promise.resolve('<html><div class="job">v1 content</div></html>'),
       } as any);
 
       // Mock scrapeWithVersion to fail
-      jest.spyOn(scraper as any, 'scrapeWithVersion').mockRejectedValue(
-        new Error('All versions failed'),
-      );
+      jest
+        .spyOn(scraper as any, 'scrapeWithVersion')
+        .mockRejectedValue(new Error('All versions failed'));
 
       await expect(scraper.scrapeJobs()).rejects.toThrow(
         'All RemoteOK scraper versions failed',
@@ -279,13 +288,13 @@ describe('RemoteOKScraper', () => {
       it('should throw error when parser not found', async () => {
         await expect(
           (scraper as any).scrapeWithVersion('nonexistent', 1, 10),
-        ).rejects.toThrow("Parser for version nonexistent not found");
+        ).rejects.toThrow('Parser for version nonexistent not found');
       });
 
       it('should handle HTTP errors on first page', async () => {
-        jest.spyOn(scraper as any, 'makeRequest').mockRejectedValue(
-          new Error('HTTP 500: Internal Server Error'),
-        );
+        jest
+          .spyOn(scraper as any, 'makeRequest')
+          .mockRejectedValue(new Error('HTTP 500: Internal Server Error'));
 
         await expect(
           (scraper as any).scrapeWithVersion('v1', 1, 10),
@@ -298,7 +307,8 @@ describe('RemoteOKScraper', () => {
           .mockReturnValueOnce([]);
         mockParser.hasNextPage.mockReturnValue(true);
 
-        jest.spyOn(scraper as any, 'makeRequest')
+        jest
+          .spyOn(scraper as any, 'makeRequest')
           .mockResolvedValueOnce({
             ok: true,
             text: () => Promise.resolve('<html>page 1</html>'),
@@ -315,7 +325,8 @@ describe('RemoteOKScraper', () => {
       it('should detect v2 version', async () => {
         jest.spyOn(scraper as any, 'makeRequest').mockResolvedValue({
           ok: true,
-          text: () => Promise.resolve('<html><div class="job-listing">v2</div></html>'),
+          text: () =>
+            Promise.resolve('<html><div class="job-listing">v2</div></html>'),
         } as any);
 
         const version = await (scraper as any).detectVersion();
@@ -346,9 +357,9 @@ describe('RemoteOKScraper', () => {
       });
 
       it('should return null on HTTP error', async () => {
-        jest.spyOn(scraper as any, 'makeRequest').mockRejectedValue(
-          new Error('Network error'),
-        );
+        jest
+          .spyOn(scraper as any, 'makeRequest')
+          .mockRejectedValue(new Error('Network error'));
 
         const version = await (scraper as any).detectVersion();
 
@@ -392,9 +403,9 @@ describe('RemoteOKScraper', () => {
     });
 
     it('should return false on health check failure', async () => {
-      jest.spyOn(scraper as any, 'makeRequest').mockRejectedValue(
-        new Error('Network error'),
-      );
+      jest
+        .spyOn(scraper as any, 'makeRequest')
+        .mockRejectedValue(new Error('Network error'));
 
       const isHealthy = await scraper.isHealthy();
 
@@ -435,9 +446,9 @@ describe('RemoteOKScraper', () => {
       const errorSpy = jest.spyOn(scraper['logger'], 'error');
       const warnSpy = jest.spyOn(scraper['logger'], 'warn');
 
-      jest.spyOn(scraper as any, 'makeRequest').mockRejectedValue(
-        new Error('Network error'),
-      );
+      jest
+        .spyOn(scraper as any, 'makeRequest')
+        .mockRejectedValue(new Error('Network error'));
 
       await expect(scraper.scrapeJobs()).rejects.toThrow(
         'All RemoteOK scraper versions failed',
@@ -446,4 +457,4 @@ describe('RemoteOKScraper', () => {
       expect(errorSpy).toHaveBeenCalled();
     });
   });
-}); 
+});

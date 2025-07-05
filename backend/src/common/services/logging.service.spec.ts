@@ -26,7 +26,7 @@ describe('LoggingService', () => {
     }).compile();
 
     service = module.get<LoggingService>(LoggingService);
-    
+
     // Replace the internal logger with our mock
     (service as any).logger = mockLogger;
   });
@@ -63,9 +63,9 @@ describe('LoggingService', () => {
 
     it('should generate valid ISO timestamp', () => {
       const message = 'Test timestamp';
-      
+
       service.log(message);
-      
+
       const call = mockLogger.log.mock.calls[0][0];
       expect(new Date(call.timestamp).toISOString()).toBe(call.timestamp);
     });
@@ -88,7 +88,10 @@ describe('LoggingService', () => {
 
       expect(mockLogger.log).toHaveBeenCalledWith({
         message: 'test',
-        context: { error: 'Context contains circular references or non-serializable data' },
+        context: {
+          error:
+            'Context contains circular references or non-serializable data',
+        },
         timestamp: expect.any(String),
       });
     });
@@ -213,9 +216,18 @@ describe('LoggingService', () => {
 
       expect(mockLogger.warn).toHaveBeenCalledTimes(3);
       // Logger.warn is called with (message, context)
-      expect(mockLogger.warn).toHaveBeenCalledWith('Invalid message provided to LoggingService.warn', { message: '' });
-      expect(mockLogger.warn).toHaveBeenCalledWith('Invalid message provided to LoggingService.warn', { message: null });
-      expect(mockLogger.warn).toHaveBeenCalledWith('Invalid message provided to LoggingService.warn', { message: undefined });
+      expect(mockLogger.warn).toHaveBeenCalledWith(
+        'Invalid message provided to LoggingService.warn',
+        { message: '' },
+      );
+      expect(mockLogger.warn).toHaveBeenCalledWith(
+        'Invalid message provided to LoggingService.warn',
+        { message: null },
+      );
+      expect(mockLogger.warn).toHaveBeenCalledWith(
+        'Invalid message provided to LoggingService.warn',
+        { message: undefined },
+      );
       // No structured log should be called
     });
   });
@@ -528,12 +540,12 @@ describe('LoggingService', () => {
   describe('timestamp consistency', () => {
     it('should generate consistent timestamps across all methods', () => {
       const beforeCall = new Date();
-      
+
       service.log('test');
       service.error('test', new Error('test'));
       service.warn('test');
       service.debug('test');
-      
+
       const afterCall = new Date();
 
       const calls = [
@@ -543,9 +555,11 @@ describe('LoggingService', () => {
         mockLogger.debug.mock.calls[0][0],
       ];
 
-      calls.forEach(call => {
+      calls.forEach((call) => {
         const timestamp = new Date(call.timestamp);
-        expect(timestamp.getTime()).toBeGreaterThanOrEqual(beforeCall.getTime());
+        expect(timestamp.getTime()).toBeGreaterThanOrEqual(
+          beforeCall.getTime(),
+        );
         expect(timestamp.getTime()).toBeLessThanOrEqual(afterCall.getTime());
       });
     });
@@ -588,7 +602,10 @@ describe('LoggingService', () => {
 
       expect(mockLogger.log).toHaveBeenCalledWith({
         message: 'test',
-        context: { error: 'Context contains circular references or non-serializable data' },
+        context: {
+          error:
+            'Context contains circular references or non-serializable data',
+        },
         timestamp: expect.any(String),
       });
     });
@@ -612,4 +629,4 @@ describe('LoggingService', () => {
       // The fallback in generateTimestamp cannot recover if Date is completely broken.
     });
   });
-}); 
+});

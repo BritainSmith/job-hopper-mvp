@@ -17,20 +17,24 @@ export class LoggingService {
     if (context === null || context === undefined) {
       return undefined;
     }
-    
+
     try {
       // Try to serialize to check for circular references
       JSON.stringify(context);
       return context;
     } catch (error) {
       // If serialization fails, return a safe representation
-      return { error: 'Context contains circular references or non-serializable data' };
+      return {
+        error: 'Context contains circular references or non-serializable data',
+      };
     }
   }
 
   log(message: string, context?: any) {
     if (!message || typeof message !== 'string') {
-      this.logger.warn('Invalid message provided to LoggingService.log', { message });
+      this.logger.warn('Invalid message provided to LoggingService.log', {
+        message,
+      });
       return;
     }
 
@@ -43,7 +47,9 @@ export class LoggingService {
 
   error(message: string, error?: any, context?: any) {
     if (!message || typeof message !== 'string') {
-      this.logger.warn('Invalid message provided to LoggingService.error', { message });
+      this.logger.warn('Invalid message provided to LoggingService.error', {
+        message,
+      });
       return;
     }
 
@@ -72,7 +78,9 @@ export class LoggingService {
 
   warn(message: string, context?: any) {
     if (!message || typeof message !== 'string') {
-      this.logger.warn('Invalid message provided to LoggingService.warn', { message });
+      this.logger.warn('Invalid message provided to LoggingService.warn', {
+        message,
+      });
       return;
     }
 
@@ -85,7 +93,9 @@ export class LoggingService {
 
   debug(message: string, context?: any) {
     if (!message || typeof message !== 'string') {
-      this.logger.warn('Invalid message provided to LoggingService.debug', { message });
+      this.logger.warn('Invalid message provided to LoggingService.debug', {
+        message,
+      });
       return;
     }
 
@@ -99,12 +109,18 @@ export class LoggingService {
   // Performance logging
   logPerformance(operation: string, duration: number, context?: any) {
     if (!operation || typeof operation !== 'string') {
-      this.logger.warn('Invalid operation provided to LoggingService.logPerformance', { operation });
+      this.logger.warn(
+        'Invalid operation provided to LoggingService.logPerformance',
+        { operation },
+      );
       return;
     }
 
     if (typeof duration !== 'number' || duration < 0) {
-      this.logger.warn('Invalid duration provided to LoggingService.logPerformance', { duration });
+      this.logger.warn(
+        'Invalid duration provided to LoggingService.logPerformance',
+        { duration },
+      );
       return;
     }
 
@@ -125,17 +141,29 @@ export class LoggingService {
     context?: any,
   ) {
     if (!operation || typeof operation !== 'string') {
-      this.logger.warn('Invalid operation provided to LoggingService.logDatabaseOperation', { operation });
+      this.logger.warn(
+        'Invalid operation provided to LoggingService.logDatabaseOperation',
+        { operation },
+      );
       return;
     }
 
     if (!table || typeof table !== 'string') {
-      this.logger.warn('Invalid table provided to LoggingService.logDatabaseOperation', { table });
+      this.logger.warn(
+        'Invalid table provided to LoggingService.logDatabaseOperation',
+        { table },
+      );
       return;
     }
 
-    if (duration !== undefined && (typeof duration !== 'number' || duration < 0)) {
-      this.logger.warn('Invalid duration provided to LoggingService.logDatabaseOperation', { duration });
+    if (
+      duration !== undefined &&
+      (typeof duration !== 'number' || duration < 0)
+    ) {
+      this.logger.warn(
+        'Invalid duration provided to LoggingService.logDatabaseOperation',
+        { duration },
+      );
       return;
     }
 
@@ -157,17 +185,29 @@ export class LoggingService {
     context?: any,
   ) {
     if (!source || typeof source !== 'string') {
-      this.logger.warn('Invalid source provided to LoggingService.logScrapingOperation', { source });
+      this.logger.warn(
+        'Invalid source provided to LoggingService.logScrapingOperation',
+        { source },
+      );
       return;
     }
 
     if (typeof jobsFound !== 'number' || jobsFound < 0) {
-      this.logger.warn('Invalid jobsFound provided to LoggingService.logScrapingOperation', { jobsFound });
+      this.logger.warn(
+        'Invalid jobsFound provided to LoggingService.logScrapingOperation',
+        { jobsFound },
+      );
       return;
     }
 
-    if (duration !== undefined && (typeof duration !== 'number' || duration < 0)) {
-      this.logger.warn('Invalid duration provided to LoggingService.logScrapingOperation', { duration });
+    if (
+      duration !== undefined &&
+      (typeof duration !== 'number' || duration < 0)
+    ) {
+      this.logger.warn(
+        'Invalid duration provided to LoggingService.logScrapingOperation',
+        { duration },
+      );
       return;
     }
 

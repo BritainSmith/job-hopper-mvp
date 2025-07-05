@@ -49,4 +49,4 @@ export async function bootstrap() {
   logger.log(`🚀 Job Hopper API is running on: http://localhost:${port}`);
   logger.log(`📚 API Documentation available at: http://localhost:${port}/api`);
   logger.log(`📊 Logs are being written to: ./logs/`);
-} 
+}

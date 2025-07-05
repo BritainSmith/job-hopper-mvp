@@ -199,8 +199,6 @@ export class RelocateV1Parser {
     return parts.length > 0 ? parts.join(', ') : 'International';
   }
 
-
-
   private normalizeUrl(url: string): string {
     if (!url) return '';
 
