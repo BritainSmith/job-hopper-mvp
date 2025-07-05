@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { JobRepository, JobFilter, PaginationOptions } from '../repositories/job.repository';
 import { Job, JobStatus, Prisma } from '@prisma/client';
 import { RemoteOKService, JobListing } from '../scrapers/remoteok.service';
+import { LoggingService } from '../common/services/logging.service';
 
 // Service Types
 export interface JobSearchOptions {
@@ -31,7 +32,8 @@ export class JobService {
 
   constructor(
     private jobRepository: JobRepository,
-    private remoteOKService: RemoteOKService
+    private remoteOKService: RemoteOKService,
+    private loggingService: LoggingService
   ) {}
 
   // --- CRUD Operations ---
@@ -169,8 +171,10 @@ export class JobService {
   // --- Scraping Integration ---
 
   async scrapeAndSaveJobs(source: string = 'remoteok', options?: any): Promise<{ scraped: number; saved: number }> {
+    const startTime = Date.now();
+    
     try {
-      this.logger.log(`Starting to scrape jobs from ${source}...`);
+      this.loggingService.log(`Starting to scrape jobs from ${source}`, { source, options });
       
       let scrapedJobs: JobListing[] = [];
       
@@ -183,7 +187,8 @@ export class JobService {
           throw new Error(`Unsupported source: ${source}`);
       }
 
-      this.logger.log(`Scraped ${scrapedJobs.length} jobs from ${source}`);
+      const scrapeDuration = Date.now() - startTime;
+      this.loggingService.logScrapingOperation(source, scrapedJobs.length, scrapeDuration);
 
       // Convert and save jobs
       let savedCount = 0;

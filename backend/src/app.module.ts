@@ -4,6 +4,8 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { PrismaModule } from './prisma/prisma.module';
 import { JobsModule } from './jobs/jobs.module';
+import { WinstonConfigModule } from './config/winston.module';
+import { HealthModule } from './health/health.module';
 import { 
   databaseConfig, 
   appConfig, 
@@ -30,8 +32,10 @@ import { scrapersConfig } from './config/scrapers.config';
         scrapersConfig
       ],
     }),
+    WinstonConfigModule,
     PrismaModule,
     JobsModule,
+    HealthModule,
   ],
   controllers: [AppController],
   providers: [AppService],

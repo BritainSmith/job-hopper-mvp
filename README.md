@@ -51,6 +51,9 @@ cp .env.example .env
    # Security (change these!)
    JWT_SECRET="your_secure_jwt_secret_here"
    SESSION_SECRET="your_secure_session_secret_here"
+   
+   # Logging
+   LOG_LEVEL=info
    ```
 
 3. **Check Configuration:**
