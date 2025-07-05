@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Job } from '../../base/interfaces';
 import { LinkedInV1Selectors } from './linkedin-v1.selectors';
 import { JSDOM } from 'jsdom';
+import { parseFlexibleDate } from '../../../common/utils/date.util';
 
 @Injectable()
 export class LinkedInV1Parser {
@@ -42,7 +43,7 @@ export class LinkedInV1Parser {
         LinkedInV1Selectors.applyLink,
         'href',
       );
-      const postedDate = this.parseDate(
+      const postedDate = parseFlexibleDate(
         this.extractText(card, LinkedInV1Selectors.postedDate),
       );
       const salary = this.extractText(card, LinkedInV1Selectors.salary);
@@ -99,57 +100,6 @@ export class LinkedInV1Parser {
       this.logger.warn('Failed to extract LinkedIn tags:', error);
       return [];
     }
-  }
-
-  private parseDate(dateString: string): Date {
-    try {
-      if (!dateString) return new Date();
-
-      // Try parsing common formats
-      const parsed = new Date(dateString);
-      if (!isNaN(parsed.getTime())) {
-        return parsed;
-      }
-
-      // Handle relative dates like "2 days ago"
-      if (dateString.includes('ago')) {
-        return this.parseRelativeDate(dateString);
-      }
-
-      return new Date();
-    } catch (error) {
-      this.logger.warn('Failed to parse LinkedIn date:', dateString, error);
-      return new Date();
-    }
-  }
-
-  private parseRelativeDate(relativeDate: string): Date {
-    const now = new Date();
-    const match = relativeDate.match(
-      /(\d+)\s+(day|days|hour|hours|minute|minutes|second|seconds)\s+ago/,
-    );
-
-    if (match) {
-      const amount = parseInt(match[1]);
-      const unit = match[2];
-
-      switch (unit) {
-        case 'day':
-        case 'days':
-          return new Date(now.getTime() - amount * 24 * 60 * 60 * 1000);
-        case 'hour':
-        case 'hours':
-          return new Date(now.getTime() - amount * 60 * 60 * 1000);
-        case 'minute':
-        case 'minutes':
-          return new Date(now.getTime() - amount * 60 * 1000);
-        case 'second':
-        case 'seconds':
-          return new Date(now.getTime() - amount * 1000);
-      }
-    }
-
-    return now;
   }
 
   private normalizeUrl(url: string): string {
