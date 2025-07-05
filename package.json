@@ -1,0 +1,31 @@
+{
+  "name": "job-hopper",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "setup": "ts-node scripts/setup-env.ts",
+    "scrape": "ts-node src/scrapers/remoteok.ts",
+    "scrape:headless": "ts-node -e \"import('./src/scrapers/remoteok').then(m => m.scrapeRemoteOKJobs({headless: true, maxPages: 5}))\"",
+    "config": "ts-node -e \"import('./src/config/env').then(m => m.printConfig())\""
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@prisma/client": "^6.11.1",
+    "axios": "^1.10.0",
+    "dotenv": "^17.0.1",
+    "puppeteer": "^24.11.2",
+    "puppeteer-extra": "^3.3.6",
+    "puppeteer-extra-plugin-stealth": "^2.11.2",
+    "sqlite3": "^5.1.7"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.10",
+    "prisma": "^6.11.1",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.3"
+  }
+}
