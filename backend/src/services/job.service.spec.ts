@@ -3,7 +3,7 @@ import { JobService } from './job.service';
 import { JobRepository } from '../repositories/job.repository';
 import { ScraperFactory } from '../scrapers/scraper-factory';
 import { LoggingService } from '../common/services/logging.service';
-import { Job, JobStatus } from '@prisma/client';
+import { Job, JobStatus, Prisma } from '@prisma/client';
 
 describe('JobService', () => {
   let service: JobService;
@@ -90,14 +90,43 @@ describe('JobService', () => {
   describe('createJob', () => {
     it('should call repository.createJob and return job', async () => {
       mockJobRepository.createJob.mockResolvedValue(mockJob);
-      const jobData = { ...mockJob };
-      const result = await service.createJob(jobData as any);
+      const jobData: Prisma.JobCreateInput = {
+        title: 'Test',
+        company: 'TestCo',
+        location: 'Remote',
+        applyLink: 'link',
+        status: 'ACTIVE',
+        applied: false,
+        dateScraped: new Date('2023-01-01'),
+        lastUpdated: new Date('2023-01-01'),
+        searchText: 'test',
+        source: 'remoteok',
+        tags: 'typescript,react',
+        salary: '100k-150k',
+        postedDate: '2d ago',
+      };
+      const result = await service.createJob(jobData);
       expect(repository.createJob).toHaveBeenCalled();
       expect(result).toEqual(mockJob);
     });
     it('should handle errors', async () => {
       mockJobRepository.createJob.mockRejectedValue(new Error('fail'));
-      await expect(service.createJob({} as any)).rejects.toThrow(
+      const jobData: Prisma.JobCreateInput = {
+        title: '',
+        company: '',
+        location: '',
+        applyLink: '',
+        status: 'ACTIVE',
+        applied: false,
+        dateScraped: new Date(),
+        lastUpdated: new Date(),
+        searchText: '',
+        source: '',
+        tags: '',
+        salary: '',
+        postedDate: '',
+      };
+      await expect(service.createJob(jobData)).rejects.toThrow(
         'Failed to create job',
       );
     });
@@ -314,13 +343,43 @@ describe('JobService', () => {
   describe('findDuplicateJobs', () => {
     it('should call repository.getJobs and return jobs', async () => {
       mockJobRepository.getJobs.mockResolvedValue([mockJob]);
-      const result = await service.findDuplicateJobs(mockJob as any);
+      const jobData: Prisma.JobCreateInput = {
+        title: 'Test',
+        company: 'TestCo',
+        location: 'Remote',
+        applyLink: 'link',
+        status: 'ACTIVE',
+        applied: false,
+        dateScraped: new Date('2023-01-01'),
+        lastUpdated: new Date('2023-01-01'),
+        searchText: 'test',
+        source: 'remoteok',
+        tags: 'typescript,react',
+        salary: '100k-150k',
+        postedDate: '2d ago',
+      };
+      const result = await service.findDuplicateJobs(jobData);
       expect(repository.getJobs).toHaveBeenCalled();
       expect(result).toEqual([mockJob]);
     });
     it('should handle errors', async () => {
       mockJobRepository.getJobs.mockRejectedValue(new Error('fail'));
-      await expect(service.findDuplicateJobs(mockJob as any)).rejects.toThrow(
+      const jobData: Prisma.JobCreateInput = {
+        title: '',
+        company: '',
+        location: '',
+        applyLink: '',
+        status: 'ACTIVE',
+        applied: false,
+        dateScraped: new Date(),
+        lastUpdated: new Date(),
+        searchText: '',
+        source: '',
+        tags: '',
+        salary: '',
+        postedDate: '',
+      };
+      await expect(service.findDuplicateJobs(jobData)).rejects.toThrow(
         'Failed to find duplicate jobs',
       );
     });
