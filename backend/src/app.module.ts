@@ -6,6 +6,7 @@ import { PrismaModule } from './prisma/prisma.module';
 import { JobsModule } from './jobs/jobs.module';
 import { WinstonConfigModule } from './config/winston.module';
 import { HealthModule } from './health/health.module';
+import { ScrapersModule } from './scrapers/scrapers.module';
 import { 
   databaseConfig, 
   appConfig, 
@@ -36,6 +37,7 @@ import { scrapersConfig } from './config/scrapers.config';
     PrismaModule,
     JobsModule,
     HealthModule,
+    ScrapersModule,
   ],
   controllers: [AppController],
   providers: [AppService],

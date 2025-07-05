@@ -63,43 +63,30 @@ cp .env.example .env
 
 **⚠️ Security Note:** Never commit your `.env` file to version control. It's already included in `.gitignore`.
 
-## Available Scripts
+## Scripts & Usage
 
-All scripts are run from the **root directory** for consistency:
+You can run all major commands from the project root. The root scripts delegate to the backend as needed.
 
-### 🚀 Development & Server
-```bash
-npm run dev          # Start development server with hot reload
-npm run start        # Start production server
-npm run build        # Build the application for production
-```
+| Script         | Description                                 | Usage (from root)         |
+| --------------|---------------------------------------------|---------------------------|
+| `dev`         | Start backend in development mode (hot reload) | `npm run dev`             |
+| `start`       | Start backend in production mode               | `npm start`               |
+| `build`       | Build the backend app                          | `npm run build`           |
+| `test`        | Run all unit tests                             | `npm test`                |
+| `test:watch`  | Run tests in watch mode                        | `npm run test:watch`      |
+| `test:cov`    | Run tests with coverage report                 | `npm run test:cov`        |
+| `test:e2e`    | Run end-to-end tests                           | `npm run test:e2e`        |
+| `lint`        | Lint the codebase                              | `npm run lint`            |
+| `format`      | Format the codebase                            | `npm run format`          |
+| `db:studio`   | Open Prisma Studio (DB browser)                | `npm run db:studio`       |
+| `db:generate` | Generate Prisma client                         | `npm run db:generate`     |
+| `db:migrate`  | Run DB migrations (dev)                        | `npm run db:migrate`      |
+| `db:reset`    | Reset the DB (dev)                             | `npm run db:reset`        |
+| `setup`       | Show environment setup instructions            | `npm run setup`           |
 
-### 🧪 Testing
-```bash
-npm test             # Run all tests
-npm run test:watch   # Run tests in watch mode
-npm run test:cov     # Run tests with coverage report
-npm run test:e2e     # Run end-to-end tests
-```
-
-### 🗄️ Database Management
-```bash
-npm run db:studio    # Open Prisma Studio (database GUI)
-npm run db:generate  # Generate Prisma client
-npm run db:migrate   # Run database migrations
-npm run db:reset     # Reset database (development only)
-```
-
-### 🔧 Code Quality
-```bash
-npm run lint         # Run ESLint to check code quality
-npm run format       # Format code with Prettier
-```
-
-### 📋 Setup
-```bash
-npm run setup        # Display environment setup instructions
-```
+**Note:**
+- All scripts can be run from the root directory for convenience.
+- For advanced workflows, you can also run scripts directly in `backend/` (e.g., `npm run start:dev`).
 
 ## Usage
 

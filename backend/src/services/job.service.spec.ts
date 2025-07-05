@@ -1,13 +1,13 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { JobService } from './job.service';
 import { JobRepository } from '../repositories/job.repository';
-import { RemoteOKService } from '../scrapers/remoteok.service';
+import { ScraperFactory } from '../scrapers/scraper-factory';
 import { LoggingService } from '../common/services/logging.service';
 
 describe('JobService', () => {
   let service: JobService;
   let repository: JobRepository;
-  let remoteOK: RemoteOKService;
+  let scraperFactory: ScraperFactory;
 
   const mockJobRepository = {
     createJob: jest.fn(),
@@ -19,8 +19,19 @@ describe('JobService', () => {
     getJobStats: jest.fn(),
   };
 
-  const mockRemoteOKService = {
-    scrapeJobs: jest.fn(),
+  const mockScraperFactory = {
+    scrapeAll: jest.fn(),
+    scrapeSpecific: jest.fn(),
+    getScraper: jest.fn(),
+    getAllScrapers: jest.fn(),
+    getEnabledScrapers: jest.fn(),
+    getScraperMetrics: jest.fn(),
+    getScraperHealth: jest.fn(),
+    checkAllScrapersHealth: jest.fn(),
+    getScraperConfig: jest.fn(),
+    updateScraperConfig: jest.fn(),
+    getAvailableScrapers: jest.fn(),
+    getScraperInfo: jest.fn(),
   };
 
   const mockLoggingService = {
@@ -35,14 +46,14 @@ describe('JobService', () => {
       providers: [
         JobService,
         { provide: JobRepository, useValue: mockJobRepository },
-        { provide: RemoteOKService, useValue: mockRemoteOKService },
+        { provide: ScraperFactory, useValue: mockScraperFactory },
         { provide: LoggingService, useValue: mockLoggingService },
       ],
     }).compile();
 
     service = module.get<JobService>(JobService);
     repository = module.get<JobRepository>(JobRepository);
-    remoteOK = module.get<RemoteOKService>(RemoteOKService);
+    scraperFactory = module.get<ScraperFactory>(ScraperFactory);
   });
 
   afterEach(() => {

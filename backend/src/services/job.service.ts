@@ -1,8 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { JobRepository, JobFilter, PaginationOptions } from '../repositories/job.repository';
 import { Job, JobStatus, Prisma } from '@prisma/client';
-import { RemoteOKService, JobListing } from '../scrapers/remoteok.service';
+import { ScraperFactory } from '../scrapers/scraper-factory';
 import { LoggingService } from '../common/services/logging.service';
+import { ScrapingOptions } from '../scrapers/base/interfaces';
 
 // Service Types
 export interface JobSearchOptions {
@@ -32,7 +33,7 @@ export class JobService {
 
   constructor(
     private jobRepository: JobRepository,
-    private remoteOKService: RemoteOKService,
+    private scraperFactory: ScraperFactory,
     private loggingService: LoggingService
   ) {}
 
@@ -170,21 +171,19 @@ export class JobService {
 
   // --- Scraping Integration ---
 
-  async scrapeAndSaveJobs(source: string = 'remoteok', options?: any): Promise<{ scraped: number; saved: number }> {
+  async scrapeAndSaveJobs(source: string = 'remoteok', options?: ScrapingOptions): Promise<{ scraped: number; saved: number }> {
     const startTime = Date.now();
     
     try {
       this.loggingService.log(`Starting to scrape jobs from ${source}`, { source, options });
       
-      let scrapedJobs: JobListing[] = [];
+      let scrapedJobs: any[] = [];
       
-      // Use appropriate scraper based on source
-      switch (source.toLowerCase()) {
-        case 'remoteok':
-          scrapedJobs = await this.remoteOKService.scrapeJobs(options);
-          break;
-        default:
-          throw new Error(`Unsupported source: ${source}`);
+      // Use the scraper factory to get the appropriate scraper
+      if (source.toLowerCase() === 'all') {
+        scrapedJobs = await this.scraperFactory.scrapeAll(options);
+      } else {
+        scrapedJobs = await this.scraperFactory.scrapeSpecific([source], options);
       }
 
       const scrapeDuration = Date.now() - startTime;
@@ -199,13 +198,14 @@ export class JobService {
             company: scrapedJob.company,
             location: scrapedJob.location,
             applyLink: scrapedJob.applyLink,
-            postedDate: scrapedJob.postedDate,
+            postedDate: scrapedJob.postedDate instanceof Date ? scrapedJob.postedDate.toISOString() : scrapedJob.postedDate,
             salary: scrapedJob.salary,
-            tags: scrapedJob.tags?.join(',') || '',
-            source: source,
+            tags: Array.isArray(scrapedJob.tags) ? scrapedJob.tags.join(',') : scrapedJob.tags || '',
+            source: scrapedJob.source || source,
             status: 'ACTIVE',
             applied: false,
-            dateScraped: new Date(),
+            dateScraped: scrapedJob.dateScraped instanceof Date ? scrapedJob.dateScraped.toISOString() : new Date().toISOString(),
+            lastUpdated: scrapedJob.lastUpdated instanceof Date ? scrapedJob.lastUpdated.toISOString() : new Date().toISOString(),
             searchText: this.generateSearchText(scrapedJob)
           };
 
