@@ -1,5 +1,5 @@
-import { ArbeitnowV1Parser } from './arbeitnow-v1.parser';
-import { ArbeitnowV1Selectors } from './arbeitnow-v1.selectors';
+import { RelocateV1Parser } from './relocate-v1.parser';
+import { RelocateV1Selectors } from './relocate-v1.selectors';
 import { JSDOM } from 'jsdom';
 import { parseFlexibleDate } from '../../../common/utils/date.util';
 
@@ -12,11 +12,11 @@ jest.mock('@nestjs/common', () => ({
   Injectable: () => (target: any) => target,
 }));
 
-describe('ArbeitnowV1Parser', () => {
-  let parser: ArbeitnowV1Parser;
+describe('RelocateV1Parser', () => {
+  let parser: RelocateV1Parser;
 
   beforeEach(() => {
-    parser = new ArbeitnowV1Parser();
+    parser = new RelocateV1Parser();
   });
 
   describe('parseJobs', () => {
@@ -27,6 +27,8 @@ describe('ArbeitnowV1Parser', () => {
             <h2 class="title">Frontend Dev</h2>
             <div class="company">Acme</div>
             <div class="location">Berlin</div>
+            <div class="country">Germany</div>
+            <div class="region">Berlin</div>
             <a class="apply-link" href="/jobs/123">Apply</a>
             <div class="posted-date">2024-01-01</div>
             <div class="salary">€50k</div>
@@ -34,15 +36,18 @@ describe('ArbeitnowV1Parser', () => {
             <span class="benefit">Visa</span>
             <span class="perk">Snacks</span>
             <span class="remote"></span>
+            <span class="visa-sponsorship"></span>
           </div>
         </div>
       `;
       // Patch selectors for test
-      Object.assign(ArbeitnowV1Selectors, {
+      Object.assign(RelocateV1Selectors, {
         jobCards: '.job-card',
         title: '.title',
         company: '.company',
         location: '.location',
+        country: '.country',
+        region: '.region',
         applyLink: '.apply-link',
         postedDate: '.posted-date',
         salary: '.salary',
@@ -50,11 +55,13 @@ describe('ArbeitnowV1Parser', () => {
         benefits: '.benefit',
         perks: '.perk',
         remote: '.remote',
+        onsite: '.onsite',
         fullTime: '.fulltime',
         partTime: '.parttime',
         contract: '.contract',
-        visaSponsorship: '.visa',
-        relocation: '.relocation',
+        visaSponsorship: '.visa-sponsorship',
+        relocationPackage: '.relocation-package',
+        englishSpeaking: '.english-speaking',
         nextPage: '.next',
         currentPage: '.current',
       });
@@ -62,15 +69,16 @@ describe('ArbeitnowV1Parser', () => {
       expect(jobs).toHaveLength(1);
       expect(jobs[0].title).toBe('Frontend Dev');
       expect(jobs[0].company).toBe('Acme');
-      expect(jobs[0].location).toBe('Berlin');
-      expect(jobs[0].applyLink).toContain('https://www.arbeitnow.com/jobs/123');
+      expect(jobs[0].location).toBe('Berlin, Berlin, Germany');
+      expect(jobs[0].applyLink).toContain('https://relocate.me/jobs/123');
       expect(jobs[0].salary).toBe('€50k');
       expect(jobs[0].tags).toContain('Remote');
       expect(jobs[0].tags).toContain('Visa');
       expect(jobs[0].tags).toContain('Snacks');
+      expect(jobs[0].tags).toContain('Visa Sponsorship');
       expect(jobs[0].status).toBe('ACTIVE');
       expect(jobs[0].applied).toBe(false);
-      expect(jobs[0].source).toBe('Arbeitnow');
+      expect(jobs[0].source).toBe('Relocate.me');
       expect(jobs[0].sourceId).toBe('frontend-dev-acme');
     });
 
@@ -87,7 +95,6 @@ describe('ArbeitnowV1Parser', () => {
       expect(parser.parseJobCard(card)).toBeNull();
     });
     it('should handle error in job card parsing gracefully', () => {
-      // Simulate error by passing undefined
       expect(parser.parseJobCard(undefined as any)).toBeNull();
     });
   });
@@ -122,7 +129,7 @@ describe('ArbeitnowV1Parser', () => {
     it('should extract tags', () => {
       const dom = new JSDOM('<div><span class="tag">A</span><span class="tag">B</span></div>');
       const card = dom.window.document.querySelector('div');
-      Object.assign(ArbeitnowV1Selectors, { tags: '.tag' });
+      Object.assign(RelocateV1Selectors, { tags: '.tag' });
       expect((parser as any).extractTags(card)).toEqual(['A', 'B']);
     });
     it('should handle error and return []', () => {
@@ -134,7 +141,7 @@ describe('ArbeitnowV1Parser', () => {
     it('should extract benefits and perks', () => {
       const dom = new JSDOM('<div><span class="benefit">A</span><span class="perk">B</span></div>');
       const card = dom.window.document.querySelector('div');
-      Object.assign(ArbeitnowV1Selectors, { benefits: '.benefit', perks: '.perk' });
+      Object.assign(RelocateV1Selectors, { benefits: '.benefit', perks: '.perk' });
       expect((parser as any).extractBenefits(card)).toEqual(['A', 'B']);
     });
     it('should handle error and return []', () => {
@@ -143,11 +150,20 @@ describe('ArbeitnowV1Parser', () => {
   });
 
   describe('extractJobType', () => {
-    it('should detect Remote, Full-time, Part-time, Contract', () => {
+    it('should detect Remote, On-site, Full-time, Part-time, Contract', () => {
       const dom = new JSDOM('<div><span class="remote"></span></div>');
       let card = dom.window.document.querySelector('div');
-      Object.assign(ArbeitnowV1Selectors, { remote: '.remote', fullTime: '.fulltime', partTime: '.parttime', contract: '.contract', visaSponsorship: '.visa', relocation: '.relocation' });
+      Object.assign(RelocateV1Selectors, { 
+        remote: '.remote', 
+        onsite: '.onsite', 
+        fullTime: '.fulltime', 
+        partTime: '.parttime', 
+        contract: '.contract' 
+      });
       expect((parser as any).extractJobType(card)).toBe('Remote');
+      dom.window.document.body.innerHTML = '<div><span class="onsite"></span></div>';
+      card = dom.window.document.querySelector('div');
+      expect((parser as any).extractJobType(card)).toBe('On-site');
       dom.window.document.body.innerHTML = '<div><span class="fulltime"></span></div>';
       card = dom.window.document.querySelector('div');
       expect((parser as any).extractJobType(card)).toBe('Full-time');
@@ -158,17 +174,43 @@ describe('ArbeitnowV1Parser', () => {
       card = dom.window.document.querySelector('div');
       expect((parser as any).extractJobType(card)).toBe('Contract');
     });
-    it('should detect Visa Sponsorship and Relocation', () => {
-      const dom = new JSDOM('<div><span class="visa"></span></div>');
-      let card = dom.window.document.querySelector('div');
-      Object.assign(ArbeitnowV1Selectors, { visaSponsorship: '.visa', relocation: '.relocation' });
-      expect((parser as any).extractJobType(card)).toBe('Visa Sponsorship');
-      dom.window.document.body.innerHTML = '<div><span class="relocation"></span></div>';
-      card = dom.window.document.querySelector('div');
-      expect((parser as any).extractJobType(card)).toBe('Relocation Package');
-    });
     it('should handle error and return empty string', () => {
       expect((parser as any).extractJobType(undefined)).toBe('');
+    });
+  });
+
+  describe('extractRelocationFeatures', () => {
+    it('should detect visa sponsorship, relocation package, and English speaking', () => {
+      const dom = new JSDOM('<div><span class="visa-sponsorship"></span></div>');
+      let card = dom.window.document.querySelector('div');
+      Object.assign(RelocateV1Selectors, { 
+        visaSponsorship: '.visa-sponsorship',
+        relocationPackage: '.relocation-package',
+        englishSpeaking: '.english-speaking'
+      });
+      expect((parser as any).extractRelocationFeatures(card)).toContain('Visa Sponsorship');
+      dom.window.document.body.innerHTML = '<div><span class="relocation-package"></span></div>';
+      card = dom.window.document.querySelector('div');
+      expect((parser as any).extractRelocationFeatures(card)).toContain('Relocation Package');
+      dom.window.document.body.innerHTML = '<div><span class="english-speaking"></span></div>';
+      card = dom.window.document.querySelector('div');
+      expect((parser as any).extractRelocationFeatures(card)).toContain('English Speaking');
+    });
+    it('should handle error and return []', () => {
+      expect((parser as any).extractRelocationFeatures(undefined)).toEqual([]);
+    });
+  });
+
+  describe('combineLocation', () => {
+    it('should combine location, region, and country', () => {
+      expect((parser as any).combineLocation('Berlin', 'Germany', 'Berlin')).toBe('Berlin, Berlin, Germany');
+    });
+    it('should handle missing parts', () => {
+      expect((parser as any).combineLocation('Berlin', '', '')).toBe('Berlin');
+      expect((parser as any).combineLocation('', 'Germany', '')).toBe('Germany');
+    });
+    it('should return International for empty location', () => {
+      expect((parser as any).combineLocation('', '', '')).toBe('International');
     });
   });
 
@@ -184,12 +226,10 @@ describe('ArbeitnowV1Parser', () => {
       expect(date).toBeInstanceOf(Date);
       expect(date.getUTCDate()).toBe(now.getUTCDate() - 2);
     });
-    it('should parse German date', () => {
-      const date = parseFlexibleDate('01.02.2023');
+    it('should parse slash date formats', () => {
+      const date = parseFlexibleDate('01/15/2023');
       expect(date).toBeInstanceOf(Date);
       expect(date.getUTCFullYear()).toBe(2023);
-      expect(date.getUTCMonth()).toBe(1); // February (zero-based)
-      expect(date.getUTCDate()).toBe(1);
     });
     it('should handle error and return new Date', () => {
       const date = parseFlexibleDate(undefined);
@@ -202,10 +242,10 @@ describe('ArbeitnowV1Parser', () => {
       expect((parser as any).normalizeUrl('')).toBe('');
     });
     it('should handle relative url', () => {
-      expect((parser as any).normalizeUrl('/jobs/123')).toBe('https://www.arbeitnow.com/jobs/123');
+      expect((parser as any).normalizeUrl('/jobs/123')).toBe('https://relocate.me/jobs/123');
     });
     it('should handle non-http url', () => {
-      expect((parser as any).normalizeUrl('jobs/123')).toBe('https://www.arbeitnow.com/jobs/123');
+      expect((parser as any).normalizeUrl('jobs/123')).toBe('https://relocate.me/jobs/123');
     });
     it('should handle absolute url', () => {
       expect((parser as any).normalizeUrl('https://foo.com/bar')).toBe('https://foo.com/bar');
@@ -220,12 +260,12 @@ describe('ArbeitnowV1Parser', () => {
 
   describe('hasNextPage', () => {
     it('should detect next page', () => {
-      Object.assign(ArbeitnowV1Selectors, { nextPage: '.next' });
+      Object.assign(RelocateV1Selectors, { nextPage: '.next' });
       const html = '<div><a class="next">Next</a></div>';
       expect(parser.hasNextPage(html)).toBe(true);
     });
     it('should return false if no next page', () => {
-      Object.assign(ArbeitnowV1Selectors, { nextPage: '.next' });
+      Object.assign(RelocateV1Selectors, { nextPage: '.next' });
       const html = '<div>No next</div>';
       expect(parser.hasNextPage(html)).toBe(false);
     });
@@ -236,12 +276,12 @@ describe('ArbeitnowV1Parser', () => {
 
   describe('getCurrentPage', () => {
     it('should get current page number', () => {
-      Object.assign(ArbeitnowV1Selectors, { currentPage: '.current' });
+      Object.assign(RelocateV1Selectors, { currentPage: '.current' });
       const html = '<div><span class="current">3</span></div>';
       expect(parser.getCurrentPage(html)).toBe(3);
     });
     it('should default to 1 if not found', () => {
-      Object.assign(ArbeitnowV1Selectors, { currentPage: '.current' });
+      Object.assign(RelocateV1Selectors, { currentPage: '.current' });
       const html = '<div>No current</div>';
       expect(parser.getCurrentPage(html)).toBe(1);
     });

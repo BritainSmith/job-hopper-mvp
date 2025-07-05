@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Job } from '../../base/interfaces';
 import { RelocateV1Selectors } from './relocate-v1.selectors';
 import { JSDOM } from 'jsdom';
+import { parseFlexibleDate } from '../../../common/utils/date.util';
 
 @Injectable()
 export class RelocateV1Parser {
@@ -44,7 +45,7 @@ export class RelocateV1Parser {
         RelocateV1Selectors.applyLink,
         'href',
       );
-      const postedDate = this.parseDate(
+      const postedDate = parseFlexibleDate(
         this.extractText(card, RelocateV1Selectors.postedDate),
       );
       const salary = this.extractText(card, RelocateV1Selectors.salary);
@@ -198,84 +199,7 @@ export class RelocateV1Parser {
     return parts.length > 0 ? parts.join(', ') : 'International';
   }
 
-  private parseDate(dateString: string): Date {
-    try {
-      if (!dateString) return new Date();
 
-      // Try parsing common formats
-      const parsed = new Date(dateString);
-      if (!isNaN(parsed.getTime())) {
-        return parsed;
-      }
-
-      // Handle relative dates like "2 days ago"
-      if (dateString.includes('ago')) {
-        return this.parseRelativeDate(dateString);
-      }
-
-      // Handle various international date formats
-      if (dateString.includes('/')) {
-        const slashDate = this.parseSlashDate(dateString);
-        if (slashDate) return slashDate;
-      }
-
-      return new Date();
-    } catch (error) {
-      this.logger.warn('Failed to parse Relocate.me date:', dateString, error);
-      return new Date();
-    }
-  }
-
-  private parseRelativeDate(relativeDate: string): Date {
-    const now = new Date();
-    const match = relativeDate.match(
-      /(\d+)\s+(day|days|hour|hours|minute|minutes|second|seconds)\s+ago/,
-    );
-
-    if (match) {
-      const amount = parseInt(match[1]);
-      const unit = match[2];
-
-      switch (unit) {
-        case 'day':
-        case 'days':
-          return new Date(now.getTime() - amount * 24 * 60 * 60 * 1000);
-        case 'hour':
-        case 'hours':
-          return new Date(now.getTime() - amount * 60 * 60 * 1000);
-        case 'minute':
-        case 'minutes':
-          return new Date(now.getTime() - amount * 60 * 1000);
-        case 'second':
-        case 'seconds':
-          return new Date(now.getTime() - amount * 1000);
-      }
-    }
-
-    return now;
-  }
-
-  private parseSlashDate(dateString: string): Date | null {
-    try {
-      // Handle MM/DD/YYYY format (US)
-      const usMatch = dateString.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
-      if (usMatch) {
-        const [, month, day, year] = usMatch;
-        return new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
-      }
-
-      // Handle DD/MM/YYYY format (European)
-      const euMatch = dateString.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
-      if (euMatch) {
-        const [, day, month, year] = euMatch;
-        return new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
-      }
-
-      return null;
-    } catch (error) {
-      return null;
-    }
-  }
 
   private normalizeUrl(url: string): string {
     if (!url) return '';

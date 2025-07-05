@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Job } from '../../base/interfaces';
 import { ArbeitnowV1Selectors } from './arbeitnow-v1.selectors';
 import { JSDOM } from 'jsdom';
+import { parseFlexibleDate } from '../../../common/utils/date.util';
 
 @Injectable()
 export class ArbeitnowV1Parser {
@@ -42,7 +43,7 @@ export class ArbeitnowV1Parser {
         ArbeitnowV1Selectors.applyLink,
         'href',
       );
-      const postedDate = this.parseDate(
+      const postedDate = parseFlexibleDate(
         this.extractText(card, ArbeitnowV1Selectors.postedDate),
       );
       const salary = this.extractText(card, ArbeitnowV1Selectors.salary);
@@ -163,86 +164,7 @@ export class ArbeitnowV1Parser {
     }
   }
 
-  private parseDate(dateString: string): Date {
-    try {
-      if (!dateString) return new Date();
 
-      // Handle German date formats FIRST (before default parsing)
-      if (dateString.includes('.')) {
-        const germanDate = this.parseGermanDate(dateString);
-        if (germanDate) return germanDate;
-      }
-
-      // Handle relative dates like "2 days ago"
-      if (dateString.includes('ago')) {
-        return this.parseRelativeDate(dateString);
-      }
-
-      // Try parsing common formats (ISO, etc.)
-      const parsed = new Date(dateString);
-      if (!isNaN(parsed.getTime())) {
-        return parsed;
-      }
-
-      return new Date();
-    } catch (error) {
-      this.logger.warn('Failed to parse Arbeitnow date:', dateString, error);
-      return new Date();
-    }
-  }
-
-  private parseRelativeDate(relativeDate: string): Date {
-    const now = new Date();
-    const match = relativeDate.match(
-      /(\d+)\s+(day|days|hour|hours|minute|minutes|second|seconds)\s+ago/,
-    );
-
-    if (match) {
-      const amount = parseInt(match[1]);
-      const unit = match[2];
-
-      switch (unit) {
-        case 'day':
-        case 'days':
-          return new Date(now.getTime() - amount * 24 * 60 * 60 * 1000);
-        case 'hour':
-        case 'hours':
-          return new Date(now.getTime() - amount * 60 * 60 * 1000);
-        case 'minute':
-        case 'minutes':
-          return new Date(now.getTime() - amount * 60 * 1000);
-        case 'second':
-        case 'seconds':
-          return new Date(now.getTime() - amount * 1000);
-      }
-    }
-
-    return now;
-  }
-
-  private parseGermanDate(dateString: string): Date | null {
-    try {
-      // Handle German date format: DD.MM.YYYY
-      const match = dateString.match(/(\d{1,2})\.(\d{1,2})\.(\d{4})/);
-      if (match) {
-        const [, day, month, year] = match;
-        return new Date(Date.UTC(parseInt(year), parseInt(month) - 1, parseInt(day)));
-      }
-
-      // Handle German date format: DD.MM.YY
-      const matchShort = dateString.match(/(\d{1,2})\.(\d{1,2})\.(\d{2})/);
-      if (matchShort) {
-        const [, day, month, year] = matchShort;
-        const fullYear =
-          parseInt(year) < 50 ? 2000 + parseInt(year) : 1900 + parseInt(year);
-        return new Date(Date.UTC(fullYear, parseInt(month) - 1, parseInt(day)));
-      }
-
-      return null;
-    } catch (error) {
-      return null;
-    }
-  }
 
   private normalizeUrl(url: string): string {
     if (!url) return '';
