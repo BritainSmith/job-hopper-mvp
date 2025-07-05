@@ -9,7 +9,7 @@ jest.mock('winston', () => ({
     timestamp: jest.fn().mockReturnValue('timestamp-format'),
     errors: jest.fn().mockReturnValue('errors-format'),
     json: jest.fn().mockReturnValue('json-format'),
-    printf: jest.fn().mockReturnValue('printf-format'),
+    printf: jest.fn(),
     colorize: jest.fn().mockReturnValue('colorize-format'),
   },
   transports: {
@@ -24,6 +24,7 @@ describe('Logger Configuration', () => {
   let mockConsoleTransport: jest.Mocked<any>;
   let mockFileTransport: jest.Mocked<any>;
   let mockWinstonLogger: jest.Mocked<any>;
+  let mockPrintf: jest.MockedFunction<any>;
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -53,6 +54,14 @@ describe('Logger Configuration', () => {
       debug: jest.fn(),
     };
     (winston.createLogger as any) = jest.fn().mockReturnValue(mockWinstonLogger);
+
+    // Mock printf function
+    mockPrintf = jest.fn().mockImplementation((fn) => {
+      // Store the function so we can test it
+      mockPrintf.fn = fn;
+      return 'printf-format';
+    });
+    (winston.format.printf as any) = mockPrintf;
   });
 
   afterEach(() => {
@@ -89,15 +98,16 @@ describe('Logger Configuration', () => {
     });
 
     it('should use default log level when not provided', () => {
-      mockConfigService.get
-        .mockReturnValueOnce('development') // NODE_ENV
-        .mockReturnValueOnce(undefined); // LOG_LEVEL
+      // Mock ConfigService to return undefined for LOG_LEVEL, which should trigger default
+      mockConfigService.get.mockImplementation((key: string, defaultValue?: any) => {
+        if (key === 'NODE_ENV') return 'development';
+        if (key === 'LOG_LEVEL') return defaultValue; // Return the default value when key is undefined
+        return undefined;
+      });
 
       const config = createLoggerConfig(mockConfigService);
 
-      // Our mock returns undefined for level, so we expect undefined here.
-      // In a real config, this would default to 'info'.
-      expect(config.level).toBeUndefined();
+      expect(config.level).toBe('info'); // Should use default 'info'
     });
 
     it('should configure console transport with colorized format', () => {
@@ -180,6 +190,135 @@ describe('Logger Configuration', () => {
       expect(winston.format.json).toHaveBeenCalled();
       expect(winston.format.printf).toHaveBeenCalled();
     });
+
+    it('should execute printf function for log format with stack trace', () => {
+      mockConfigService.get
+        .mockReturnValueOnce('development')
+        .mockReturnValueOnce('info');
+
+      createLoggerConfig(mockConfigService);
+
+      // Get the printf function that was called for log format
+      const printfCalls = mockPrintf.mock.calls;
+      expect(printfCalls.length).toBeGreaterThan(0);
+
+      // Execute the printf function with stack trace
+      const logFormatPrintf = printfCalls[0][0];
+      const logInfo = {
+        timestamp: '2023-01-01T00:00:00.000Z',
+        level: 'error',
+        message: 'Test error',
+        stack: 'Error: Test error\n    at test.js:1:1',
+        userId: 123,
+        requestId: 'req-123'
+      };
+
+      const result = logFormatPrintf(logInfo);
+      expect(result).toBeDefined();
+      expect(typeof result).toBe('string');
+      expect(result).toContain('Test error');
+      expect(result).toContain('req-123');
+    });
+
+    it('should execute printf function for log format without stack trace', () => {
+      mockConfigService.get
+        .mockReturnValueOnce('development')
+        .mockReturnValueOnce('info');
+
+      createLoggerConfig(mockConfigService);
+
+      // Get the printf function that was called for log format
+      const printfCalls = mockPrintf.mock.calls;
+      const logFormatPrintf = printfCalls[0][0];
+
+      // Execute the printf function without stack trace
+      const logInfo = {
+        timestamp: '2023-01-01T00:00:00.000Z',
+        level: 'info',
+        message: 'Test info',
+        userId: 123,
+        requestId: 'req-123'
+      };
+
+      const result = logFormatPrintf(logInfo);
+      expect(result).toBeDefined();
+      expect(typeof result).toBe('string');
+      expect(result).toContain('Test info');
+      expect(result).toContain('req-123');
+    });
+
+    it('should execute printf function for console transport with meta data', () => {
+      mockConfigService.get
+        .mockReturnValueOnce('development')
+        .mockReturnValueOnce('info');
+
+      createLoggerConfig(mockConfigService);
+
+      // Get the printf function that was called for console transport
+      const printfCalls = mockPrintf.mock.calls;
+      expect(printfCalls.length).toBeGreaterThan(1);
+
+      const consolePrintf = printfCalls[1][0];
+      const logInfo = {
+        timestamp: '2023-01-01T00:00:00.000Z',
+        level: 'info',
+        message: 'Test message',
+        userId: 123,
+        requestId: 'req-123'
+      };
+
+      const result = consolePrintf(logInfo);
+      expect(result).toBeDefined();
+      expect(typeof result).toBe('string');
+      expect(result).toContain('Test message');
+      expect(result).toContain('[info]');
+    });
+
+    it('should execute printf function for console transport with stack trace', () => {
+      mockConfigService.get
+        .mockReturnValueOnce('development')
+        .mockReturnValueOnce('info');
+
+      createLoggerConfig(mockConfigService);
+
+      const printfCalls = mockPrintf.mock.calls;
+      const consolePrintf = printfCalls[1][0];
+      const logInfo = {
+        timestamp: '2023-01-01T00:00:00.000Z',
+        level: 'error',
+        message: 'Test error',
+        stack: 'Error: Test error\n    at test.js:1:1',
+        userId: 123
+      };
+
+      const result = consolePrintf(logInfo);
+      expect(result).toBeDefined();
+      expect(typeof result).toBe('string');
+      expect(result).toContain('Test error');
+      expect(result).toContain('Error: Test error');
+    });
+
+    it('should execute printf function for console transport without meta data', () => {
+      mockConfigService.get
+        .mockReturnValueOnce('development')
+        .mockReturnValueOnce('info');
+
+      createLoggerConfig(mockConfigService);
+
+      const printfCalls = mockPrintf.mock.calls;
+      const consolePrintf = printfCalls[1][0];
+      const logInfo = {
+        timestamp: '2023-01-01T00:00:00.000Z',
+        level: 'info',
+        message: 'Test message'
+      };
+
+      const result = consolePrintf(logInfo);
+      expect(result).toBeDefined();
+      expect(typeof result).toBe('string');
+      expect(result).toContain('Test message');
+      expect(result).not.toContain('{}');
+    });
   });
 
   describe('createServiceLogger', () => {
@@ -249,6 +388,72 @@ describe('Logger Configuration', () => {
       expect(logger2).toBe(mockWinstonLogger);
       expect(winston.createLogger).toHaveBeenCalledTimes(2);
     });
+
+    it('should execute printf function for service logger console transport with service name', () => {
+      const serviceName = 'TestService';
+      createServiceLogger(serviceName);
+
+      const printfCalls = mockPrintf.mock.calls;
+      expect(printfCalls.length).toBeGreaterThan(0);
+
+      const serviceConsolePrintf = printfCalls[printfCalls.length - 1][0];
+      const logInfo = {
+        timestamp: '2023-01-01T00:00:00.000Z',
+        level: 'info',
+        message: 'Test message',
+        service: serviceName,
+        userId: 123
+      };
+
+      const result = serviceConsolePrintf(logInfo);
+      expect(result).toBeDefined();
+      expect(typeof result).toBe('string');
+      expect(result).toContain('Test message');
+      expect(result).toContain(`[${serviceName}]`);
+      expect(result).toContain('[info]');
+    });
+
+    it('should execute printf function for service logger console transport with stack trace', () => {
+      const serviceName = 'TestService';
+      createServiceLogger(serviceName);
+
+      const printfCalls = mockPrintf.mock.calls;
+      const serviceConsolePrintf = printfCalls[printfCalls.length - 1][0];
+      const logInfo = {
+        timestamp: '2023-01-01T00:00:00.000Z',
+        level: 'error',
+        message: 'Test error',
+        service: serviceName,
+        stack: 'Error: Test error\n    at test.js:1:1'
+      };
+
+      const result = serviceConsolePrintf(logInfo);
+      expect(result).toBeDefined();
+      expect(typeof result).toBe('string');
+      expect(result).toContain('Test error');
+      expect(result).toContain('Error: Test error');
+      expect(result).toContain(`[${serviceName}]`);
+    });
+
+    it('should execute printf function for service logger console transport without meta data', () => {
+      const serviceName = 'TestService';
+      createServiceLogger(serviceName);
+
+      const printfCalls = mockPrintf.mock.calls;
+      const serviceConsolePrintf = printfCalls[printfCalls.length - 1][0];
+      const logInfo = {
+        timestamp: '2023-01-01T00:00:00.000Z',
+        level: 'info',
+        message: 'Test message',
+        service: serviceName
+      };
+
+      const result = serviceConsolePrintf(logInfo);
+      expect(result).toBeDefined();
+      expect(typeof result).toBe('string');
+      expect(result).toContain('Test message');
+      expect(result).not.toContain('{}');
+    });
   });
 
   describe('Log Format Configuration', () => {
@@ -300,6 +505,54 @@ describe('Logger Configuration', () => {
         .mockReturnValueOnce('invalid-level');
 
       expect(() => createLoggerConfig(mockConfigService)).not.toThrow();
+    });
+
+    it('should handle empty service name gracefully', () => {
+      expect(() => createServiceLogger('')).not.toThrow();
+    });
+
+    it('should handle null service name gracefully', () => {
+      expect(() => createServiceLogger(null as any)).not.toThrow();
+    });
+
+    it('should handle undefined service name gracefully', () => {
+      expect(() => createServiceLogger(undefined as any)).not.toThrow();
+    });
+  });
+
+  describe('Edge Cases', () => {
+    it('should handle test environment configuration', () => {
+      mockConfigService.get
+        .mockReturnValueOnce('test')
+        .mockReturnValueOnce('debug');
+
+      const config = createLoggerConfig(mockConfigService);
+
+      expect(config).toBeDefined();
+      expect(config.transports).toHaveLength(3); // console + 2 file transports (no debug in test)
+    });
+
+    it('should handle staging environment configuration', () => {
+      mockConfigService.get
+        .mockReturnValueOnce('staging')
+        .mockReturnValueOnce('warn');
+
+      const config = createLoggerConfig(mockConfigService);
+
+      expect(config).toBeDefined();
+      expect(config.level).toBe('warn');
+      expect(config.transports).toHaveLength(3); // console + 2 file transports
+    });
+
+    it('should handle custom log level configuration', () => {
+      mockConfigService.get
+        .mockReturnValueOnce('development')
+        .mockReturnValueOnce('silly');
+
+      const config = createLoggerConfig(mockConfigService);
+
+      expect(config).toBeDefined();
+      expect(config.level).toBe('silly');
     });
   });
 }); 

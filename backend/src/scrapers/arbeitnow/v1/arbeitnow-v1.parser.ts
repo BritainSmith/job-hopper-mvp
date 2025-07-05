@@ -167,10 +167,10 @@ export class ArbeitnowV1Parser {
     try {
       if (!dateString) return new Date();
 
-      // Try parsing common formats
-      const parsed = new Date(dateString);
-      if (!isNaN(parsed.getTime())) {
-        return parsed;
+      // Handle German date formats FIRST (before default parsing)
+      if (dateString.includes('.')) {
+        const germanDate = this.parseGermanDate(dateString);
+        if (germanDate) return germanDate;
       }
 
       // Handle relative dates like "2 days ago"
@@ -178,10 +178,10 @@ export class ArbeitnowV1Parser {
         return this.parseRelativeDate(dateString);
       }
 
-      // Handle German date formats
-      if (dateString.includes('.')) {
-        const germanDate = this.parseGermanDate(dateString);
-        if (germanDate) return germanDate;
+      // Try parsing common formats (ISO, etc.)
+      const parsed = new Date(dateString);
+      if (!isNaN(parsed.getTime())) {
+        return parsed;
       }
 
       return new Date();
@@ -226,7 +226,7 @@ export class ArbeitnowV1Parser {
       const match = dateString.match(/(\d{1,2})\.(\d{1,2})\.(\d{4})/);
       if (match) {
         const [, day, month, year] = match;
-        return new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+        return new Date(Date.UTC(parseInt(year), parseInt(month) - 1, parseInt(day)));
       }
 
       // Handle German date format: DD.MM.YY
@@ -235,7 +235,7 @@ export class ArbeitnowV1Parser {
         const [, day, month, year] = matchShort;
         const fullYear =
           parseInt(year) < 50 ? 2000 + parseInt(year) : 1900 + parseInt(year);
-        return new Date(fullYear, parseInt(month) - 1, parseInt(day));
+        return new Date(Date.UTC(fullYear, parseInt(month) - 1, parseInt(day)));
       }
 
       return null;
