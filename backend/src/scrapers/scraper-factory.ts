@@ -1,6 +1,12 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { IScraper, ScrapingOptions, Job, ScrapingMetrics, ScraperConfig } from './base/interfaces';
 import { RemoteOKScraper } from './remoteok/remoteok-scraper';
+import { LinkedInScraper } from './linkedin/linkedin-scraper';
+import { LinkedInV1Parser } from './linkedin/v1/linkedin-v1.parser';
+import { ArbeitnowScraper } from './arbeitnow/arbeitnow-scraper';
+import { ArbeitnowV1Parser } from './arbeitnow/v1/arbeitnow-v1.parser';
+import { RelocateScraper } from './relocate/relocate-scraper';
+import { RelocateV1Parser } from './relocate/v1/relocate-v1.parser';
 
 @Injectable()
 export class ScraperFactory {
@@ -16,6 +22,9 @@ export class ScraperFactory {
   private initializeScrapers() {
     // Register all scrapers
     this.registerScraper('remoteok', new RemoteOKScraper());
+    this.registerScraper('linkedin', new LinkedInScraper(new LinkedInV1Parser()));
+    this.registerScraper('arbeitnow', new ArbeitnowScraper(new ArbeitnowV1Parser()));
+    this.registerScraper('relocate', new RelocateScraper(new RelocateV1Parser()));
     // Add more scrapers as needed:
     // this.registerScraper('weworkremotely', new WeWorkRemotelyScraper());
     // this.registerScraper('stackoverflow', new StackOverflowScraper());
@@ -29,6 +38,51 @@ export class ScraperFactory {
         requestsPerMinute: 30,
         delayBetweenRequests: { min: 2000, max: 5000 },
         maxConcurrentRequests: 1,
+      },
+      retryAttempts: 3,
+      timeout: 30000,
+      userAgents: [
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+      ],
+    });
+
+    this.configs.set('linkedin', {
+      enabled: true,
+      rateLimit: {
+        requestsPerMinute: 20,
+        delayBetweenRequests: { min: 3000, max: 8000 },
+        maxConcurrentRequests: 1,
+      },
+      retryAttempts: 3,
+      timeout: 30000,
+      userAgents: [
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+      ],
+    });
+
+    this.configs.set('arbeitnow', {
+      enabled: true,
+      rateLimit: {
+        requestsPerMinute: 30,
+        delayBetweenRequests: { min: 2000, max: 5000 },
+        maxConcurrentRequests: 2,
+      },
+      retryAttempts: 3,
+      timeout: 30000,
+      userAgents: [
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+      ],
+    });
+
+    this.configs.set('relocate', {
+      enabled: true,
+      rateLimit: {
+        requestsPerMinute: 25,
+        delayBetweenRequests: { min: 2500, max: 6000 },
+        maxConcurrentRequests: 2,
       },
       retryAttempts: 3,
       timeout: 30000,

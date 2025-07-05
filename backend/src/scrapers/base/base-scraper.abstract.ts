@@ -47,6 +47,12 @@ export abstract class BaseScraper implements IScraper {
       
       try {
         const response = await this.sessionManager.makeRequest(url, options);
+        
+        // Throw error for HTTP error status codes
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
         this.recordRequest(Date.now() - startTime, true);
         return response;
       } catch (error) {

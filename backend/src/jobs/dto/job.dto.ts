@@ -169,7 +169,7 @@ export class ScrapeJobsDto {
   @ApiPropertyOptional({ 
     description: 'Source to scrape jobs from', 
     default: 'remoteok',
-    enum: ['remoteok', 'linkedin', 'indeed']
+    enum: ['remoteok', 'linkedin', 'arbeitnow', 'relocate', 'all']
   })
   @IsOptional()
   @IsString()
