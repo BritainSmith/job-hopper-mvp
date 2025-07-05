@@ -9,7 +9,16 @@ describe('JobsController', () => {
   const mockJobService = {
     getJobsByStatus: jest.fn().mockResolvedValue([]),
     searchJobs: jest.fn().mockResolvedValue([]),
-    getJobStats: jest.fn().mockResolvedValue({ total: 0, applied: 0, active: 0, byStatus: {}, byCompany: {}, byLocation: {} }),
+    getJobStats: jest
+      .fn()
+      .mockResolvedValue({
+        total: 0,
+        applied: 0,
+        active: 0,
+        byStatus: {},
+        byCompany: {},
+        byLocation: {},
+      }),
     scrapeAndSaveJobs: jest.fn().mockResolvedValue({ scraped: 0, saved: 0 }),
     getJobById: jest.fn().mockResolvedValue(null),
     createJob: jest.fn().mockResolvedValue({ id: 1 }),
@@ -18,9 +27,7 @@ describe('JobsController', () => {
   beforeAll(async () => {
     const moduleRef: TestingModule = await Test.createTestingModule({
       controllers: [JobsController],
-      providers: [
-        { provide: JobService, useValue: mockJobService },
-      ],
+      providers: [{ provide: JobService, useValue: mockJobService }],
     }).compile();
 
     app = moduleRef.createNestApplication();
@@ -32,16 +39,20 @@ describe('JobsController', () => {
   });
 
   it('/jobs (GET) should return jobs', () => {
-    return request(app.getHttpServer())
-      .get('/jobs')
-      .expect(200)
-      .expect([]);
+    return request(app.getHttpServer()).get('/jobs').expect(200).expect([]);
   });
 
   it('/jobs/stats (GET) should return job stats', () => {
     return request(app.getHttpServer())
       .get('/jobs/stats')
       .expect(200)
-      .expect({ total: 0, applied: 0, active: 0, byStatus: {}, byCompany: {}, byLocation: {} });
+      .expect({
+        total: 0,
+        applied: 0,
+        active: 0,
+        byStatus: {},
+        byCompany: {},
+        byLocation: {},
+      });
   });
-}); 
+});

@@ -7,9 +7,10 @@ import { createLoggerConfig } from './logger.config';
   imports: [
     WinstonModule.forRootAsync({
       imports: [ConfigModule],
-      useFactory: (configService: ConfigService) => createLoggerConfig(configService),
+      useFactory: (configService: ConfigService) =>
+        createLoggerConfig(configService),
       inject: [ConfigService],
     }),
   ],
 })
-export class WinstonConfigModule {} 
+export class WinstonConfigModule {}

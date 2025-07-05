@@ -50,7 +50,12 @@ export class LoggingService {
   }
 
   // Database operation logging
-  logDatabaseOperation(operation: string, table: string, duration?: number, context?: any) {
+  logDatabaseOperation(
+    operation: string,
+    table: string,
+    duration?: number,
+    context?: any,
+  ) {
     this.logger.log({
       message: 'Database operation',
       operation,
@@ -62,7 +67,12 @@ export class LoggingService {
   }
 
   // Scraping operation logging
-  logScrapingOperation(source: string, jobsFound: number, duration?: number, context?: any) {
+  logScrapingOperation(
+    source: string,
+    jobsFound: number,
+    duration?: number,
+    context?: any,
+  ) {
     this.logger.log({
       message: 'Scraping operation completed',
       source,
@@ -72,4 +82,4 @@ export class LoggingService {
       timestamp: new Date().toISOString(),
     });
   }
-} 
+}

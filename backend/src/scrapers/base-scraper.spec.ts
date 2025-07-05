@@ -56,11 +56,14 @@ describe('BaseScraper', () => {
       const result = await scraper.testMakeRequest('https://example.com');
 
       expect(result).toBe(mockResponse);
-      expect(global.fetch).toHaveBeenCalledWith('https://example.com', expect.objectContaining({
-        headers: expect.objectContaining({
-          'User-Agent': expect.any(String),
+      expect(global.fetch).toHaveBeenCalledWith(
+        'https://example.com',
+        expect.objectContaining({
+          headers: expect.objectContaining({
+            'User-Agent': expect.any(String),
+          }),
         }),
-      }));
+      );
     });
 
     it('should handle HTTP errors', async () => {
@@ -73,13 +76,17 @@ describe('BaseScraper', () => {
 
       global.fetch = jest.fn().mockResolvedValue(mockResponse);
 
-      await expect(scraper.testMakeRequest('https://example.com')).rejects.toThrow('HTTP 404: Not Found');
+      await expect(
+        scraper.testMakeRequest('https://example.com'),
+      ).rejects.toThrow('HTTP 404: Not Found');
     });
 
     it('should handle network errors', async () => {
       global.fetch = jest.fn().mockRejectedValue(new Error('Network error'));
 
-      await expect(scraper.testMakeRequest('https://example.com')).rejects.toThrow('Network error');
+      await expect(
+        scraper.testMakeRequest('https://example.com'),
+      ).rejects.toThrow('Network error');
     });
 
     it('should respect rate limiting', async () => {
@@ -100,4 +107,4 @@ describe('BaseScraper', () => {
       expect(endTime - startTime).toBeGreaterThanOrEqual(1000);
     });
   });
-}); 
+});

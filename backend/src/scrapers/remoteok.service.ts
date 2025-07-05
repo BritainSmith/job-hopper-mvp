@@ -34,8 +34,9 @@ export class RemoteOKService {
       maxPages: scraperConfig.maxPages,
       delay: scraperConfig.delay,
       headless: scraperConfig.headless,
-      userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-      ...options
+      userAgent:
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+      ...options,
     };
 
     try {
@@ -58,18 +59,18 @@ export class RemoteOKService {
           '--disable-accelerated-2d-canvas',
           '--no-first-run',
           '--no-zygote',
-          '--disable-gpu'
-        ]
+          '--disable-gpu',
+        ],
       });
 
       this.page = await this.browser.newPage();
-      
+
       // Set user agent
       await this.page.setUserAgent(options.userAgent!);
-      
+
       // Set viewport
       await this.page.setViewport({ width: 1920, height: 1080 });
-      
+
       // Enable request interception to block unnecessary resources
       await this.page.setRequestInterception(true);
       this.page.on('request', (req) => {
@@ -87,7 +88,9 @@ export class RemoteOKService {
     }
   }
 
-  private async performScraping(options: ScrapingOptions): Promise<JobListing[]> {
+  private async performScraping(
+    options: ScrapingOptions,
+  ): Promise<JobListing[]> {
     if (!this.page) {
       throw new Error('Browser not initialized. Call initialize() first.');
     }
@@ -96,40 +99,49 @@ export class RemoteOKService {
     let currentPage = 1;
 
     try {
-      this.logger.log('🚀 Starting to scrape RemoteOK for software developer jobs...');
+      this.logger.log(
+        '🚀 Starting to scrape RemoteOK for software developer jobs...',
+      );
 
       while (currentPage <= options.maxPages!) {
         this.logger.log(`📄 Scraping page ${currentPage}...`);
-        
-        const url = currentPage === 1 
-          ? 'https://remoteok.com/remote-dev-jobs'
-          : `https://remoteok.com/remote-dev-jobs?page=${currentPage}`;
 
-        await this.page.goto(url, { 
+        const url =
+          currentPage === 1
+            ? 'https://remoteok.com/remote-dev-jobs'
+            : `https://remoteok.com/remote-dev-jobs?page=${currentPage}`;
+
+        await this.page.goto(url, {
           waitUntil: 'networkidle2',
-          timeout: 30000 
+          timeout: 30000,
         });
 
         // Wait for content to load
         await this.delay(3000);
-        
+
         // Take a screenshot for debugging (only in development)
-        if (this.configService.get('app.nodeEnv') === 'development' && 
-            this.configService.get('app.debugScreenshots') === 'true') {
+        if (
+          this.configService.get('app.nodeEnv') === 'development' &&
+          this.configService.get('app.debugScreenshots') === 'true'
+        ) {
           await this.page.screenshot({ path: `debug-page-${currentPage}.png` });
-          this.logger.log(`📸 Screenshot saved as debug-page-${currentPage}.png`);
+          this.logger.log(
+            `📸 Screenshot saved as debug-page-${currentPage}.png`,
+          );
         }
 
         // Extract jobs from current page
         const pageJobs = await this.extractJobsFromPage();
-        
+
         if (pageJobs.length === 0) {
           this.logger.log('No more jobs found, stopping pagination');
           break;
         }
 
         allJobs.push(...pageJobs);
-        this.logger.log(`✅ Found ${pageJobs.length} jobs on page ${currentPage}`);
+        this.logger.log(
+          `✅ Found ${pageJobs.length} jobs on page ${currentPage}`,
+        );
 
         // Check if there are more pages
         const hasNextPage = await this.checkForNextPage();
@@ -139,7 +151,7 @@ export class RemoteOKService {
         }
 
         currentPage++;
-        
+
         // Add delay between requests to be respectful
         if (currentPage <= options.maxPages!) {
           this.logger.log(`⏳ Waiting ${options.delay}ms before next page...`);
@@ -147,9 +159,10 @@ export class RemoteOKService {
         }
       }
 
-      this.logger.log(`🎉 Scraping completed! Total jobs found: ${allJobs.length}`);
+      this.logger.log(
+        `🎉 Scraping completed! Total jobs found: ${allJobs.length}`,
+      );
       return allJobs;
-
     } catch (error) {
       this.logger.error('❌ Error during scraping:', error);
       throw error;
@@ -161,7 +174,7 @@ export class RemoteOKService {
 
     return await this.page.evaluate(() => {
       const jobs: JobListing[] = [];
-      
+
       // Try multiple selectors to find job listings
       const selectors = [
         'tr.job',
@@ -169,12 +182,12 @@ export class RemoteOKService {
         '.job',
         '[data-job]',
         'tr:has(td)',
-        'tbody tr'
+        'tbody tr',
       ];
-      
+
       let jobRows: NodeListOf<Element> | null = null;
       let usedSelector = '';
-      
+
       for (const selector of selectors) {
         const rows = document.querySelectorAll(selector);
         if (rows.length > 0) {
@@ -184,7 +197,7 @@ export class RemoteOKService {
           break;
         }
       }
-      
+
       if (!jobRows || jobRows.length === 0) {
         console.log('No job rows found with any selector');
         return jobs;
@@ -193,21 +206,25 @@ export class RemoteOKService {
       jobRows.forEach((row, index) => {
         try {
           // Extract job title and link - look for the main job link
-          const titleElement = row.querySelector('h2 a, h3 a, .job-title a, a[href*="/remote-jobs/"]');
+          const titleElement = row.querySelector(
+            'h2 a, h3 a, .job-title a, a[href*="/remote-jobs/"]',
+          );
           let title = titleElement?.textContent?.trim() || '';
           const applyLink = titleElement?.getAttribute('href') || '';
-          const fullApplyLink = applyLink.startsWith('http') ? applyLink : `https://remoteok.com${applyLink}`;
+          const fullApplyLink = applyLink.startsWith('http')
+            ? applyLink
+            : `https://remoteok.com${applyLink}`;
 
           // Extract company name - look for company information in different positions
           const companySelectors = [
-            'h3 a', 
-            '.company a', 
-            '[data-company]', 
+            'h3 a',
+            '.company a',
+            '[data-company]',
             'td:nth-child(2) a',
             'td:nth-child(3) a',
-            'td a:not([href*="/remote-jobs/"])'
+            'td a:not([href*="/remote-jobs/"])',
           ];
-          
+
           let company = '';
           for (const selector of companySelectors) {
             const element = row.querySelector(selector);
@@ -216,7 +233,7 @@ export class RemoteOKService {
               break;
             }
           }
-          
+
           // If title looks like an abbreviation (1-3 characters), it might be swapped with company
           if (title.length <= 3 && company.length > 3) {
             const temp = title;
@@ -225,7 +242,9 @@ export class RemoteOKService {
           }
 
           // Extract location
-          const locationElement = row.querySelector('td.location, .location, [data-location]');
+          const locationElement = row.querySelector(
+            'td.location, .location, [data-location]',
+          );
           const location = locationElement?.textContent?.trim() || 'Remote';
 
           // Extract posted date
@@ -233,13 +252,17 @@ export class RemoteOKService {
           const postedDate = dateElement?.textContent?.trim() || '';
 
           // Extract salary (if available)
-          const salaryElement = row.querySelector('td.salary, .salary, [data-salary]');
+          const salaryElement = row.querySelector(
+            'td.salary, .salary, [data-salary]',
+          );
           const salary = salaryElement?.textContent?.trim() || '';
 
           // Extract tags
-          const tagElements = row.querySelectorAll('td.tags a, .tags a, [data-tags] a');
+          const tagElements = row.querySelectorAll(
+            'td.tags a, .tags a, [data-tags] a',
+          );
           const tags = Array.from(tagElements)
-            .map(tag => tag.textContent?.trim())
+            .map((tag) => tag.textContent?.trim())
             .filter((tag): tag is string => Boolean(tag));
 
           if (title && company) {
@@ -250,7 +273,7 @@ export class RemoteOKService {
               applyLink: fullApplyLink,
               postedDate,
               salary: salary || undefined,
-              tags: tags.length > 0 ? tags : undefined
+              tags: tags.length > 0 ? tags : undefined,
             });
           }
         } catch (error) {
@@ -266,13 +289,15 @@ export class RemoteOKService {
     if (!this.page) return false;
 
     return await this.page.evaluate(() => {
-      const nextButton = document.querySelector('a[rel="next"], .next, .pagination .next');
+      const nextButton = document.querySelector(
+        'a[rel="next"], .next, .pagination .next',
+      );
       return nextButton !== null;
     });
   }
 
   private delay(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
   private async close(): Promise<void> {
@@ -283,4 +308,4 @@ export class RemoteOKService {
       this.logger.log('🔒 Browser closed');
     }
   }
-} 
+}

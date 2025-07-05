@@ -37,12 +37,12 @@ describe('ScraperFactory', () => {
   describe('initialization', () => {
     it('should register all scrapers', () => {
       const scrapers = factory.getAllScrapers();
-      
+
       expect(scrapers).toHaveLength(4);
-      expect(scrapers.some(s => s.name === 'RemoteOK')).toBe(true);
-      expect(scrapers.some(s => s.name === 'LinkedIn')).toBe(true);
-      expect(scrapers.some(s => s.name === 'Arbeitnow')).toBe(true);
-      expect(scrapers.some(s => s.name === 'Relocate.me')).toBe(true);
+      expect(scrapers.some((s) => s.name === 'RemoteOK')).toBe(true);
+      expect(scrapers.some((s) => s.name === 'LinkedIn')).toBe(true);
+      expect(scrapers.some((s) => s.name === 'Arbeitnow')).toBe(true);
+      expect(scrapers.some((s) => s.name === 'Relocate.me')).toBe(true);
     });
 
     it('should have configurations for all scrapers', () => {
@@ -72,7 +72,9 @@ describe('ScraperFactory', () => {
     });
 
     it('should throw error for unknown scraper', () => {
-      expect(() => factory.getScraper('unknown')).toThrow("Scraper 'unknown' not found");
+      expect(() => factory.getScraper('unknown')).toThrow(
+        "Scraper 'unknown' not found",
+      );
     });
 
     it('should return all scrapers', () => {
@@ -83,7 +85,7 @@ describe('ScraperFactory', () => {
     it('should return enabled scrapers', () => {
       const enabledScrapers = factory.getEnabledScrapers();
       expect(enabledScrapers.length).toBeGreaterThan(0);
-      
+
       // All scrapers should be enabled by default
       expect(enabledScrapers.length).toBe(4);
     });
@@ -163,7 +165,7 @@ describe('ScraperFactory', () => {
   describe('configuration management', () => {
     it('should get scraper configuration', () => {
       const config = factory.getScraperConfig('remoteok');
-      
+
       expect(config).toBeDefined();
       expect(config!.enabled).toBe(true);
       expect(config!.rateLimit).toBeDefined();
@@ -172,16 +174,16 @@ describe('ScraperFactory', () => {
 
     it('should update scraper configuration', () => {
       const newConfig = { enabled: false };
-      
+
       factory.updateScraperConfig('remoteok', newConfig);
-      
+
       const updatedConfig = factory.getScraperConfig('remoteok');
       expect(updatedConfig!.enabled).toBe(false);
     });
 
     it('should return available scrapers', () => {
       const available = factory.getAvailableScrapers();
-      
+
       expect(available).toContain('remoteok');
       expect(available).toContain('linkedin');
       expect(available).toContain('arbeitnow');
@@ -192,19 +194,19 @@ describe('ScraperFactory', () => {
   describe('scraper information', () => {
     it('should return scraper info', () => {
       const info = factory.getScraperInfo();
-      
+
       expect(info.length).toBe(4);
-      
-      const remoteokInfo = info.find(s => s.name === 'RemoteOK');
-      const linkedinInfo = info.find(s => s.name === 'LinkedIn');
-      const arbeitnowInfo = info.find(s => s.name === 'Arbeitnow');
-      const relocateInfo = info.find(s => s.name === 'Relocate.me');
-      
+
+      const remoteokInfo = info.find((s) => s.name === 'RemoteOK');
+      const linkedinInfo = info.find((s) => s.name === 'LinkedIn');
+      const arbeitnowInfo = info.find((s) => s.name === 'Arbeitnow');
+      const relocateInfo = info.find((s) => s.name === 'Relocate.me');
+
       expect(remoteokInfo).toBeDefined();
       expect(linkedinInfo).toBeDefined();
       expect(arbeitnowInfo).toBeDefined();
       expect(relocateInfo).toBeDefined();
-      
+
       expect(remoteokInfo!.enabled).toBe(true);
       expect(linkedinInfo!.enabled).toBe(true);
       expect(arbeitnowInfo!.enabled).toBe(true);
@@ -215,7 +217,7 @@ describe('ScraperFactory', () => {
   describe('health checks', () => {
     it('should check all scrapers health', async () => {
       const health = await factory.checkAllScrapersHealth();
-      
+
       expect(health).toBeDefined();
       expect(typeof health['RemoteOK']).toBe('boolean');
       expect(typeof health['LinkedIn']).toBe('boolean');
@@ -225,7 +227,7 @@ describe('ScraperFactory', () => {
 
     it('should return health status object', () => {
       const health = factory.getScraperHealth();
-      
+
       expect(health).toBeDefined();
       expect(health['RemoteOK']).toBe(false); // Default to false
       expect(health['LinkedIn']).toBe(false);
@@ -237,7 +239,7 @@ describe('ScraperFactory', () => {
   describe('metrics', () => {
     it('should return scraper metrics', () => {
       const metrics = factory.getScraperMetrics();
-      
+
       expect(metrics).toBeDefined();
       // Metrics will be empty if scrapers don't have getMetrics method
       expect(typeof metrics).toBe('object');
@@ -247,7 +249,7 @@ describe('ScraperFactory', () => {
   describe('rate limiting configuration', () => {
     it('should have appropriate rate limits for LinkedIn', () => {
       const config = factory.getScraperConfig('linkedin');
-      
+
       expect(config!.rateLimit.requestsPerMinute).toBe(20);
       expect(config!.rateLimit.delayBetweenRequests.min).toBe(3000);
       expect(config!.rateLimit.delayBetweenRequests.max).toBe(8000);
@@ -256,7 +258,7 @@ describe('ScraperFactory', () => {
 
     it('should have appropriate rate limits for Arbeitnow', () => {
       const config = factory.getScraperConfig('arbeitnow');
-      
+
       expect(config!.rateLimit.requestsPerMinute).toBe(30);
       expect(config!.rateLimit.delayBetweenRequests.min).toBe(2000);
       expect(config!.rateLimit.delayBetweenRequests.max).toBe(5000);
@@ -265,7 +267,7 @@ describe('ScraperFactory', () => {
 
     it('should have appropriate rate limits for Relocate.me', () => {
       const config = factory.getScraperConfig('relocate');
-      
+
       expect(config!.rateLimit.requestsPerMinute).toBe(25);
       expect(config!.rateLimit.delayBetweenRequests.min).toBe(2500);
       expect(config!.rateLimit.delayBetweenRequests.max).toBe(6000);
@@ -274,7 +276,7 @@ describe('ScraperFactory', () => {
 
     it('should have appropriate rate limits for RemoteOK', () => {
       const config = factory.getScraperConfig('remoteok');
-      
+
       expect(config!.rateLimit.requestsPerMinute).toBe(30);
       expect(config!.rateLimit.delayBetweenRequests.min).toBe(2000);
       expect(config!.rateLimit.delayBetweenRequests.max).toBe(5000);
@@ -295,7 +297,9 @@ describe('ScraperFactory', () => {
     it('should handle health check errors gracefully', async () => {
       const mockScraper = {
         name: 'error',
-        isHealthy: jest.fn().mockRejectedValue(new Error('Health check failed')),
+        isHealthy: jest
+          .fn()
+          .mockRejectedValue(new Error('Health check failed')),
       };
 
       factory.registerScraper('error', mockScraper as any);
@@ -304,4 +308,4 @@ describe('ScraperFactory', () => {
       expect(health.error).toBe(false);
     });
   });
-}); 
+});

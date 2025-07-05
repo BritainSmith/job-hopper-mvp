@@ -1,5 +1,12 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsString, IsOptional, IsBoolean, IsDate, IsNumber, IsArray } from 'class-validator';
+import {
+  IsString,
+  IsOptional,
+  IsBoolean,
+  IsDate,
+  IsNumber,
+  IsArray,
+} from 'class-validator';
 
 export class JobDto {
   @ApiProperty({ description: 'Unique job identifier' })
@@ -41,7 +48,9 @@ export class JobDto {
   @ApiProperty({ description: 'When the job was last updated' })
   lastUpdated: Date;
 
-  @ApiPropertyOptional({ description: 'Job tags/skills as comma-separated string' })
+  @ApiPropertyOptional({
+    description: 'Job tags/skills as comma-separated string',
+  })
   tags?: string | null;
 
   @ApiPropertyOptional({ description: 'Searchable text for the job' })
@@ -122,7 +131,9 @@ export class UpdateJobDto {
   @IsString()
   tags?: string;
 
-  @ApiPropertyOptional({ description: 'Whether the user has applied to this job' })
+  @ApiPropertyOptional({
+    description: 'Whether the user has applied to this job',
+  })
   @IsOptional()
   @IsBoolean()
   applied?: boolean;
@@ -149,7 +160,9 @@ export class JobQueryDto {
   @IsString()
   location?: string;
 
-  @ApiPropertyOptional({ description: 'Search in job title, company, or description' })
+  @ApiPropertyOptional({
+    description: 'Search in job title, company, or description',
+  })
   @IsOptional()
   @IsString()
   search?: string;
@@ -166,10 +179,10 @@ export class JobQueryDto {
 }
 
 export class ScrapeJobsDto {
-  @ApiPropertyOptional({ 
-    description: 'Source to scrape jobs from', 
+  @ApiPropertyOptional({
+    description: 'Source to scrape jobs from',
     default: 'remoteok',
-    enum: ['remoteok', 'linkedin', 'arbeitnow', 'relocate', 'all']
+    enum: ['remoteok', 'linkedin', 'arbeitnow', 'relocate', 'all'],
   })
   @IsOptional()
   @IsString()
@@ -210,4 +223,4 @@ export class ScrapeResultDto {
 
   @ApiProperty({ description: 'Number of jobs saved to database' })
   saved: number;
-} 
+}

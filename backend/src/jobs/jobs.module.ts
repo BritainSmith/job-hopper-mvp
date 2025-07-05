@@ -11,4 +11,4 @@ import { ScrapersModule } from '../scrapers/scrapers.module';
   providers: [JobService, JobRepository, LoggingService],
   exports: [JobService],
 })
-export class JobsModule {} 
+export class JobsModule {}

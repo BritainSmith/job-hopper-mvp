@@ -40,8 +40,19 @@ describe('JobRepository', () => {
   });
 
   it('should call prisma.job.create on createJob', async () => {
-    const data = { title: 'Test', company: 'TestCo', location: 'Remote', applyLink: 'link', status: 'ACTIVE', applied: false, dateScraped: new Date(), lastUpdated: new Date(), searchText: 'test', source: 'remoteok' };
+    const data = {
+      title: 'Test',
+      company: 'TestCo',
+      location: 'Remote',
+      applyLink: 'link',
+      status: 'ACTIVE',
+      applied: false,
+      dateScraped: new Date(),
+      lastUpdated: new Date(),
+      searchText: 'test',
+      source: 'remoteok',
+    };
     await repository.createJob(data as any);
     expect(prisma.job.create).toHaveBeenCalledWith({ data });
   });
-}); 
+});

@@ -1,5 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { IScraper, ScrapingOptions, Job, ScrapingMetrics, ScraperConfig } from './base/interfaces';
+import {
+  IScraper,
+  ScrapingOptions,
+  Job,
+  ScrapingMetrics,
+  ScraperConfig,
+} from './base/interfaces';
 import { RemoteOKScraper } from './remoteok/remoteok-scraper';
 import { LinkedInScraper } from './linkedin/linkedin-scraper';
 import { LinkedInV1Parser } from './linkedin/v1/linkedin-v1.parser';
@@ -22,9 +28,18 @@ export class ScraperFactory {
   private initializeScrapers() {
     // Register all scrapers
     this.registerScraper('remoteok', new RemoteOKScraper());
-    this.registerScraper('linkedin', new LinkedInScraper(new LinkedInV1Parser()));
-    this.registerScraper('arbeitnow', new ArbeitnowScraper(new ArbeitnowV1Parser()));
-    this.registerScraper('relocate', new RelocateScraper(new RelocateV1Parser()));
+    this.registerScraper(
+      'linkedin',
+      new LinkedInScraper(new LinkedInV1Parser()),
+    );
+    this.registerScraper(
+      'arbeitnow',
+      new ArbeitnowScraper(new ArbeitnowV1Parser()),
+    );
+    this.registerScraper(
+      'relocate',
+      new RelocateScraper(new RelocateV1Parser()),
+    );
     // Add more scrapers as needed:
     // this.registerScraper('weworkremotely', new WeWorkRemotelyScraper());
     // this.registerScraper('stackoverflow', new StackOverflowScraper());
@@ -113,7 +128,7 @@ export class ScraperFactory {
   }
 
   getEnabledScrapers(): IScraper[] {
-    return this.getAllScrapers().filter(scraper => {
+    return this.getAllScrapers().filter((scraper) => {
       const config = this.configs.get(scraper.name.toLowerCase());
       return config?.enabled !== false;
     });
@@ -123,14 +138,18 @@ export class ScraperFactory {
     const enabledScrapers = this.getEnabledScrapers();
     const allJobs: Job[] = [];
 
-    this.logger.log(`Starting scraping with ${enabledScrapers.length} enabled scrapers`);
+    this.logger.log(
+      `Starting scraping with ${enabledScrapers.length} enabled scrapers`,
+    );
 
     for (const scraper of enabledScrapers) {
       try {
         this.logger.log(`Scraping ${scraper.name}...`);
         const jobs = await scraper.scrapeJobs(options);
         allJobs.push(...jobs);
-        this.logger.log(`Successfully scraped ${jobs.length} jobs from ${scraper.name}`);
+        this.logger.log(
+          `Successfully scraped ${jobs.length} jobs from ${scraper.name}`,
+        );
       } catch (error) {
         this.logger.error(`Failed to scrape ${scraper.name}:`, error);
       }
@@ -140,7 +159,10 @@ export class ScraperFactory {
     return allJobs;
   }
 
-  async scrapeSpecific(scraperNames: string[], options?: ScrapingOptions): Promise<Job[]> {
+  async scrapeSpecific(
+    scraperNames: string[],
+    options?: ScrapingOptions,
+  ): Promise<Job[]> {
     const allJobs: Job[] = [];
 
     for (const name of scraperNames) {
@@ -149,7 +171,9 @@ export class ScraperFactory {
         this.logger.log(`Scraping ${scraper.name}...`);
         const jobs = await scraper.scrapeJobs(options);
         allJobs.push(...jobs);
-        this.logger.log(`Successfully scraped ${jobs.length} jobs from ${scraper.name}`);
+        this.logger.log(
+          `Successfully scraped ${jobs.length} jobs from ${scraper.name}`,
+        );
       } catch (error) {
         this.logger.error(`Failed to scrape ${name}:`, error);
       }
@@ -160,29 +184,29 @@ export class ScraperFactory {
 
   getScraperMetrics(): Record<string, ScrapingMetrics> {
     const metrics: Record<string, ScrapingMetrics> = {};
-    
+
     for (const scraper of this.getAllScrapers()) {
       if ('getMetrics' in scraper) {
         metrics[scraper.name] = (scraper as any).getMetrics();
       }
     }
-    
+
     return metrics;
   }
 
   getScraperHealth(): Record<string, boolean> {
     const health: Record<string, boolean> = {};
-    
+
     for (const scraper of this.getAllScrapers()) {
       health[scraper.name] = false; // Default to false, will be updated by health checks
     }
-    
+
     return health;
   }
 
   async checkAllScrapersHealth(): Promise<Record<string, boolean>> {
     const health: Record<string, boolean> = {};
-    
+
     for (const scraper of this.getAllScrapers()) {
       try {
         health[scraper.name] = await scraper.isHealthy();
@@ -191,7 +215,7 @@ export class ScraperFactory {
         health[scraper.name] = false;
       }
     }
-    
+
     return health;
   }
 
@@ -210,8 +234,13 @@ export class ScraperFactory {
     return Array.from(this.scrapers.keys());
   }
 
-  getScraperInfo(): Array<{ name: string; version: string; baseUrl: string; enabled: boolean }> {
-    return this.getAllScrapers().map(scraper => {
+  getScraperInfo(): Array<{
+    name: string;
+    version: string;
+    baseUrl: string;
+    enabled: boolean;
+  }> {
+    return this.getAllScrapers().map((scraper) => {
       const config = this.configs.get(scraper.name.toLowerCase());
       return {
         name: scraper.name,
@@ -221,4 +250,4 @@ export class ScraperFactory {
       };
     });
   }
-} 
+}

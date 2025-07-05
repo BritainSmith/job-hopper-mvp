@@ -14,7 +14,13 @@ describe('RelocateScraper', () => {
     applyLink: 'https://relocate.me/jobs/123',
     postedDate: new Date('2025-01-01'),
     salary: '€70k - €90k',
-    tags: ['Docker', 'Kubernetes', 'AWS', 'Visa Sponsorship', 'Relocation Package'],
+    tags: [
+      'Docker',
+      'Kubernetes',
+      'AWS',
+      'Visa Sponsorship',
+      'Relocation Package',
+    ],
     status: 'ACTIVE',
     applied: false,
     dateScraped: new Date(),
@@ -43,7 +49,7 @@ describe('RelocateScraper', () => {
     }).compile();
 
     scraper = module.get<RelocateScraper>(RelocateScraper);
-    
+
     // Mock the sleep method to avoid delays in tests
     jest.spyOn(scraper as any, 'sleep').mockResolvedValue(undefined);
   });
@@ -97,7 +103,11 @@ describe('RelocateScraper', () => {
 
     it('should respect maxJobs option', async () => {
       const mockHtml = '<div class="job-card">Job content</div>';
-      const multipleJobs = [mockJob, { ...mockJob, title: 'Job 2' }, { ...mockJob, title: 'Job 3' }];
+      const multipleJobs = [
+        mockJob,
+        { ...mockJob, title: 'Job 2' },
+        { ...mockJob, title: 'Job 3' },
+      ];
       mockParser.parseJobs.mockReturnValue(multipleJobs);
       mockParser.hasNextPage.mockReturnValue(false);
       jest.spyOn(scraper as any, 'makeRequest').mockResolvedValue({
@@ -114,7 +124,9 @@ describe('RelocateScraper', () => {
         status: 404,
         statusText: 'Not Found',
       });
-      await expect(scraper.scrapeJobs()).rejects.toThrow('All Relocate.me scraper versions failed');
+      await expect(scraper.scrapeJobs()).rejects.toThrow(
+        'All Relocate.me scraper versions failed',
+      );
     });
 
     it('should handle parsing errors gracefully', async () => {
@@ -123,14 +135,16 @@ describe('RelocateScraper', () => {
         ok: true,
         text: () => Promise.resolve('<div>No jobs here</div>'),
       });
-      await expect(scraper.scrapeJobs()).rejects.toThrow('All Relocate.me scraper versions failed');
+      await expect(scraper.scrapeJobs()).rejects.toThrow(
+        'All Relocate.me scraper versions failed',
+      );
     });
   });
 
   describe('version detection', () => {
     it('should detect v2 structure', async () => {
       const v2Html = '<div class="job-listing">New structure</div>';
-      
+
       jest.spyOn(scraper as any, 'makeRequest').mockResolvedValue({
         ok: true,
         text: () => Promise.resolve(v2Html),
@@ -142,7 +156,7 @@ describe('RelocateScraper', () => {
 
     it('should detect v1 structure', async () => {
       const v1Html = '<div class="job-card">Old structure</div>';
-      
+
       jest.spyOn(scraper as any, 'makeRequest').mockResolvedValue({
         ok: true,
         text: () => Promise.resolve(v1Html),
@@ -154,7 +168,7 @@ describe('RelocateScraper', () => {
 
     it('should return null for unknown structure', async () => {
       const unknownHtml = '<div class="unknown">Unknown structure</div>';
-      
+
       jest.spyOn(scraper as any, 'makeRequest').mockResolvedValue({
         ok: true,
         text: () => Promise.resolve(unknownHtml),
@@ -195,7 +209,9 @@ describe('RelocateScraper', () => {
     });
 
     it('should handle request errors', async () => {
-      jest.spyOn(scraper as any, 'makeRequest').mockRejectedValue(new Error('Network error'));
+      jest
+        .spyOn(scraper as any, 'makeRequest')
+        .mockRejectedValue(new Error('Network error'));
 
       const isHealthy = await scraper.isHealthy();
       expect(isHealthy).toBe(false);
@@ -216,9 +232,13 @@ describe('RelocateScraper', () => {
 
   describe('error handling', () => {
     it('should handle network timeouts', async () => {
-      jest.spyOn(scraper as any, 'makeRequest').mockRejectedValue(new Error('Timeout'));
+      jest
+        .spyOn(scraper as any, 'makeRequest')
+        .mockRejectedValue(new Error('Timeout'));
 
-      await expect(scraper.scrapeJobs()).rejects.toThrow('All Relocate.me scraper versions failed');
+      await expect(scraper.scrapeJobs()).rejects.toThrow(
+        'All Relocate.me scraper versions failed',
+      );
     });
 
     it('should handle malformed HTML', async () => {
@@ -231,7 +251,9 @@ describe('RelocateScraper', () => {
         text: () => Promise.resolve('<malformed>html'),
       });
 
-      await expect(scraper.scrapeJobs()).rejects.toThrow('All Relocate.me scraper versions failed');
+      await expect(scraper.scrapeJobs()).rejects.toThrow(
+        'All Relocate.me scraper versions failed',
+      );
     });
 
     it('should handle rate limiting gracefully', async () => {
@@ -241,7 +263,9 @@ describe('RelocateScraper', () => {
         statusText: 'Too Many Requests',
       });
 
-      await expect(scraper.scrapeJobs()).rejects.toThrow('All Relocate.me scraper versions failed');
+      await expect(scraper.scrapeJobs()).rejects.toThrow(
+        'All Relocate.me scraper versions failed',
+      );
     });
 
     it('should handle 404 errors gracefully', async () => {
@@ -251,7 +275,9 @@ describe('RelocateScraper', () => {
         statusText: 'Not Found',
       });
 
-      await expect(scraper.scrapeJobs()).rejects.toThrow('All Relocate.me scraper versions failed');
+      await expect(scraper.scrapeJobs()).rejects.toThrow(
+        'All Relocate.me scraper versions failed',
+      );
     });
   });
 
@@ -282,7 +308,10 @@ describe('RelocateScraper', () => {
 
   describe('date parsing', () => {
     it('should handle international date formats', () => {
-      const internationalJob = { ...mockJob, postedDate: new Date('2025-01-15') };
+      const internationalJob = {
+        ...mockJob,
+        postedDate: new Date('2025-01-15'),
+      };
       expect(internationalJob.postedDate).toBeInstanceOf(Date);
     });
 
@@ -291,4 +320,4 @@ describe('RelocateScraper', () => {
       expect(relativeDateJob.postedDate).toBeInstanceOf(Date);
     });
   });
-}); 
+});

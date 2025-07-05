@@ -10,21 +10,21 @@ export class RelocateV1Parser {
   parseJobs(html: string): Job[] {
     try {
       const jobs: Job[] = [];
-      
+
       // Parse HTML with jsdom
       const dom = new JSDOM(html);
       const document = dom.window.document;
-      
+
       // Find job cards using selectors
       const jobCards = document.querySelectorAll(RelocateV1Selectors.jobCards);
-      
+
       this.logger.debug(`Found ${jobCards.length} job cards`);
-      
-      jobCards.forEach(card => {
+
+      jobCards.forEach((card) => {
         const job = this.parseJobCard(card);
         if (job) jobs.push(job);
       });
-      
+
       return jobs;
     } catch (error) {
       this.logger.error('Failed to parse Relocate.me v1 HTML:', error);
@@ -39,8 +39,14 @@ export class RelocateV1Parser {
       const location = this.extractText(card, RelocateV1Selectors.location);
       const country = this.extractText(card, RelocateV1Selectors.country);
       const region = this.extractText(card, RelocateV1Selectors.region);
-      const applyLink = this.extractAttribute(card, RelocateV1Selectors.applyLink, 'href');
-      const postedDate = this.parseDate(this.extractText(card, RelocateV1Selectors.postedDate));
+      const applyLink = this.extractAttribute(
+        card,
+        RelocateV1Selectors.applyLink,
+        'href',
+      );
+      const postedDate = this.parseDate(
+        this.extractText(card, RelocateV1Selectors.postedDate),
+      );
       const salary = this.extractText(card, RelocateV1Selectors.salary);
       const tags = this.extractTags(card);
       const benefits = this.extractBenefits(card);
@@ -56,7 +62,12 @@ export class RelocateV1Parser {
       const fullLocation = this.combineLocation(location, country, region);
 
       // Combine tags, benefits, job type, and relocation features
-      const allTags = [...tags, ...benefits, jobType, ...relocationFeatures].filter(Boolean);
+      const allTags = [
+        ...tags,
+        ...benefits,
+        jobType,
+        ...relocationFeatures,
+      ].filter(Boolean);
 
       return {
         title: title.trim(),
@@ -85,7 +96,11 @@ export class RelocateV1Parser {
     return found?.textContent?.trim() || '';
   }
 
-  private extractAttribute(element: any, selector: string, attribute: string): string {
+  private extractAttribute(
+    element: any,
+    selector: string,
+    attribute: string,
+  ): string {
     const found = element.querySelector(selector);
     return found?.getAttribute(attribute) || '';
   }
@@ -93,7 +108,9 @@ export class RelocateV1Parser {
   private extractTags(card: any): string[] {
     try {
       const tagElements = card.querySelectorAll(RelocateV1Selectors.tags);
-      return Array.from(tagElements).map((el: any) => el.textContent?.trim()).filter(Boolean);
+      return Array.from(tagElements)
+        .map((el: any) => el.textContent?.trim())
+        .filter(Boolean);
     } catch (error) {
       this.logger.warn('Failed to extract Relocate.me tags:', error);
       return [];
@@ -102,12 +119,18 @@ export class RelocateV1Parser {
 
   private extractBenefits(card: any): string[] {
     try {
-      const benefitElements = card.querySelectorAll(RelocateV1Selectors.benefits);
+      const benefitElements = card.querySelectorAll(
+        RelocateV1Selectors.benefits,
+      );
       const perkElements = card.querySelectorAll(RelocateV1Selectors.perks);
-      
-      const benefits = Array.from(benefitElements).map((el: any) => el.textContent?.trim()).filter(Boolean);
-      const perks = Array.from(perkElements).map((el: any) => el.textContent?.trim()).filter(Boolean);
-      
+
+      const benefits = Array.from(benefitElements)
+        .map((el: any) => el.textContent?.trim())
+        .filter(Boolean);
+      const perks = Array.from(perkElements)
+        .map((el: any) => el.textContent?.trim())
+        .filter(Boolean);
+
       return [...benefits, ...perks];
     } catch (error) {
       this.logger.warn('Failed to extract Relocate.me benefits:', error);
@@ -133,7 +156,7 @@ export class RelocateV1Parser {
       if (card.querySelector(RelocateV1Selectors.contract)) {
         return 'Contract';
       }
-      
+
       return '';
     } catch (error) {
       this.logger.warn('Failed to extract Relocate.me job type:', error);
@@ -144,7 +167,7 @@ export class RelocateV1Parser {
   private extractRelocationFeatures(card: any): string[] {
     try {
       const features: string[] = [];
-      
+
       // Check for relocation-specific features
       if (card.querySelector(RelocateV1Selectors.visaSponsorship)) {
         features.push('Visa Sponsorship');
@@ -155,15 +178,22 @@ export class RelocateV1Parser {
       if (card.querySelector(RelocateV1Selectors.englishSpeaking)) {
         features.push('English Speaking');
       }
-      
+
       return features;
     } catch (error) {
-      this.logger.warn('Failed to extract Relocate.me relocation features:', error);
+      this.logger.warn(
+        'Failed to extract Relocate.me relocation features:',
+        error,
+      );
       return [];
     }
   }
 
-  private combineLocation(location: string, country: string, region: string): string {
+  private combineLocation(
+    location: string,
+    country: string,
+    region: string,
+  ): string {
     const parts = [location, region, country].filter(Boolean);
     return parts.length > 0 ? parts.join(', ') : 'International';
   }
@@ -171,24 +201,24 @@ export class RelocateV1Parser {
   private parseDate(dateString: string): Date {
     try {
       if (!dateString) return new Date();
-      
+
       // Try parsing common formats
       const parsed = new Date(dateString);
       if (!isNaN(parsed.getTime())) {
         return parsed;
       }
-      
+
       // Handle relative dates like "2 days ago"
       if (dateString.includes('ago')) {
         return this.parseRelativeDate(dateString);
       }
-      
+
       // Handle various international date formats
       if (dateString.includes('/')) {
         const slashDate = this.parseSlashDate(dateString);
         if (slashDate) return slashDate;
       }
-      
+
       return new Date();
     } catch (error) {
       this.logger.warn('Failed to parse Relocate.me date:', dateString, error);
@@ -198,12 +228,14 @@ export class RelocateV1Parser {
 
   private parseRelativeDate(relativeDate: string): Date {
     const now = new Date();
-    const match = relativeDate.match(/(\d+)\s+(day|days|hour|hours|minute|minutes|second|seconds)\s+ago/);
-    
+    const match = relativeDate.match(
+      /(\d+)\s+(day|days|hour|hours|minute|minutes|second|seconds)\s+ago/,
+    );
+
     if (match) {
       const amount = parseInt(match[1]);
       const unit = match[2];
-      
+
       switch (unit) {
         case 'day':
         case 'days':
@@ -219,7 +251,7 @@ export class RelocateV1Parser {
           return new Date(now.getTime() - amount * 1000);
       }
     }
-    
+
     return now;
   }
 
@@ -231,14 +263,14 @@ export class RelocateV1Parser {
         const [, month, day, year] = usMatch;
         return new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
       }
-      
+
       // Handle DD/MM/YYYY format (European)
       const euMatch = dateString.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
       if (euMatch) {
         const [, day, month, year] = euMatch;
         return new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
       }
-      
+
       return null;
     } catch (error) {
       return null;
@@ -247,16 +279,16 @@ export class RelocateV1Parser {
 
   private normalizeUrl(url: string): string {
     if (!url) return '';
-    
+
     // Ensure URL is absolute
     if (url.startsWith('/')) {
       return `https://relocate.me${url}`;
     }
-    
+
     if (!url.startsWith('http')) {
       return `https://relocate.me/${url}`;
     }
-    
+
     return url;
   }
 
@@ -281,11 +313,13 @@ export class RelocateV1Parser {
     try {
       const dom = new JSDOM(html);
       const document = dom.window.document;
-      const currentPage = document.querySelector(RelocateV1Selectors.currentPage);
+      const currentPage = document.querySelector(
+        RelocateV1Selectors.currentPage,
+      );
       return parseInt(currentPage?.textContent || '1');
     } catch (error) {
       this.logger.warn('Failed to get Relocate.me current page:', error);
       return 1;
     }
   }
-} 
+}

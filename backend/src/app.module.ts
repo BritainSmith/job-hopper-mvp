@@ -7,14 +7,14 @@ import { JobsModule } from './jobs/jobs.module';
 import { WinstonConfigModule } from './config/winston.module';
 import { HealthModule } from './health/health.module';
 import { ScrapersModule } from './scrapers/scrapers.module';
-import { 
-  databaseConfig, 
-  appConfig, 
-  scraperConfig, 
-  securityConfig, 
-  apiKeysConfig, 
-  externalServicesConfig, 
-  emailConfig 
+import {
+  databaseConfig,
+  appConfig,
+  scraperConfig,
+  securityConfig,
+  apiKeysConfig,
+  externalServicesConfig,
+  emailConfig,
 } from './config/env.config';
 import { scrapersConfig } from './config/scrapers.config';
 
@@ -30,7 +30,7 @@ import { scrapersConfig } from './config/scrapers.config';
         apiKeysConfig,
         externalServicesConfig,
         emailConfig,
-        scrapersConfig
+        scrapersConfig,
       ],
     }),
     WinstonConfigModule,

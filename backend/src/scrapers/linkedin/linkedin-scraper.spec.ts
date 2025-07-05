@@ -84,10 +84,10 @@ describe('LinkedInScraper', () => {
       const mockHtml = '<div class="job-search-card">Job content</div>';
       mockParser.parseJobs.mockReturnValue([mockJob]);
       mockParser.hasNextPage.mockReturnValue(true);
-      
+
       // Mock the sleep method to avoid delays
       jest.spyOn(scraper as any, 'sleep').mockResolvedValue(undefined);
-      
+
       jest.spyOn(scraper as any, 'makeRequest').mockResolvedValue({
         ok: true,
         text: () => Promise.resolve(mockHtml),
@@ -98,7 +98,11 @@ describe('LinkedInScraper', () => {
 
     it('should respect maxJobs option', async () => {
       const mockHtml = '<div class="job-search-card">Job content</div>';
-      const multipleJobs = [mockJob, { ...mockJob, title: 'Job 2' }, { ...mockJob, title: 'Job 3' }];
+      const multipleJobs = [
+        mockJob,
+        { ...mockJob, title: 'Job 2' },
+        { ...mockJob, title: 'Job 3' },
+      ];
       mockParser.parseJobs.mockReturnValue(multipleJobs);
       mockParser.hasNextPage.mockReturnValue(false);
       jest.spyOn(scraper as any, 'makeRequest').mockResolvedValue({
@@ -115,7 +119,9 @@ describe('LinkedInScraper', () => {
         status: 404,
         statusText: 'Not Found',
       });
-      await expect(scraper.scrapeJobs()).rejects.toThrow('All LinkedIn scraper versions failed');
+      await expect(scraper.scrapeJobs()).rejects.toThrow(
+        'All LinkedIn scraper versions failed',
+      );
     });
 
     it('should handle parsing errors gracefully', async () => {
@@ -124,14 +130,16 @@ describe('LinkedInScraper', () => {
         ok: true,
         text: () => Promise.resolve('<div>No jobs here</div>'),
       });
-      await expect(scraper.scrapeJobs()).rejects.toThrow('All LinkedIn scraper versions failed');
+      await expect(scraper.scrapeJobs()).rejects.toThrow(
+        'All LinkedIn scraper versions failed',
+      );
     });
   });
 
   describe('version detection', () => {
     it('should detect v2 structure', async () => {
       const v2Html = '<div class="job-card-container">New structure</div>';
-      
+
       jest.spyOn(scraper as any, 'makeRequest').mockResolvedValue({
         ok: true,
         text: () => Promise.resolve(v2Html),
@@ -143,7 +151,7 @@ describe('LinkedInScraper', () => {
 
     it('should detect v1 structure', async () => {
       const v1Html = '<div class="job-search-card">Old structure</div>';
-      
+
       jest.spyOn(scraper as any, 'makeRequest').mockResolvedValue({
         ok: true,
         text: () => Promise.resolve(v1Html),
@@ -155,7 +163,7 @@ describe('LinkedInScraper', () => {
 
     it('should return null for unknown structure', async () => {
       const unknownHtml = '<div class="unknown">Unknown structure</div>';
-      
+
       jest.spyOn(scraper as any, 'makeRequest').mockResolvedValue({
         ok: true,
         text: () => Promise.resolve(unknownHtml),
@@ -196,7 +204,9 @@ describe('LinkedInScraper', () => {
     });
 
     it('should handle request errors', async () => {
-      jest.spyOn(scraper as any, 'makeRequest').mockRejectedValue(new Error('Network error'));
+      jest
+        .spyOn(scraper as any, 'makeRequest')
+        .mockRejectedValue(new Error('Network error'));
 
       const isHealthy = await scraper.isHealthy();
       expect(isHealthy).toBe(false);
@@ -217,9 +227,13 @@ describe('LinkedInScraper', () => {
 
   describe('error handling', () => {
     it('should handle network timeouts', async () => {
-      jest.spyOn(scraper as any, 'makeRequest').mockRejectedValue(new Error('Timeout'));
+      jest
+        .spyOn(scraper as any, 'makeRequest')
+        .mockRejectedValue(new Error('Timeout'));
 
-      await expect(scraper.scrapeJobs()).rejects.toThrow('All LinkedIn scraper versions failed');
+      await expect(scraper.scrapeJobs()).rejects.toThrow(
+        'All LinkedIn scraper versions failed',
+      );
     });
 
     it('should handle malformed HTML', async () => {
@@ -232,7 +246,9 @@ describe('LinkedInScraper', () => {
         text: () => Promise.resolve('<malformed>html'),
       });
 
-      await expect(scraper.scrapeJobs()).rejects.toThrow('All LinkedIn scraper versions failed');
+      await expect(scraper.scrapeJobs()).rejects.toThrow(
+        'All LinkedIn scraper versions failed',
+      );
     });
   });
-}); 
+});

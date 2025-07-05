@@ -24,7 +24,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     if (exception instanceof HttpException) {
       status = exception.getStatus();
       const exceptionResponse = exception.getResponse();
-      
+
       if (typeof exceptionResponse === 'string') {
         message = exceptionResponse;
       } else if (typeof exceptionResponse === 'object') {
@@ -61,4 +61,4 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       ...(process.env.NODE_ENV === 'development' && { details: errorDetails }),
     });
   }
-} 
+}

@@ -65,8 +65,19 @@ describe('JobService', () => {
   });
 
   it('should call repository.createJob on createJob', async () => {
-    const jobData = { title: 'Test', company: 'TestCo', location: 'Remote', applyLink: 'link', status: 'ACTIVE', applied: false, dateScraped: new Date(), lastUpdated: new Date(), searchText: 'test', source: 'remoteok' };
+    const jobData = {
+      title: 'Test',
+      company: 'TestCo',
+      location: 'Remote',
+      applyLink: 'link',
+      status: 'ACTIVE',
+      applied: false,
+      dateScraped: new Date(),
+      lastUpdated: new Date(),
+      searchText: 'test',
+      source: 'remoteok',
+    };
     await service.createJob(jobData as any);
     expect(repository.createJob).toHaveBeenCalled();
   });
-}); 
+});

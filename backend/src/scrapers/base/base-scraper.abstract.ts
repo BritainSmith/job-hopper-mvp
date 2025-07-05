@@ -1,5 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { IScraper, RateLimitConfig, ScrapingOptions, Job, ScrapingMetrics } from './interfaces';
+import {
+  IScraper,
+  RateLimitConfig,
+  ScrapingOptions,
+  Job,
+  ScrapingMetrics,
+} from './interfaces';
 import { RateLimiter } from './rate-limiter';
 import { SessionManager } from './session-manager';
 import { JSDOM } from 'jsdom';
@@ -41,18 +47,21 @@ export abstract class BaseScraper implements IScraper {
     }
   }
 
-  protected async makeRequest(url: string, options: RequestInit = {}): Promise<Response> {
+  protected async makeRequest(
+    url: string,
+    options: RequestInit = {},
+  ): Promise<Response> {
     return this.rateLimiter.add(async () => {
       const startTime = Date.now();
-      
+
       try {
         const response = await this.sessionManager.makeRequest(url, options);
-        
+
         // Throw error for HTTP error status codes
         if (!response.ok) {
           throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
-        
+
         this.recordRequest(Date.now() - startTime, true);
         return response;
       } catch (error) {
@@ -65,7 +74,7 @@ export abstract class BaseScraper implements IScraper {
   protected async withRetry<T>(
     operation: () => Promise<T>,
     maxRetries: number = 3,
-    baseDelay: number = 1000
+    baseDelay: number = 1000,
   ): Promise<T> {
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
@@ -76,7 +85,10 @@ export abstract class BaseScraper implements IScraper {
         }
 
         const delay = baseDelay * Math.pow(2, attempt - 1); // Exponential backoff
-        this.logger.warn(`Attempt ${attempt} failed, retrying in ${delay}ms:`, error);
+        this.logger.warn(
+          `Attempt ${attempt} failed, retrying in ${delay}ms:`,
+          error,
+        );
         await this.sleep(delay);
       }
     }
@@ -93,7 +105,11 @@ export abstract class BaseScraper implements IScraper {
     return found?.textContent?.trim() || '';
   }
 
-  protected extractAttribute(element: any, selector: string, attribute: string): string {
+  protected extractAttribute(
+    element: any,
+    selector: string,
+    attribute: string,
+  ): string {
     const found = element.querySelector(selector);
     return found?.getAttribute(attribute) || '';
   }
@@ -124,12 +140,12 @@ export abstract class BaseScraper implements IScraper {
   }
 
   protected async sleep(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
   private recordRequest(duration: number, success: boolean) {
     this.metrics.totalRequests++;
-    
+
     if (success) {
       this.metrics.successfulRequests++;
     } else {
@@ -137,9 +153,11 @@ export abstract class BaseScraper implements IScraper {
     }
 
     // Update average response time
-    const totalTime = this.metrics.averageResponseTime * (this.metrics.totalRequests - 1) + duration;
+    const totalTime =
+      this.metrics.averageResponseTime * (this.metrics.totalRequests - 1) +
+      duration;
     this.metrics.averageResponseTime = totalTime / this.metrics.totalRequests;
-    
+
     this.metrics.lastScraped = new Date();
   }
 
@@ -154,4 +172,4 @@ export abstract class BaseScraper implements IScraper {
   getSessionInfo() {
     return this.sessionManager.getSessionInfo();
   }
-} 
+}

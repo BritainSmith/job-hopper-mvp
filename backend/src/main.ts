@@ -10,10 +10,12 @@ async function bootstrap() {
   const logger = new Logger('Bootstrap');
 
   // Enable validation
-  app.useGlobalPipes(new ValidationPipe({
-    whitelist: true,
-    transform: true,
-  }));
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      transform: true,
+    }),
+  );
 
   // Global logging interceptor
   app.useGlobalInterceptors(new LoggingInterceptor());
@@ -24,7 +26,9 @@ async function bootstrap() {
   // Configure Swagger
   const config = new DocumentBuilder()
     .setTitle('Job Hopper API')
-    .setDescription('A comprehensive API for job scraping, management, and application tracking')
+    .setDescription(
+      'A comprehensive API for job scraping, management, and application tracking',
+    )
     .setVersion('1.0')
     .addTag('jobs', 'Job management operations')
     .addServer('http://localhost:3000', 'Development server')
@@ -40,7 +44,7 @@ async function bootstrap() {
 
   const port = process.env.PORT ?? 3000;
   await app.listen(port);
-  
+
   logger.log(`🚀 Job Hopper API is running on: http://localhost:${port}`);
   logger.log(`📚 API Documentation available at: http://localhost:${port}/api`);
   logger.log(`📊 Logs are being written to: ./logs/`);

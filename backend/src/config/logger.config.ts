@@ -25,7 +25,7 @@ export const createLoggerConfig = (configService: ConfigService) => {
       }
 
       return JSON.stringify(logEntry);
-    })
+    }),
   );
 
   // Console transport for development
@@ -34,10 +34,12 @@ export const createLoggerConfig = (configService: ConfigService) => {
       winston.format.colorize(),
       winston.format.timestamp(),
       winston.format.printf(({ timestamp, level, message, stack, ...meta }) => {
-        const metaStr = Object.keys(meta).length ? JSON.stringify(meta, null, 2) : '';
+        const metaStr = Object.keys(meta).length
+          ? JSON.stringify(meta, null, 2)
+          : '';
         const stackStr = stack ? `\n${stack}` : '';
         return `${timestamp} [${level}]: ${message}${metaStr}${stackStr}`;
-      })
+      }),
     ),
   });
 
@@ -69,15 +71,12 @@ export const createLoggerConfig = (configService: ConfigService) => {
         format: logFormat,
         maxsize: 5242880, // 5MB
         maxFiles: 3,
-      })
+      }),
     );
   }
 
   return {
-    transports: [
-      consoleTransport,
-      ...fileTransports,
-    ],
+    transports: [consoleTransport, ...fileTransports],
     level: logLevel,
     format: logFormat,
   };
@@ -97,11 +96,15 @@ export const createServiceLogger = (serviceName: string) => {
         format: winston.format.combine(
           winston.format.colorize(),
           winston.format.timestamp(),
-          winston.format.printf(({ timestamp, level, message, service, stack, ...meta }) => {
-            const metaStr = Object.keys(meta).length ? JSON.stringify(meta, null, 2) : '';
-            const stackStr = stack ? `\n${stack}` : '';
-            return `${timestamp} [${level}] [${service}]: ${message}${metaStr}${stackStr}`;
-          })
+          winston.format.printf(
+            ({ timestamp, level, message, service, stack, ...meta }) => {
+              const metaStr = Object.keys(meta).length
+                ? JSON.stringify(meta, null, 2)
+                : '';
+              const stackStr = stack ? `\n${stack}` : '';
+              return `${timestamp} [${level}] [${service}]: ${message}${metaStr}${stackStr}`;
+            },
+          ),
         ),
       }),
       new winston.transports.File({
@@ -114,4 +117,4 @@ export const createServiceLogger = (serviceName: string) => {
       }),
     ],
   });
-}; 
+};

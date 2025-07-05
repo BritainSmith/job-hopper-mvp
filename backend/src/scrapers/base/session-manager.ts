@@ -23,18 +23,19 @@ export class SessionManager {
   getHeaders(): Record<string, string> {
     return {
       'User-Agent': this.currentUserAgent,
-      'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
+      Accept:
+        'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
       'Accept-Language': 'en-US,en;q=0.9',
       'Accept-Encoding': 'gzip, deflate, br',
-      'DNT': '1',
-      'Connection': 'keep-alive',
+      DNT: '1',
+      Connection: 'keep-alive',
       'Upgrade-Insecure-Requests': '1',
       'Sec-Fetch-Dest': 'document',
       'Sec-Fetch-Mode': 'navigate',
       'Sec-Fetch-Site': 'none',
       'Sec-Fetch-User': '?1',
       'Cache-Control': 'max-age=0',
-      'Cookie': this.getCookieString(),
+      Cookie: this.getCookieString(),
     };
   }
 
@@ -72,7 +73,7 @@ export class SessionManager {
 
   private async rotateSession(): Promise<void> {
     this.logger.debug('Rotating session');
-    
+
     this.cookies.clear();
     this.sessionStart = new Date();
     this.requestCount = 0;
@@ -96,7 +97,7 @@ export class SessionManager {
     const setCookieHeader = response.headers.get('set-cookie');
     if (setCookieHeader) {
       const cookies = setCookieHeader.split(',');
-      cookies.forEach(cookie => {
+      cookies.forEach((cookie) => {
         const [nameValue] = cookie.split(';');
         const [name, value] = nameValue.split('=');
         if (name && value) {
@@ -107,7 +108,7 @@ export class SessionManager {
   }
 
   private sleep(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
   getSessionInfo() {
@@ -118,4 +119,4 @@ export class SessionManager {
       userAgent: this.currentUserAgent,
     };
   }
-} 
+}

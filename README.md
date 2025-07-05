@@ -1,5 +1,9 @@
 # Job Hopper - Multi-Source Job Scraper
 
+[![CI/CD Pipeline](https://github.com/britain/job-hopper/workflows/CI/CD%20Pipeline/badge.svg)](https://github.com/britain/job-hopper/actions/workflows/ci.yml)
+[![PR Quality Check](https://github.com/britain/job-hopper/workflows/Pull%20Request%20Quality%20Check/badge.svg)](https://github.com/britain/job-hopper/actions/workflows/pr-check.yml)
+[![Test Coverage](https://codecov.io/gh/britain/job-hopper/branch/main/graph/badge.svg)](https://codecov.io/gh/britain/job-hopper)
+
 A TypeScript-based web scraper using Puppeteer to extract software developer job listings from multiple sources, with a NestJS backend for scalable API development.
 
 ## 🚀 Recent Major Updates (v2.0)
@@ -292,6 +296,103 @@ job-hopper/
 - **Unified gitignore**: Single `.gitignore` file for the entire project
 - **Minimal root package.json**: Only contains scripts and essential metadata
 
+## 🚀 CI/CD Pipeline
+
+### GitHub Actions Workflows
+
+The project uses comprehensive GitHub Actions workflows to ensure code quality and maintainability:
+
+#### 🔍 **Pull Request Quality Check** (`.github/workflows/pr-check.yml`)
+- **Triggers**: On every pull request to `main` or `develop`
+- **Enforces**:
+  - ✅ All tests must pass
+  - 📊 Test coverage must be above 80%
+  - 🏗️ Application must build successfully
+  - 🔍 Code must pass linting
+  - 🎨 Code formatting must be correct
+  - 🔒 Security audit must pass
+
+#### 🏭 **Full CI/CD Pipeline** (`.github/workflows/ci.yml`)
+- **Triggers**: On push to `main`/`develop` and pull requests
+- **Jobs**:
+  - **Test & Coverage**: Runs all tests with coverage reporting
+  - **Build**: Ensures application builds successfully
+  - **Lint & Format**: Checks code quality and formatting
+  - **Security Audit**: Scans for vulnerabilities
+  - **Database Migration**: Validates database schema
+  - **Integration Tests**: Runs end-to-end tests
+  - **Quality Gates**: Final validation before deployment
+
+#### 🚀 **Production Deployment** (`.github/workflows/deploy.yml`)
+- **Triggers**: On push to `main` or manual dispatch
+- **Features**:
+  - Final test validation
+  - Production build creation
+  - Artifact upload
+  - Deployment to production environment
+
+### Quality Gates
+
+The CI/CD pipeline enforces strict quality standards:
+
+| Gate | Requirement | Action |
+|------|-------------|---------|
+| **Test Coverage** | ≥80% overall | ❌ Block merge if below threshold |
+| **All Tests Pass** | 100% test success | ❌ Block merge if any test fails |
+| **Build Success** | Clean build | ❌ Block merge if build fails |
+| **Linting** | No linting errors | ❌ Block merge if linting fails |
+| **Security** | No moderate+ vulnerabilities | ⚠️ Warn on security issues |
+| **Formatting** | Consistent code style | ❌ Block merge if formatting incorrect |
+
+### Branch Protection Rules
+
+The repository enforces branch protection on `main` and `develop`:
+
+- ✅ **Require pull request reviews** before merging
+- ✅ **Require status checks to pass** before merging
+- ✅ **Require branches to be up to date** before merging
+- ✅ **Enforce test coverage threshold** of 80%
+- ✅ **Prevent force pushes** to protected branches
+
+### Local Development Workflow
+
+1. **Create Feature Branch**:
+   ```bash
+   git checkout -b feature/your-feature-name
+   ```
+
+2. **Make Changes & Test Locally**:
+   ```bash
+   npm test                    # Run all tests
+   npm run test:cov           # Check coverage
+   npm run lint               # Check linting
+   npm run format:check       # Check formatting
+   ```
+
+3. **Commit & Push**:
+   ```bash
+   git add .
+   git commit -m "feat: your feature description"
+   git push origin feature/your-feature-name
+   ```
+
+4. **Create Pull Request**:
+   - GitHub Actions will automatically run quality checks
+   - All checks must pass before merging
+   - Coverage will be reported in the PR
+
+### Coverage Reporting
+
+- **Codecov Integration**: Automatic coverage reporting on pull requests
+- **Coverage Badge**: Displayed in README showing current coverage
+- **Coverage Alerts**: Notifications when coverage drops below threshold
+
+### Deployment Strategy
+
+- **Automatic**: Deploy to production on merge to `main`
+- **Manual**: Trigger deployment via GitHub Actions UI
+- **Rollback**: Quick rollback capability if issues arise
+
 ## Security
 
 This project follows security best practices:
@@ -300,6 +401,7 @@ This project follows security best practices:
 - Sensitive files are excluded via `.gitignore`
 - Security checklist available in `SECURITY.md`
 - No hardcoded secrets in source code
+- **CI/CD Security**: Automated security audits in every build
 
 See `SECURITY.md` for detailed security guidelines.
 

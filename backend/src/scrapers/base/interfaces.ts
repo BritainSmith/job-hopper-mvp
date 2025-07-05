@@ -2,7 +2,7 @@ export interface IScraper {
   readonly name: string;
   readonly version: string;
   readonly baseUrl: string;
-  
+
   scrapeJobs(options?: ScrapingOptions): Promise<Job[]>;
   isHealthy(): Promise<boolean>;
   getRateLimit(): RateLimitConfig;
@@ -63,4 +63,4 @@ export interface ScraperConfig {
   timeout: number;
   userAgents: string[];
   proxies?: string[];
-} 
+}

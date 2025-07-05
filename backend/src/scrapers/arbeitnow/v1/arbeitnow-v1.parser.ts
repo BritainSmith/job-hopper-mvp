@@ -10,21 +10,21 @@ export class ArbeitnowV1Parser {
   parseJobs(html: string): Job[] {
     try {
       const jobs: Job[] = [];
-      
+
       // Parse HTML with jsdom
       const dom = new JSDOM(html);
       const document = dom.window.document;
-      
+
       // Find job cards using selectors
       const jobCards = document.querySelectorAll(ArbeitnowV1Selectors.jobCards);
-      
+
       this.logger.debug(`Found ${jobCards.length} job cards`);
-      
-      jobCards.forEach(card => {
+
+      jobCards.forEach((card) => {
         const job = this.parseJobCard(card);
         if (job) jobs.push(job);
       });
-      
+
       return jobs;
     } catch (error) {
       this.logger.error('Failed to parse Arbeitnow v1 HTML:', error);
@@ -37,8 +37,14 @@ export class ArbeitnowV1Parser {
       const title = this.extractText(card, ArbeitnowV1Selectors.title);
       const company = this.extractText(card, ArbeitnowV1Selectors.company);
       const location = this.extractText(card, ArbeitnowV1Selectors.location);
-      const applyLink = this.extractAttribute(card, ArbeitnowV1Selectors.applyLink, 'href');
-      const postedDate = this.parseDate(this.extractText(card, ArbeitnowV1Selectors.postedDate));
+      const applyLink = this.extractAttribute(
+        card,
+        ArbeitnowV1Selectors.applyLink,
+        'href',
+      );
+      const postedDate = this.parseDate(
+        this.extractText(card, ArbeitnowV1Selectors.postedDate),
+      );
       const salary = this.extractText(card, ArbeitnowV1Selectors.salary);
       const tags = this.extractTags(card);
       const benefits = this.extractBenefits(card);
@@ -79,7 +85,11 @@ export class ArbeitnowV1Parser {
     return found?.textContent?.trim() || '';
   }
 
-  private extractAttribute(element: any, selector: string, attribute: string): string {
+  private extractAttribute(
+    element: any,
+    selector: string,
+    attribute: string,
+  ): string {
     const found = element.querySelector(selector);
     return found?.getAttribute(attribute) || '';
   }
@@ -87,7 +97,9 @@ export class ArbeitnowV1Parser {
   private extractTags(card: any): string[] {
     try {
       const tagElements = card.querySelectorAll(ArbeitnowV1Selectors.tags);
-      return Array.from(tagElements).map((el: any) => el.textContent?.trim()).filter(Boolean);
+      return Array.from(tagElements)
+        .map((el: any) => el.textContent?.trim())
+        .filter(Boolean);
     } catch (error) {
       this.logger.warn('Failed to extract Arbeitnow tags:', error);
       return [];
@@ -96,12 +108,18 @@ export class ArbeitnowV1Parser {
 
   private extractBenefits(card: any): string[] {
     try {
-      const benefitElements = card.querySelectorAll(ArbeitnowV1Selectors.benefits);
+      const benefitElements = card.querySelectorAll(
+        ArbeitnowV1Selectors.benefits,
+      );
       const perkElements = card.querySelectorAll(ArbeitnowV1Selectors.perks);
-      
-      const benefits = Array.from(benefitElements).map((el: any) => el.textContent?.trim()).filter(Boolean);
-      const perks = Array.from(perkElements).map((el: any) => el.textContent?.trim()).filter(Boolean);
-      
+
+      const benefits = Array.from(benefitElements)
+        .map((el: any) => el.textContent?.trim())
+        .filter(Boolean);
+      const perks = Array.from(perkElements)
+        .map((el: any) => el.textContent?.trim())
+        .filter(Boolean);
+
       return [...benefits, ...perks];
     } catch (error) {
       this.logger.warn('Failed to extract Arbeitnow benefits:', error);
@@ -124,18 +142,20 @@ export class ArbeitnowV1Parser {
       if (card.querySelector(ArbeitnowV1Selectors.contract)) {
         return 'Contract';
       }
-      
+
       // Check for visa sponsorship and relocation
-      const hasVisaSponsorship = card.querySelector(ArbeitnowV1Selectors.visaSponsorship);
+      const hasVisaSponsorship = card.querySelector(
+        ArbeitnowV1Selectors.visaSponsorship,
+      );
       const hasRelocation = card.querySelector(ArbeitnowV1Selectors.relocation);
-      
+
       if (hasVisaSponsorship) {
         return 'Visa Sponsorship';
       }
       if (hasRelocation) {
         return 'Relocation Package';
       }
-      
+
       return '';
     } catch (error) {
       this.logger.warn('Failed to extract Arbeitnow job type:', error);
@@ -146,24 +166,24 @@ export class ArbeitnowV1Parser {
   private parseDate(dateString: string): Date {
     try {
       if (!dateString) return new Date();
-      
+
       // Try parsing common formats
       const parsed = new Date(dateString);
       if (!isNaN(parsed.getTime())) {
         return parsed;
       }
-      
+
       // Handle relative dates like "2 days ago"
       if (dateString.includes('ago')) {
         return this.parseRelativeDate(dateString);
       }
-      
+
       // Handle German date formats
       if (dateString.includes('.')) {
         const germanDate = this.parseGermanDate(dateString);
         if (germanDate) return germanDate;
       }
-      
+
       return new Date();
     } catch (error) {
       this.logger.warn('Failed to parse Arbeitnow date:', dateString, error);
@@ -173,12 +193,14 @@ export class ArbeitnowV1Parser {
 
   private parseRelativeDate(relativeDate: string): Date {
     const now = new Date();
-    const match = relativeDate.match(/(\d+)\s+(day|days|hour|hours|minute|minutes|second|seconds)\s+ago/);
-    
+    const match = relativeDate.match(
+      /(\d+)\s+(day|days|hour|hours|minute|minutes|second|seconds)\s+ago/,
+    );
+
     if (match) {
       const amount = parseInt(match[1]);
       const unit = match[2];
-      
+
       switch (unit) {
         case 'day':
         case 'days':
@@ -194,7 +216,7 @@ export class ArbeitnowV1Parser {
           return new Date(now.getTime() - amount * 1000);
       }
     }
-    
+
     return now;
   }
 
@@ -206,15 +228,16 @@ export class ArbeitnowV1Parser {
         const [, day, month, year] = match;
         return new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
       }
-      
+
       // Handle German date format: DD.MM.YY
       const matchShort = dateString.match(/(\d{1,2})\.(\d{1,2})\.(\d{2})/);
       if (matchShort) {
         const [, day, month, year] = matchShort;
-        const fullYear = parseInt(year) < 50 ? 2000 + parseInt(year) : 1900 + parseInt(year);
+        const fullYear =
+          parseInt(year) < 50 ? 2000 + parseInt(year) : 1900 + parseInt(year);
         return new Date(fullYear, parseInt(month) - 1, parseInt(day));
       }
-      
+
       return null;
     } catch (error) {
       return null;
@@ -223,16 +246,16 @@ export class ArbeitnowV1Parser {
 
   private normalizeUrl(url: string): string {
     if (!url) return '';
-    
+
     // Ensure URL is absolute
     if (url.startsWith('/')) {
       return `https://www.arbeitnow.com${url}`;
     }
-    
+
     if (!url.startsWith('http')) {
       return `https://www.arbeitnow.com/${url}`;
     }
-    
+
     return url;
   }
 
@@ -257,11 +280,13 @@ export class ArbeitnowV1Parser {
     try {
       const dom = new JSDOM(html);
       const document = dom.window.document;
-      const currentPage = document.querySelector(ArbeitnowV1Selectors.currentPage);
+      const currentPage = document.querySelector(
+        ArbeitnowV1Selectors.currentPage,
+      );
       return parseInt(currentPage?.textContent || '1');
     } catch (error) {
       this.logger.warn('Failed to get Arbeitnow current page:', error);
       return 1;
     }
   }
-} 
+}

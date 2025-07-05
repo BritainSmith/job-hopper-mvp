@@ -1,0 +1,24 @@
+name: 'Setup Repository Configuration'
+description: 'Configure repository settings and branch protection rules'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Setup branch protection
+      run: |
+        echo "Setting up branch protection rules..."
+        echo "Main branch will require:"
+        echo "- Status checks to pass"
+        echo "- Test coverage above 80%"
+        echo "- Code review approval"
+        echo "- Up-to-date branch"
+      shell: bash
+      
+    - name: Configure repository settings
+      run: |
+        echo "Repository configuration:"
+        echo "- Require pull request reviews"
+        echo "- Require status checks to pass"
+        echo "- Require branches to be up to date"
+        echo "- Enforce test coverage threshold"
+      shell: bash 

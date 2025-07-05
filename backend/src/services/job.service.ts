@@ -1,5 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { JobRepository, JobFilter, PaginationOptions } from '../repositories/job.repository';
+import {
+  JobRepository,
+  JobFilter,
+  PaginationOptions,
+} from '../repositories/job.repository';
 import { Job, JobStatus, Prisma } from '@prisma/client';
 import { ScraperFactory } from '../scrapers/scraper-factory';
 import { LoggingService } from '../common/services/logging.service';
@@ -34,7 +38,7 @@ export class JobService {
   constructor(
     private jobRepository: JobRepository,
     private scraperFactory: ScraperFactory,
-    private loggingService: LoggingService
+    private loggingService: LoggingService,
   ) {}
 
   // --- CRUD Operations ---
@@ -44,7 +48,7 @@ export class JobService {
       // Add searchable text for better search
       const searchText = this.generateSearchText(jobData);
       const jobWithSearch = { ...jobData, searchText };
-      
+
       return await this.jobRepository.createJob(jobWithSearch);
     } catch (error) {
       this.logger.error('Error creating job:', error);
@@ -71,7 +75,7 @@ export class JobService {
           updateData.searchText = this.generateSearchText(updatedData);
         }
       }
-      
+
       return await this.jobRepository.updateJob(id, updateData);
     } catch (error) {
       this.logger.error('Error updating job:', error);
@@ -93,17 +97,19 @@ export class JobService {
   async searchJobs(options: JobSearchOptions): Promise<Job[]> {
     try {
       const { query, filters = {}, pagination = {} } = options;
-      
+
       // Add search query to filters
       if (query) {
         filters.searchText = query;
       }
 
       // Default sorting by most recent
-      const defaultOrderBy: Prisma.JobOrderByWithRelationInput = { dateScraped: 'desc' };
+      const defaultOrderBy: Prisma.JobOrderByWithRelationInput = {
+        dateScraped: 'desc',
+      };
       const finalPagination = {
         ...pagination,
-        orderBy: pagination.orderBy || defaultOrderBy
+        orderBy: pagination.orderBy || defaultOrderBy,
       };
 
       return await this.jobRepository.getJobs(filters, finalPagination);
@@ -113,35 +119,41 @@ export class JobService {
     }
   }
 
-  async getJobsByStatus(status: JobStatus, pagination?: PaginationOptions): Promise<Job[]> {
+  async getJobsByStatus(
+    status: JobStatus,
+    pagination?: PaginationOptions,
+  ): Promise<Job[]> {
     return this.searchJobs({
       filters: { status },
-      pagination
+      pagination,
     });
   }
 
   async getAppliedJobs(pagination?: PaginationOptions): Promise<Job[]> {
     return this.searchJobs({
       filters: { applied: true },
-      pagination
+      pagination,
     });
   }
 
   async getActiveJobs(pagination?: PaginationOptions): Promise<Job[]> {
     return this.searchJobs({
       filters: { status: 'ACTIVE' },
-      pagination
+      pagination,
     });
   }
 
   // --- Application Tracking ---
 
-  async applyToJob(id: number, applicationData?: JobApplicationData): Promise<Job> {
+  async applyToJob(
+    id: number,
+    applicationData?: JobApplicationData,
+  ): Promise<Job> {
     try {
       const updateData: Prisma.JobUpdateInput = {
         applied: true,
         appliedAt: applicationData?.appliedAt || new Date(),
-        status: applicationData?.status || 'APPLIED'
+        status: applicationData?.status || 'APPLIED',
       };
 
       return await this.updateJob(id, updateData);
@@ -151,11 +163,15 @@ export class JobService {
     }
   }
 
-  async updateApplicationStatus(id: number, status: JobStatus, notes?: string): Promise<Job> {
+  async updateApplicationStatus(
+    id: number,
+    status: JobStatus,
+    notes?: string,
+  ): Promise<Job> {
     try {
       const updateData: Prisma.JobUpdateInput = {
         status,
-        applied: status !== 'ACTIVE' // Mark as applied if not active
+        applied: status !== 'ACTIVE', // Mark as applied if not active
       };
 
       if (status === 'APPLIED' && !updateData.appliedAt) {
@@ -171,23 +187,36 @@ export class JobService {
 
   // --- Scraping Integration ---
 
-  async scrapeAndSaveJobs(source: string = 'remoteok', options?: ScrapingOptions): Promise<{ scraped: number; saved: number }> {
+  async scrapeAndSaveJobs(
+    source: string = 'remoteok',
+    options?: ScrapingOptions,
+  ): Promise<{ scraped: number; saved: number }> {
     const startTime = Date.now();
-    
+
     try {
-      this.loggingService.log(`Starting to scrape jobs from ${source}`, { source, options });
-      
+      this.loggingService.log(`Starting to scrape jobs from ${source}`, {
+        source,
+        options,
+      });
+
       let scrapedJobs: any[] = [];
-      
+
       // Use the scraper factory to get the appropriate scraper
       if (source.toLowerCase() === 'all') {
         scrapedJobs = await this.scraperFactory.scrapeAll(options);
       } else {
-        scrapedJobs = await this.scraperFactory.scrapeSpecific([source], options);
+        scrapedJobs = await this.scraperFactory.scrapeSpecific(
+          [source],
+          options,
+        );
       }
 
       const scrapeDuration = Date.now() - startTime;
-      this.loggingService.logScrapingOperation(source, scrapedJobs.length, scrapeDuration);
+      this.loggingService.logScrapingOperation(
+        source,
+        scrapedJobs.length,
+        scrapeDuration,
+      );
 
       // Convert and save jobs
       let savedCount = 0;
@@ -198,15 +227,26 @@ export class JobService {
             company: scrapedJob.company,
             location: scrapedJob.location,
             applyLink: scrapedJob.applyLink,
-            postedDate: scrapedJob.postedDate instanceof Date ? scrapedJob.postedDate.toISOString() : scrapedJob.postedDate,
+            postedDate:
+              scrapedJob.postedDate instanceof Date
+                ? scrapedJob.postedDate.toISOString()
+                : scrapedJob.postedDate,
             salary: scrapedJob.salary,
-            tags: Array.isArray(scrapedJob.tags) ? scrapedJob.tags.join(',') : scrapedJob.tags || '',
+            tags: Array.isArray(scrapedJob.tags)
+              ? scrapedJob.tags.join(',')
+              : scrapedJob.tags || '',
             source: scrapedJob.source || source,
             status: 'ACTIVE',
             applied: false,
-            dateScraped: scrapedJob.dateScraped instanceof Date ? scrapedJob.dateScraped.toISOString() : new Date().toISOString(),
-            lastUpdated: scrapedJob.lastUpdated instanceof Date ? scrapedJob.lastUpdated.toISOString() : new Date().toISOString(),
-            searchText: this.generateSearchText(scrapedJob)
+            dateScraped:
+              scrapedJob.dateScraped instanceof Date
+                ? scrapedJob.dateScraped.toISOString()
+                : new Date().toISOString(),
+            lastUpdated:
+              scrapedJob.lastUpdated instanceof Date
+                ? scrapedJob.lastUpdated.toISOString()
+                : new Date().toISOString(),
+            searchText: this.generateSearchText(scrapedJob),
           };
 
           await this.jobRepository.upsertJob(jobData);
@@ -230,24 +270,26 @@ export class JobService {
     try {
       const stats = await this.jobRepository.getJobStats();
       const allJobs = await this.jobRepository.getJobs();
-      
+
       const jobStats: JobStats = {
         total: stats.total,
         applied: stats.applied,
         active: stats.notApplied, // This might need adjustment based on your logic
         byStatus: stats.byStatus as Record<JobStatus, number>,
         byCompany: {},
-        byLocation: {}
+        byLocation: {},
       };
 
       // Count by company
-      allJobs.forEach(job => {
-        jobStats.byCompany[job.company] = (jobStats.byCompany[job.company] || 0) + 1;
+      allJobs.forEach((job) => {
+        jobStats.byCompany[job.company] =
+          (jobStats.byCompany[job.company] || 0) + 1;
       });
 
       // Count by location
-      allJobs.forEach(job => {
-        jobStats.byLocation[job.location] = (jobStats.byLocation[job.location] || 0) + 1;
+      allJobs.forEach((job) => {
+        jobStats.byLocation[job.location] =
+          (jobStats.byLocation[job.location] || 0) + 1;
       });
 
       return jobStats;
@@ -262,7 +304,7 @@ export class JobService {
   async bulkUpdateStatus(jobIds: number[], status: JobStatus): Promise<number> {
     try {
       let updatedCount = 0;
-      
+
       for (const id of jobIds) {
         try {
           await this.updateApplicationStatus(id, status);
@@ -289,7 +331,7 @@ export class JobService {
       jobData.location,
       jobData.tags,
       jobData.salary,
-      jobData.postedDate
+      jobData.postedDate,
     ].filter(Boolean);
 
     return searchableFields.join(' ').toLowerCase();
@@ -300,7 +342,7 @@ export class JobService {
       // Look for jobs with the same apply link or similar title/company
       const filters: JobFilter = {
         company: jobData.company,
-        searchText: jobData.title
+        searchText: jobData.title,
       };
 
       return await this.jobRepository.getJobs(filters);
@@ -309,4 +351,4 @@ export class JobService {
       throw new Error('Failed to find duplicate jobs');
     }
   }
-} 
+}

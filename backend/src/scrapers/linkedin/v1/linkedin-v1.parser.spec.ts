@@ -128,7 +128,9 @@ describe('LinkedInV1Parser', () => {
       // Should be approximately 2 days ago
       const twoDaysAgo = new Date();
       twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
-      expect(Math.abs(job.postedDate.getTime() - twoDaysAgo.getTime())).toBeLessThan(24 * 60 * 60 * 1000); // Within 1 day
+      expect(
+        Math.abs(job.postedDate.getTime() - twoDaysAgo.getTime()),
+      ).toBeLessThan(24 * 60 * 60 * 1000); // Within 1 day
     });
 
     it('should parse hours ago', () => {
@@ -312,4 +314,4 @@ describe('LinkedInV1Parser', () => {
       expect(job.tags).toEqual([]);
     });
   });
-}); 
+});

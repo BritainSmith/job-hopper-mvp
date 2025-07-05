@@ -89,7 +89,7 @@ export class RateLimiter {
   }
 
   private sleep(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
   getMetrics() {
@@ -100,4 +100,4 @@ export class RateLimiter {
       resetTime: this.resetTime,
     };
   }
-} 
+}

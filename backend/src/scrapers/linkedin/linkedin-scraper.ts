@@ -15,7 +15,7 @@ export class LinkedInScraper extends BaseScraper {
   constructor(private readonly linkedInV1Parser: LinkedInV1Parser) {
     super();
     this.versions.set('v1', this.linkedInV1Parser);
-    
+
     // Update metrics version
     this.metrics.version = this.currentVersion;
   }
@@ -33,37 +33,58 @@ export class LinkedInScraper extends BaseScraper {
     const maxJobs = options?.maxJobs || 50;
     const allJobs: Job[] = [];
 
-    this.logger.log(`Starting LinkedIn scraping (version: ${this.currentVersion})`);
+    this.logger.log(
+      `Starting LinkedIn scraping (version: ${this.currentVersion})`,
+    );
 
     try {
       // Try current version first
-      const jobs = await this.scrapeWithVersion(this.currentVersion, maxPages, maxJobs);
+      const jobs = await this.scrapeWithVersion(
+        this.currentVersion,
+        maxPages,
+        maxJobs,
+      );
       allJobs.push(...jobs);
     } catch (error) {
-      this.logger.warn(`Current version ${this.currentVersion} failed, attempting version detection`);
-      
+      this.logger.warn(
+        `Current version ${this.currentVersion} failed, attempting version detection`,
+      );
+
       // Try to detect new version
       const detectedVersion = await this.detectVersion();
       if (detectedVersion && detectedVersion !== this.currentVersion) {
         this.currentVersion = detectedVersion;
         this.metrics.version = detectedVersion;
-        this.logger.log(`LinkedIn structure changed, switching to ${detectedVersion}`);
-        
+        this.logger.log(
+          `LinkedIn structure changed, switching to ${detectedVersion}`,
+        );
+
         try {
-          const jobs = await this.scrapeWithVersion(detectedVersion, maxPages, maxJobs);
+          const jobs = await this.scrapeWithVersion(
+            detectedVersion,
+            maxPages,
+            maxJobs,
+          );
           allJobs.push(...jobs);
         } catch (detectionError) {
-          this.logger.error(`Detected version ${detectedVersion} also failed:`, detectionError);
+          this.logger.error(
+            `Detected version ${detectedVersion} also failed:`,
+            detectionError,
+          );
         }
       }
-      
+
       // If detection fails, try fallback versions
       if (allJobs.length === 0) {
         for (const version of this.versions.keys()) {
           if (version !== this.currentVersion) {
             try {
               this.logger.log(`Trying fallback version: ${version}`);
-              const jobs = await this.scrapeWithVersion(version, maxPages, maxJobs);
+              const jobs = await this.scrapeWithVersion(
+                version,
+                maxPages,
+                maxJobs,
+              );
               allJobs.push(...jobs);
               break; // Use first working fallback
             } catch (fallbackError) {
@@ -78,11 +99,17 @@ export class LinkedInScraper extends BaseScraper {
       throw new Error('All LinkedIn scraper versions failed');
     }
 
-    this.logger.log(`Successfully scraped ${allJobs.length} jobs from LinkedIn`);
+    this.logger.log(
+      `Successfully scraped ${allJobs.length} jobs from LinkedIn`,
+    );
     return allJobs.slice(0, maxJobs);
   }
 
-  private async scrapeWithVersion(version: string, maxPages: number, maxJobs: number): Promise<Job[]> {
+  private async scrapeWithVersion(
+    version: string,
+    maxPages: number,
+    maxJobs: number,
+  ): Promise<Job[]> {
     const parser = this.versions.get(version);
     if (!parser) {
       throw new Error(`Parser for version ${version} not found`);
@@ -110,7 +137,9 @@ export class LinkedInScraper extends BaseScraper {
         }
 
         jobs.push(...pageJobs);
-        this.logger.debug(`Found ${pageJobs.length} jobs on page ${currentPage}`);
+        this.logger.debug(
+          `Found ${pageJobs.length} jobs on page ${currentPage}`,
+        );
 
         // Check if there's a next page
         if (!parser.hasNextPage(html)) {
@@ -119,18 +148,17 @@ export class LinkedInScraper extends BaseScraper {
         }
 
         currentPage++;
-        
+
         // Add delay between pages
         await this.sleep(5000 + Math.random() * 3000);
-
       } catch (error) {
         this.logger.error(`Failed to scrape page ${currentPage}:`, error);
-        
+
         // If it's the first page, the version might be broken
         if (currentPage === 1) {
           throw error;
         }
-        
+
         // For subsequent pages, just stop
         break;
       }
@@ -147,17 +175,23 @@ export class LinkedInScraper extends BaseScraper {
       }
 
       const html = await response.text();
-      
+
       // Check for v2 indicators (update these based on actual HTML changes)
-      if (html.includes('job-card-container') || html.includes('job-card-list')) {
+      if (
+        html.includes('job-card-container') ||
+        html.includes('job-card-list')
+      ) {
         return 'v2';
       }
-      
+
       // Check for v1 indicators
-      if (html.includes('job-search-card') || html.includes('artdeco-pagination')) {
+      if (
+        html.includes('job-search-card') ||
+        html.includes('artdeco-pagination')
+      ) {
         return 'v1';
       }
-      
+
       return null;
     } catch (error) {
       this.logger.error('LinkedIn version detection failed:', error);
@@ -189,4 +223,4 @@ export class LinkedInScraper extends BaseScraper {
   getAvailableVersions(): string[] {
     return Array.from(this.versions.keys());
   }
-} 
+}

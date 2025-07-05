@@ -9,4 +9,4 @@ export class HealthController {
       timestamp: new Date().toISOString(),
     };
   }
-} 
+}

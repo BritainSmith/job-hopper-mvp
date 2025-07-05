@@ -17,10 +17,10 @@ afterAll(() => {
 afterEach(() => {
   // Clear all timers
   jest.clearAllTimers();
-  
+
   // Clear all mocks
   jest.clearAllMocks();
-  
+
   // Reset modules to prevent state leakage
   jest.resetModules();
 });
@@ -33,4 +33,4 @@ process.on('unhandledRejection', (reason, promise) => {
 // Handle uncaught exceptions in tests
 process.on('uncaughtException', (error) => {
   console.error('Uncaught Exception:', error);
-}); 
+});

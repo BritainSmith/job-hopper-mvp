@@ -10,21 +10,21 @@ export class LinkedInV1Parser {
   parseJobs(html: string): Job[] {
     try {
       const jobs: Job[] = [];
-      
+
       // Parse HTML with jsdom
       const dom = new JSDOM(html);
       const document = dom.window.document;
-      
+
       // Find job cards using selectors
       const jobCards = document.querySelectorAll(LinkedInV1Selectors.jobCards);
-      
+
       this.logger.debug(`Found ${jobCards.length} job cards`);
-      
-      jobCards.forEach(card => {
+
+      jobCards.forEach((card) => {
         const job = this.parseJobCard(card);
         if (job) jobs.push(job);
       });
-      
+
       return jobs;
     } catch (error) {
       this.logger.error('Failed to parse LinkedIn v1 HTML:', error);
@@ -37,8 +37,14 @@ export class LinkedInV1Parser {
       const title = this.extractText(card, LinkedInV1Selectors.title);
       const company = this.extractText(card, LinkedInV1Selectors.company);
       const location = this.extractText(card, LinkedInV1Selectors.location);
-      const applyLink = this.extractAttribute(card, LinkedInV1Selectors.applyLink, 'href');
-      const postedDate = this.parseDate(this.extractText(card, LinkedInV1Selectors.postedDate));
+      const applyLink = this.extractAttribute(
+        card,
+        LinkedInV1Selectors.applyLink,
+        'href',
+      );
+      const postedDate = this.parseDate(
+        this.extractText(card, LinkedInV1Selectors.postedDate),
+      );
       const salary = this.extractText(card, LinkedInV1Selectors.salary);
       const tags = this.extractTags(card);
 
@@ -74,7 +80,11 @@ export class LinkedInV1Parser {
     return found?.textContent?.trim() || '';
   }
 
-  private extractAttribute(element: any, selector: string, attribute: string): string {
+  private extractAttribute(
+    element: any,
+    selector: string,
+    attribute: string,
+  ): string {
     const found = element.querySelector(selector);
     return found?.getAttribute(attribute) || '';
   }
@@ -82,7 +92,9 @@ export class LinkedInV1Parser {
   private extractTags(card: any): string[] {
     try {
       const tagElements = card.querySelectorAll(LinkedInV1Selectors.tags);
-      return Array.from(tagElements).map((el: any) => el.textContent?.trim()).filter(Boolean);
+      return Array.from(tagElements)
+        .map((el: any) => el.textContent?.trim())
+        .filter(Boolean);
     } catch (error) {
       this.logger.warn('Failed to extract LinkedIn tags:', error);
       return [];
@@ -92,18 +104,18 @@ export class LinkedInV1Parser {
   private parseDate(dateString: string): Date {
     try {
       if (!dateString) return new Date();
-      
+
       // Try parsing common formats
       const parsed = new Date(dateString);
       if (!isNaN(parsed.getTime())) {
         return parsed;
       }
-      
+
       // Handle relative dates like "2 days ago"
       if (dateString.includes('ago')) {
         return this.parseRelativeDate(dateString);
       }
-      
+
       return new Date();
     } catch (error) {
       this.logger.warn('Failed to parse LinkedIn date:', dateString, error);
@@ -113,12 +125,14 @@ export class LinkedInV1Parser {
 
   private parseRelativeDate(relativeDate: string): Date {
     const now = new Date();
-    const match = relativeDate.match(/(\d+)\s+(day|days|hour|hours|minute|minutes|second|seconds)\s+ago/);
-    
+    const match = relativeDate.match(
+      /(\d+)\s+(day|days|hour|hours|minute|minutes|second|seconds)\s+ago/,
+    );
+
     if (match) {
       const amount = parseInt(match[1]);
       const unit = match[2];
-      
+
       switch (unit) {
         case 'day':
         case 'days':
@@ -134,22 +148,22 @@ export class LinkedInV1Parser {
           return new Date(now.getTime() - amount * 1000);
       }
     }
-    
+
     return now;
   }
 
   private normalizeUrl(url: string): string {
     if (!url) return '';
-    
+
     // Ensure URL is absolute
     if (url.startsWith('/')) {
       return `https://linkedin.com${url}`;
     }
-    
+
     if (!url.startsWith('http')) {
       return `https://${url}`;
     }
-    
+
     return url;
   }
 
@@ -174,11 +188,13 @@ export class LinkedInV1Parser {
     try {
       const dom = new JSDOM(html);
       const document = dom.window.document;
-      const currentPage = document.querySelector(LinkedInV1Selectors.currentPage);
+      const currentPage = document.querySelector(
+        LinkedInV1Selectors.currentPage,
+      );
       return parseInt(currentPage?.textContent || '1');
     } catch (error) {
       this.logger.warn('Failed to get LinkedIn current page:', error);
       return 1;
     }
   }
-} 
+}

@@ -37,7 +37,10 @@ export class JobRepository {
   }
 
   // Get jobs with optional filtering and pagination
-  async getJobs(filter: JobFilter = {}, options: PaginationOptions = {}): Promise<Job[]> {
+  async getJobs(
+    filter: JobFilter = {},
+    options: PaginationOptions = {},
+  ): Promise<Job[]> {
     const where: Prisma.JobWhereInput = {
       company: filter.company,
       location: filter.location,
@@ -45,9 +48,11 @@ export class JobRepository {
       applied: filter.applied,
       source: filter.source,
       tags: filter.tags ? { contains: filter.tags.join(',') } : undefined,
-      searchText: filter.searchText ? { contains: filter.searchText } : undefined,
+      searchText: filter.searchText
+        ? { contains: filter.searchText }
+        : undefined,
     };
-    
+
     return this.prisma.job.findMany({
       where,
       skip: options.skip,
@@ -92,11 +97,14 @@ export class JobRepository {
       }),
     ]);
 
-    const byStatus = statusStats.reduce((acc, stat) => {
-      acc[stat.status || 'unknown'] = stat._count.status;
-      return acc;
-    }, {} as Record<string, number>);
+    const byStatus = statusStats.reduce(
+      (acc, stat) => {
+        acc[stat.status || 'unknown'] = stat._count.status;
+        return acc;
+      },
+      {} as Record<string, number>,
+    );
 
     return { total, applied, notApplied, byStatus };
   }
-} 
+}
