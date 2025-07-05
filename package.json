@@ -7,7 +7,11 @@
     "setup": "ts-node scripts/setup-env.ts",
     "scrape": "ts-node src/scrapers/remoteok.ts",
     "scrape:headless": "ts-node -e \"import('./src/scrapers/remoteok').then(m => m.scrapeRemoteOKJobs({headless: true, maxPages: 5}))\"",
-    "config": "ts-node -e \"import('./src/config/env').then(m => m.printConfig())\""
+    "config": "ts-node -e \"import('./src/config/env').then(m => m.printConfig())\"",
+    "test:services": "ts-node scripts/test-services.ts",
+    "scrape:save": "ts-node -e \"import('./src/services').then(s => s.scraperService.scrapeJobs({saveToDatabase: true, headless: true}))\"",
+    "save:jobs": "ts-node scripts/save-scraped-jobs.ts",
+    "inspect:db": "ts-node scripts/inspect-db.ts"
   },
   "keywords": [],
   "author": "",

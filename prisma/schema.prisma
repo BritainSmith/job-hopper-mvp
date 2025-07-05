@@ -7,15 +7,95 @@ generator client {
 
 datasource db {
   provider = "sqlite"
-  url      = "file:./dev.db"
+  url      = env("DATABASE_URL")
 }
 
 model Job {
-  id         Int      @id @default(autoincrement())
-  title      String
-  company    String
-  location   String
-  applyLink  String
-  applied    Boolean  @default(false)
+  id          Int      @id @default(autoincrement())
+  
+  // Core job information
+  title       String
+  company     String
+  location    String   @default("Remote")
+  applyLink   String   @unique
+  
+  // Additional scraped data
+  postedDate  String?  // e.g., "2d ago", "1mo ago"
+  salary      String?  // e.g., "$80k - $120k"
+  
+  // Application tracking
+  applied     Boolean  @default(false)
+  appliedAt   DateTime?
+  status      JobStatus @default(ACTIVE)
+  
+  // Metadata
+  source      String   @default("remoteok") // Which scraper found this job
   dateScraped DateTime @default(now())
+  lastUpdated DateTime @updatedAt
+  
+  // Tags/Skills (stored as JSON for flexibility)
+  tags        String?  // JSON array of tags
+  
+  // Search and filtering
+  searchText  String?  // Concatenated searchable text for full-text search
+  
+  // Relations
+  companyId   Int?
+  companyRel  Company? @relation(fields: [companyId], references: [id])
+  
+  @@index([location])
+  @@index([dateScraped])
+  @@index([applied])
+  @@index([status])
+  @@index([source])
+  @@index([companyId])
+}
+
+enum JobStatus {
+  ACTIVE      // Job is still active/available
+  APPLIED     // User has applied
+  INTERVIEWED // User has interviewed
+  REJECTED    // Application was rejected
+  ACCEPTED    // Application was accepted
+  EXPIRED     // Job posting has expired
+  ARCHIVED    // Job has been archived
+}
+
+// Optional: Company model for better organization
+model Company {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  website     String?
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  jobs        Job[]
+  
+  @@index([name])
+}
+
+// Optional: Scraping session tracking
+model ScrapingSession {
+  id          Int      @id @default(autoincrement())
+  source      String   // e.g., "remoteok"
+  startedAt   DateTime @default(now())
+  completedAt DateTime?
+  jobsFound   Int      @default(0)
+  jobsNew     Int      @default(0)
+  jobsUpdated Int      @default(0)
+  errors      String?  // JSON array of errors
+  status      ScrapingStatus @default(RUNNING)
+  
+  @@index([source])
+  @@index([startedAt])
+  @@index([status])
+}
+
+enum ScrapingStatus {
+  RUNNING
+  COMPLETED
+  FAILED
+  CANCELLED
 }
