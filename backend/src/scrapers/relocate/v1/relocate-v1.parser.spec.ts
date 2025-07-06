@@ -92,7 +92,7 @@ describe('RelocateV1Parser', () => {
     it('should return null if required fields are missing', () => {
       const dom = new JSDOM('<div class="job-card"></div>');
       const card = dom.window.document.querySelector('.job-card');
-      expect(parser.parseJobCard(card)).toBeNull();
+      expect(parser.parseJobCard(card!)).toBeNull();
     });
     it('should handle error in job card parsing gracefully', () => {
       expect(parser.parseJobCard(undefined as any)).toBeNull();

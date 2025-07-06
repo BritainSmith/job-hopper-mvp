@@ -95,18 +95,18 @@ export abstract class BaseScraper implements IScraper {
     throw new Error('Max retries exceeded');
   }
 
-  protected async parseHtml(html: string): Promise<Document> {
+  protected parseHtml(html: string): Document {
     const dom = new JSDOM(html);
     return dom.window.document;
   }
 
-  protected extractText(element: any, selector: string): string {
+  protected extractText(element: Element, selector: string): string {
     const found = element.querySelector(selector);
     return found?.textContent?.trim() || '';
   }
 
   protected extractAttribute(
-    element: any,
+    element: Element,
     selector: string,
     attribute: string,
   ): string {
@@ -114,7 +114,7 @@ export abstract class BaseScraper implements IScraper {
     return found?.getAttribute(attribute) || '';
   }
 
-  protected extractElements(element: any, selector: string): any[] {
+  protected extractElements(element: Element, selector: string): Element[] {
     const elements = element.querySelectorAll(selector);
     return Array.from(elements);
   }

@@ -1,11 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { Job } from '../../base/interfaces';
+import { Job, IJobParser } from '../../base/interfaces';
 import { RemoteOKV1Selectors } from './remoteok-v1.selectors';
 import { JSDOM } from 'jsdom';
 import { parseFlexibleDate } from '../../../common/utils/date.util';
 
 @Injectable()
-export class RemoteOKV1Parser {
+export class RemoteOKV1Parser implements IJobParser {
   private readonly logger = new Logger(RemoteOKV1Parser.name);
 
   parseJobs(html: string): Job[] {
@@ -33,7 +33,7 @@ export class RemoteOKV1Parser {
     }
   }
 
-  parseJobCard(card: any): Job | null {
+  parseJobCard(card: Element): Job | null {
     try {
       const title = this.extractText(card, RemoteOKV1Selectors.title);
       const company = this.extractText(card, RemoteOKV1Selectors.company);
@@ -76,13 +76,13 @@ export class RemoteOKV1Parser {
     }
   }
 
-  private extractText(element: any, selector: string): string {
+  private extractText(element: Element, selector: string): string {
     const found = element.querySelector(selector);
     return found?.textContent?.trim() || '';
   }
 
   private extractAttribute(
-    element: any,
+    element: Element,
     selector: string,
     attribute: string,
   ): string {
@@ -90,12 +90,12 @@ export class RemoteOKV1Parser {
     return found?.getAttribute(attribute) || '';
   }
 
-  private extractTags(card: any): string[] {
+  private extractTags(card: Element): string[] {
     try {
       const tagElements = card.querySelectorAll(RemoteOKV1Selectors.tags);
       return Array.from(tagElements)
-        .map((el: any) => el.textContent?.trim())
-        .filter(Boolean);
+        .map((el: Element) => el.textContent?.trim())
+        .filter((text): text is string => Boolean(text));
     } catch (error) {
       this.logger.warn('Failed to extract tags:', error);
       return [];
