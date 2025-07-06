@@ -1,12 +1,11 @@
-import * as core from '@nestjs/core';
-import * as common from '@nestjs/common';
-import * as swagger from '@nestjs/swagger';
+import 'reflect-metadata';
+import { NestFactory } from '@nestjs/core';
+import { Logger } from '@nestjs/common';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
-jest.mock('@nestjs/core');
-jest.mock('@nestjs/common');
-jest.mock('@nestjs/swagger');
-
-// Do not import main.ts at the top level!
+// Only mock local modules, not NestJS core
+jest.mock('./common/interceptors/logging.interceptor');
+jest.mock('./common/filters/error.filter');
 
 describe('bootstrap-app.ts', () => {
   it.skip('should bootstrap the NestJS app and set up global features', async () => {
@@ -19,43 +18,38 @@ describe('bootstrap-app.ts', () => {
       listen: jest.fn().mockResolvedValue(undefined),
     };
     const mockLogger = { log: jest.fn() };
-    const mockDocument = {};
+    const mockDocument = {
+      openapi: '3.0.0',
+      info: { title: 'Test API', version: '1.0.0' },
+      paths: {},
+    };
 
-    jest.spyOn(require('@nestjs/core'), 'NestFactory', 'get').mockReturnValue({
-      create: jest.fn().mockResolvedValue(mockApp),
+    // Spy on NestFactory.create
+    jest.spyOn(NestFactory, 'create').mockResolvedValue(mockApp as any);
+    // Spy on Logger
+    jest.spyOn(Logger.prototype, 'log').mockImplementation(mockLogger.log);
+    // Spy on DocumentBuilder
+    jest.spyOn(DocumentBuilder.prototype, 'setTitle').mockReturnThis();
+    jest.spyOn(DocumentBuilder.prototype, 'setDescription').mockReturnThis();
+    jest.spyOn(DocumentBuilder.prototype, 'setVersion').mockReturnThis();
+    jest.spyOn(DocumentBuilder.prototype, 'addTag').mockReturnThis();
+    jest.spyOn(DocumentBuilder.prototype, 'addServer').mockReturnThis();
+    jest.spyOn(DocumentBuilder.prototype, 'build').mockReturnValue({
+      openapi: '3.0.0',
+      info: { title: 'Test API', version: '1.0.0' },
     });
+    // Spy on SwaggerModule
     jest
-      .spyOn(require('@nestjs/common'), 'Logger')
-      .mockImplementation(() => mockLogger);
-    jest
-      .spyOn(require('@nestjs/common'), 'ValidationPipe')
-      .mockImplementation(() => ({}));
-    jest.mock('./common/interceptors/logging.interceptor', () => ({
-      LoggingInterceptor: jest.fn(),
-    }));
-    jest.mock('./common/filters/error.filter', () => ({
-      GlobalExceptionFilter: jest.fn(),
-    }));
-    const swagger = require('@nestjs/swagger');
-    jest.spyOn(swagger, 'DocumentBuilder').mockImplementation(() => ({
-      setTitle: jest.fn().mockReturnThis(),
-      setDescription: jest.fn().mockReturnThis(),
-      setVersion: jest.fn().mockReturnThis(),
-      addTag: jest.fn().mockReturnThis(),
-      addServer: jest.fn().mockReturnThis(),
-      build: jest.fn().mockReturnValue({}),
-    }));
-    jest
-      .spyOn(swagger.SwaggerModule, 'createDocument')
-      .mockReturnValue(mockDocument);
-    jest.spyOn(swagger.SwaggerModule, 'setup').mockReturnValue(undefined);
+      .spyOn(SwaggerModule, 'createDocument')
+      .mockReturnValue(mockDocument as any);
+    jest.spyOn(SwaggerModule, 'setup').mockReturnValue(undefined);
 
     // Import and call the bootstrap function
-    const { bootstrap } = require('./bootstrap-app');
+    const { bootstrap } = await import('./bootstrap-app');
     await bootstrap();
 
     // App creation
-    expect(require('@nestjs/core').NestFactory.create).toHaveBeenCalled();
+    expect(NestFactory.create).toHaveBeenCalled();
     // Global pipes
     expect(mockApp.useGlobalPipes).toHaveBeenCalled();
     // Global interceptors
@@ -63,12 +57,11 @@ describe('bootstrap-app.ts', () => {
     // Global filters
     expect(mockApp.useGlobalFilters).toHaveBeenCalled();
     // Swagger setup
-    expect(swagger.DocumentBuilder).toHaveBeenCalled();
-    expect(swagger.SwaggerModule.createDocument).toHaveBeenCalledWith(
+    expect(SwaggerModule.createDocument).toHaveBeenCalledWith(
       mockApp,
       expect.any(Object),
     );
-    expect(swagger.SwaggerModule.setup).toHaveBeenCalledWith(
+    expect(SwaggerModule.setup).toHaveBeenCalledWith(
       'api',
       mockApp,
       mockDocument,

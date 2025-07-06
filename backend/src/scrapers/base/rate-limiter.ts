@@ -19,10 +19,10 @@ export class RateLimiter {
           const result = await request();
           resolve(result);
         } catch (error) {
-          reject(error);
+          reject(error instanceof Error ? error : new Error(String(error)));
         }
       });
-      this.process();
+      void this.process();
     });
   }
 

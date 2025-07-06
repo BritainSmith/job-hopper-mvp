@@ -84,7 +84,7 @@ function parseGermanDate(dateString: string): Date | null {
     }
 
     return null;
-  } catch (error) {
+  } catch {
     return null;
   }
 }

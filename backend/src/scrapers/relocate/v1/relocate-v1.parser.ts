@@ -1,11 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { Job } from '../../base/interfaces';
+import { Job, IJobParser } from '../../base/interfaces';
 import { RelocateV1Selectors } from './relocate-v1.selectors';
 import { JSDOM } from 'jsdom';
 import { parseFlexibleDate } from '../../../common/utils/date.util';
 
 @Injectable()
-export class RelocateV1Parser {
+export class RelocateV1Parser implements IJobParser {
   private readonly logger = new Logger(RelocateV1Parser.name);
 
   parseJobs(html: string): Job[] {
@@ -33,7 +33,7 @@ export class RelocateV1Parser {
     }
   }
 
-  parseJobCard(card: any): Job | null {
+  parseJobCard(card: Element): Job | null {
     try {
       const title = this.extractText(card, RelocateV1Selectors.title);
       const company = this.extractText(card, RelocateV1Selectors.company);
@@ -92,13 +92,14 @@ export class RelocateV1Parser {
     }
   }
 
-  private extractText(element: any, selector: string): string {
+  private extractText(element: Element, selector: string): string {
     const found = element.querySelector(selector);
-    return found?.textContent?.trim() || '';
+    const result = found?.textContent?.trim() || '';
+    return result;
   }
 
   private extractAttribute(
-    element: any,
+    element: Element,
     selector: string,
     attribute: string,
   ): string {
@@ -106,19 +107,19 @@ export class RelocateV1Parser {
     return found?.getAttribute(attribute) || '';
   }
 
-  private extractTags(card: any): string[] {
+  private extractTags(card: Element): string[] {
     try {
       const tagElements = card.querySelectorAll(RelocateV1Selectors.tags);
       return Array.from(tagElements)
-        .map((el: any) => el.textContent?.trim())
-        .filter(Boolean);
+        .map((el: Element) => el.textContent?.trim())
+        .filter((text): text is string => Boolean(text));
     } catch (error) {
       this.logger.warn('Failed to extract Relocate.me tags:', error);
       return [];
     }
   }
 
-  private extractBenefits(card: any): string[] {
+  private extractBenefits(card: Element): string[] {
     try {
       const benefitElements = card.querySelectorAll(
         RelocateV1Selectors.benefits,
@@ -126,11 +127,11 @@ export class RelocateV1Parser {
       const perkElements = card.querySelectorAll(RelocateV1Selectors.perks);
 
       const benefits = Array.from(benefitElements)
-        .map((el: any) => el.textContent?.trim())
-        .filter(Boolean);
+        .map((el: Element) => el.textContent?.trim())
+        .filter((text): text is string => Boolean(text));
       const perks = Array.from(perkElements)
-        .map((el: any) => el.textContent?.trim())
-        .filter(Boolean);
+        .map((el: Element) => el.textContent?.trim())
+        .filter((text): text is string => Boolean(text));
 
       return [...benefits, ...perks];
     } catch (error) {
@@ -139,7 +140,7 @@ export class RelocateV1Parser {
     }
   }
 
-  private extractJobType(card: any): string {
+  private extractJobType(card: Element): string {
     try {
       // Check for job type indicators
       if (card.querySelector(RelocateV1Selectors.remote)) {
@@ -165,7 +166,7 @@ export class RelocateV1Parser {
     }
   }
 
-  private extractRelocationFeatures(card: any): string[] {
+  private extractRelocationFeatures(card: Element): string[] {
     try {
       const features: string[] = [];
 

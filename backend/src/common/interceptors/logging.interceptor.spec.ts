@@ -2,6 +2,7 @@ import { LoggingInterceptor } from './logging.interceptor';
 import { ExecutionContext, CallHandler } from '@nestjs/common';
 import { of, throwError } from 'rxjs';
 
+/* eslint-disable @typescript-eslint/no-unsafe-return */
 describe('LoggingInterceptor', () => {
   let interceptor: LoggingInterceptor;
   let mockContext: ExecutionContext;
@@ -43,7 +44,9 @@ describe('LoggingInterceptor', () => {
 
   describe('intercept', () => {
     it('should log incoming request and successful response', (done) => {
-      const loggerSpy = jest.spyOn(interceptor['logger'], 'log');
+      const loggerSpy = jest
+        .spyOn(interceptor['logger'], 'log')
+        .mockImplementation(() => {});
       const responseData = { message: 'Success' };
 
       mockCallHandler.handle = jest.fn().mockReturnValue(of(responseData));
@@ -79,7 +82,9 @@ describe('LoggingInterceptor', () => {
     });
 
     it('should log incoming request and error response', (done) => {
-      const loggerSpy = jest.spyOn(interceptor['logger'], 'error');
+      const loggerSpy = jest
+        .spyOn(interceptor['logger'], 'error')
+        .mockImplementation(() => {});
       const error = new Error('Test error');
       error.stack = 'Error stack trace';
 
@@ -109,7 +114,9 @@ describe('LoggingInterceptor', () => {
     });
 
     it('should handle request without user-agent header', (done) => {
-      const loggerSpy = jest.spyOn(interceptor['logger'], 'log');
+      const loggerSpy = jest
+        .spyOn(interceptor['logger'], 'log')
+        .mockImplementation(() => {});
       mockRequest.headers = {};
 
       mockCallHandler.handle = jest.fn().mockReturnValue(of({}));
@@ -132,7 +139,9 @@ describe('LoggingInterceptor', () => {
     });
 
     it('should calculate duration for successful request', (done) => {
-      const loggerSpy = jest.spyOn(interceptor['logger'], 'log');
+      const loggerSpy = jest
+        .spyOn(interceptor['logger'], 'log')
+        .mockImplementation(() => {});
 
       mockCallHandler.handle = jest.fn().mockReturnValue(of({}));
 
@@ -154,7 +163,9 @@ describe('LoggingInterceptor', () => {
     });
 
     it('should calculate duration for failed request', (done) => {
-      const loggerSpy = jest.spyOn(interceptor['logger'], 'error');
+      const loggerSpy = jest
+        .spyOn(interceptor['logger'], 'error')
+        .mockImplementation(() => {});
 
       const error = new Error('Test error');
       mockCallHandler.handle = jest
@@ -180,7 +191,9 @@ describe('LoggingInterceptor', () => {
     });
 
     it('should handle different HTTP methods', (done) => {
-      const loggerSpy = jest.spyOn(interceptor['logger'], 'log');
+      const loggerSpy = jest
+        .spyOn(interceptor['logger'], 'log')
+        .mockImplementation(() => {});
       mockRequest.method = 'POST';
       mockRequest.url = '/api/users';
 
@@ -204,7 +217,9 @@ describe('LoggingInterceptor', () => {
     });
 
     it('should handle different response status codes', (done) => {
-      const loggerSpy = jest.spyOn(interceptor['logger'], 'log');
+      const loggerSpy = jest
+        .spyOn(interceptor['logger'], 'log')
+        .mockImplementation(() => {});
       mockResponse.statusCode = 201;
 
       mockCallHandler.handle = jest.fn().mockReturnValue(of({}));
@@ -227,13 +242,16 @@ describe('LoggingInterceptor', () => {
     });
 
     it('should generate valid ISO timestamps', (done) => {
-      const loggerSpy = jest.spyOn(interceptor['logger'], 'log');
+      const loggerSpy = jest
+        .spyOn(interceptor['logger'], 'log')
+        .mockImplementation(() => {});
 
       mockCallHandler.handle = jest.fn().mockReturnValue(of({}));
 
       interceptor.intercept(mockContext, mockCallHandler).subscribe({
         next: () => {
           const requestLog = loggerSpy.mock.calls[0][0];
+
           const responseLog = loggerSpy.mock.calls[1][0];
 
           // Verify timestamps are valid ISO strings
@@ -251,7 +269,9 @@ describe('LoggingInterceptor', () => {
     });
 
     it('should handle error without stack trace', (done) => {
-      const loggerSpy = jest.spyOn(interceptor['logger'], 'error');
+      const loggerSpy = jest
+        .spyOn(interceptor['logger'], 'error')
+        .mockImplementation(() => {});
       const error = new Error('Test error');
       delete error.stack;
 

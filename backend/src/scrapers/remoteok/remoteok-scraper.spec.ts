@@ -1,7 +1,7 @@
+/* eslint-disable @typescript-eslint/no-unsafe-return */
 import { Test, TestingModule } from '@nestjs/testing';
 import { Logger } from '@nestjs/common';
 import { RemoteOKScraper } from './remoteok-scraper';
-import { RemoteOKV1Parser } from './v1/remoteok-v1.parser';
 import { Job, ScrapingOptions } from '../base/interfaces';
 
 // Mock the base scraper's makeRequest method
@@ -20,7 +20,7 @@ jest.mock('../base/base-scraper.abstract', () => {
         version: 'unknown',
       };
 
-      protected async makeRequest(url: string): Promise<Response> {
+      protected async makeRequest(): Promise<Response> {
         // Mock implementation
         return Promise.resolve({
           ok: true,
@@ -30,7 +30,7 @@ jest.mock('../base/base-scraper.abstract', () => {
         } as Response);
       }
 
-      protected async sleep(ms: number): Promise<void> {
+      protected async sleep(): Promise<void> {
         return Promise.resolve();
       }
 
@@ -145,7 +145,8 @@ describe('RemoteOKScraper', () => {
       mockParser.parseJobs.mockReturnValue(mockJobs);
       mockParser.hasNextPage.mockReturnValue(false);
 
-      const jobs = await scraper.scrapeJobs({ maxJobs: 1 });
+      const options: ScrapingOptions = { maxJobs: 1 };
+      const jobs = await scraper.scrapeJobs(options);
 
       expect(jobs).toHaveLength(1);
       expect(jobs[0].title).toBe('Senior Developer');
@@ -159,7 +160,8 @@ describe('RemoteOKScraper', () => {
         .mockReturnValueOnce(true)
         .mockReturnValueOnce(false);
 
-      const jobs = await scraper.scrapeJobs({ maxPages: 2 });
+      const options: ScrapingOptions = { maxPages: 2 };
+      const jobs = await scraper.scrapeJobs(options);
 
       expect(jobs).toHaveLength(2);
       expect(mockParser.parseJobs).toHaveBeenCalledTimes(2);
@@ -426,8 +428,6 @@ describe('RemoteOKScraper', () => {
   describe('error handling and logging', () => {
     it('should log appropriate messages during scraping', async () => {
       const logSpy = jest.spyOn(scraper['logger'], 'log');
-      const warnSpy = jest.spyOn(scraper['logger'], 'warn');
-      const errorSpy = jest.spyOn(scraper['logger'], 'error');
 
       mockParser.parseJobs.mockReturnValue(mockJobs);
       mockParser.hasNextPage.mockReturnValue(false);
@@ -444,7 +444,6 @@ describe('RemoteOKScraper', () => {
 
     it('should handle and log errors appropriately', async () => {
       const errorSpy = jest.spyOn(scraper['logger'], 'error');
-      const warnSpy = jest.spyOn(scraper['logger'], 'warn');
 
       jest
         .spyOn(scraper as any, 'makeRequest')

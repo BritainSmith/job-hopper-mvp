@@ -97,7 +97,7 @@ describe('RelocateScraper', () => {
         ok: true,
         text: () => Promise.resolve(mockHtml),
       });
-      const result = await scraper.scrapeJobs({ maxPages: 2 });
+      await scraper.scrapeJobs({ maxPages: 2 });
       expect(mockParser.parseJobs).toHaveBeenCalledTimes(2);
     });
 

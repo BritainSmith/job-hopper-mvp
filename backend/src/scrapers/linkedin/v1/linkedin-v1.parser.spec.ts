@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { LinkedInV1Parser } from './linkedin-v1.parser';
-import { Job } from '../../base/interfaces';
+import { JSDOM } from 'jsdom';
 
 describe('LinkedInV1Parser', () => {
   let parser: LinkedInV1Parser;
@@ -312,6 +312,14 @@ describe('LinkedInV1Parser', () => {
       expect(job.location).toBe('Remote');
       expect(job.salary).toBe('');
       expect(job.tags).toEqual([]);
+    });
+  });
+
+  describe('parseJobCard', () => {
+    it('should return null if required fields are missing', () => {
+      const dom = new JSDOM('<div class="job-search-card"></div>');
+      const card = dom.window.document.querySelector('.job-search-card');
+      expect(parser.parseJobCard(card!)).toBeNull();
     });
   });
 });

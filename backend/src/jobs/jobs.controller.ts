@@ -19,7 +19,6 @@ import { JobService } from '../services/job.service';
 import {
   JobDto,
   CreateJobDto,
-  UpdateJobDto,
   JobQueryDto,
   ScrapeJobsDto,
   JobStatsDto,
