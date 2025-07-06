@@ -72,7 +72,6 @@ export class JobDeduplicationService {
     jobData: Prisma.JobCreateInput,
     options: DeduplicationOptions = {},
   ): Promise<DeduplicationResult> {
-    const startTime = Date.now();
     const config = { ...this.DEFAULT_OPTIONS, ...options };
 
     try {
@@ -99,7 +98,7 @@ export class JobDeduplicationService {
       }
 
       // Calculate similarity scores
-      const similarityScores = await this.calculateSimilarityScores(
+      const similarityScores = this.calculateSimilarityScores(
         jobData,
         potentialDuplicates,
         config,
@@ -185,7 +184,7 @@ export class JobDeduplicationService {
 
     stats.averageSimilarityScore =
       processedCount > 0 ? totalSimilarityScore / processedCount : 0;
-    
+
     // Ensure minimum processing time for accurate measurement
     const elapsedTime = Date.now() - startTime;
     stats.processingTimeMs = Math.max(elapsedTime, 1);
@@ -211,7 +210,7 @@ export class JobDeduplicationService {
       });
       // Filter to exact apply link matches
       const exactLinkMatches = linkMatches.filter(
-        job => job.applyLink === jobData.applyLink,
+        (job) => job.applyLink === jobData.applyLink,
       );
       duplicates.push(...exactLinkMatches);
     }
@@ -224,7 +223,7 @@ export class JobDeduplicationService {
       });
       // Filter to exact title matches
       const exactTitleMatches = titleCompanyMatches.filter(
-        job => job.title === jobData.title,
+        (job) => job.title === jobData.title,
       );
       duplicates.push(...exactTitleMatches);
     }
@@ -248,11 +247,11 @@ export class JobDeduplicationService {
   /**
    * Calculate similarity scores between jobs
    */
-  private async calculateSimilarityScores(
+  private calculateSimilarityScores(
     jobData: Prisma.JobCreateInput,
     potentialDuplicates: PrismaJob[],
     config: Required<DeduplicationOptions>,
-  ): Promise<JobSimilarityScore[]> {
+  ): JobSimilarityScore[] {
     const scores: JobSimilarityScore[] = [];
 
     for (const existingJob of potentialDuplicates) {
@@ -352,7 +351,7 @@ export class JobDeduplicationService {
     // Word-based similarity
     const words1 = s1.split(/\s+/);
     const words2 = s2.split(/\s+/);
-    const commonWords = words1.filter(word => words2.includes(word));
+    const commonWords = words1.filter((word) => words2.includes(word));
     const totalWords = Math.max(words1.length, words2.length);
 
     return totalWords > 0 ? commonWords.length / totalWords : 0;
@@ -380,8 +379,10 @@ export class JobDeduplicationService {
 
     // One remote, one specific
     if (
-      (l1.includes('remote') || l1 === 'remote') ||
-      (l2.includes('remote') || l2 === 'remote')
+      l1.includes('remote') ||
+      l1 === 'remote' ||
+      l2.includes('remote') ||
+      l2 === 'remote'
     ) {
       return 0.3; // Lower similarity for remote vs specific
     }
@@ -389,7 +390,7 @@ export class JobDeduplicationService {
     // Both specific locations - check for city/state matches
     const words1 = l1.split(/[,\s]+/);
     const words2 = l2.split(/[,\s]+/);
-    const commonWords = words1.filter(word => words2.includes(word));
+    const commonWords = words1.filter((word) => words2.includes(word));
 
     return commonWords.length > 0 ? 0.7 : 0.1;
   }
@@ -437,7 +438,7 @@ export class JobDeduplicationService {
    */
   private removeDuplicateJobs(jobs: PrismaJob[]): PrismaJob[] {
     const seen = new Set<number>();
-    return jobs.filter(job => {
+    return jobs.filter((job) => {
       if (seen.has(job.id)) {
         return false;
       }
@@ -561,7 +562,7 @@ export class JobDeduplicationService {
       }
 
       const groupsWithDuplicates = Array.from(duplicateGroups.values()).filter(
-        count => count > 1,
+        (count) => count > 1,
       ).length;
 
       return {
@@ -575,4 +576,4 @@ export class JobDeduplicationService {
       throw new Error('Failed to get deduplication statistics');
     }
   }
-} 
+}
