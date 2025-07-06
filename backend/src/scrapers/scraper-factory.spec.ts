@@ -4,7 +4,14 @@ import { RemoteOKScraper } from './remoteok/remoteok-scraper';
 import { LinkedInScraper } from './linkedin/linkedin-scraper';
 import { ArbeitnowScraper } from './arbeitnow/arbeitnow-scraper';
 import { RelocateScraper } from './relocate/relocate-scraper';
-import { Job } from './base/interfaces';
+import { Job, IScraper } from './base/interfaces';
+
+// Mock interface for testing
+interface MockScraper extends Partial<IScraper> {
+  name: string;
+  scrapeJobs: jest.MockedFunction<IScraper['scrapeJobs']>;
+  isHealthy: jest.MockedFunction<IScraper['isHealthy']>;
+}
 
 describe('ScraperFactory', () => {
   let factory: ScraperFactory;
@@ -93,13 +100,13 @@ describe('ScraperFactory', () => {
 
   describe('scraping operations', () => {
     it('should scrape from specific scraper', async () => {
-      const mockScraper = {
+      const mockScraper: MockScraper = {
         name: 'test',
         scrapeJobs: jest.fn().mockResolvedValue([mockJob]),
         isHealthy: jest.fn().mockResolvedValue(true),
       };
 
-      factory.registerScraper('test', mockScraper as any);
+      factory.registerScraper('test', mockScraper as IScraper);
 
       const jobs = await factory.scrapeSpecific(['test']);
 
@@ -110,32 +117,32 @@ describe('ScraperFactory', () => {
 
     it('should scrape from all enabled scrapers', async () => {
       // Mock the actual scrapers to avoid real HTTP calls
-      const mockRemoteOKScraper = {
+      const mockRemoteOKScraper: MockScraper = {
         name: 'RemoteOK',
         scrapeJobs: jest.fn().mockResolvedValue([mockJob]),
         isHealthy: jest.fn().mockResolvedValue(true),
       };
-      const mockLinkedInScraper = {
+      const mockLinkedInScraper: MockScraper = {
         name: 'LinkedIn',
         scrapeJobs: jest.fn().mockResolvedValue([mockJob]),
         isHealthy: jest.fn().mockResolvedValue(true),
       };
-      const mockArbeitnowScraper = {
+      const mockArbeitnowScraper: MockScraper = {
         name: 'Arbeitnow',
         scrapeJobs: jest.fn().mockResolvedValue([mockJob]),
         isHealthy: jest.fn().mockResolvedValue(true),
       };
-      const mockRelocateScraper = {
+      const mockRelocateScraper: MockScraper = {
         name: 'Relocate.me',
         scrapeJobs: jest.fn().mockResolvedValue([mockJob]),
         isHealthy: jest.fn().mockResolvedValue(true),
       };
 
       // Replace the real scrapers with mocks
-      factory.registerScraper('remoteok', mockRemoteOKScraper as any);
-      factory.registerScraper('linkedin', mockLinkedInScraper as any);
-      factory.registerScraper('arbeitnow', mockArbeitnowScraper as any);
-      factory.registerScraper('relocate', mockRelocateScraper as any);
+      factory.registerScraper('remoteok', mockRemoteOKScraper as IScraper);
+      factory.registerScraper('linkedin', mockLinkedInScraper as IScraper);
+      factory.registerScraper('arbeitnow', mockArbeitnowScraper as IScraper);
+      factory.registerScraper('relocate', mockRelocateScraper as IScraper);
 
       const jobs = await factory.scrapeAll();
 
@@ -147,13 +154,13 @@ describe('ScraperFactory', () => {
     });
 
     it('should handle scraper failures gracefully', async () => {
-      const mockScraper = {
+      const mockScraper: MockScraper = {
         name: 'failing',
         scrapeJobs: jest.fn().mockRejectedValue(new Error('Scraping failed')),
         isHealthy: jest.fn().mockResolvedValue(true),
       };
 
-      factory.registerScraper('failing', mockScraper as any);
+      factory.registerScraper('failing', mockScraper as IScraper);
 
       const jobs = await factory.scrapeSpecific(['failing']);
 
@@ -286,7 +293,7 @@ describe('ScraperFactory', () => {
 
   describe('error handling', () => {
     it('should handle scraper registration errors', () => {
-      expect(() => factory.registerScraper('', {} as any)).not.toThrow();
+      expect(() => factory.registerScraper('', {} as IScraper)).not.toThrow();
     });
 
     it('should handle configuration retrieval for unknown scraper', () => {
@@ -295,14 +302,15 @@ describe('ScraperFactory', () => {
     });
 
     it('should handle health check errors gracefully', async () => {
-      const mockScraper = {
+      const mockScraper: MockScraper = {
         name: 'error',
+        scrapeJobs: jest.fn().mockResolvedValue([]),
         isHealthy: jest
           .fn()
           .mockRejectedValue(new Error('Health check failed')),
       };
 
-      factory.registerScraper('error', mockScraper as any);
+      factory.registerScraper('error', mockScraper as IScraper);
 
       const health = await factory.checkAllScrapersHealth();
       expect(health.error).toBe(false);

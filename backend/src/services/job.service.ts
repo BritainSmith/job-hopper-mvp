@@ -4,10 +4,13 @@ import {
   JobFilter,
   PaginationOptions,
 } from '../repositories/job.repository';
-import { Job, JobStatus, Prisma } from '@prisma/client';
+import { Job as PrismaJob, JobStatus, Prisma } from '@prisma/client';
 import { ScraperFactory } from '../scrapers/scraper-factory';
 import { LoggingService } from '../common/services/logging.service';
-import { ScrapingOptions } from '../scrapers/base/interfaces';
+import {
+  ScrapingOptions,
+  Job as ScrapedJob,
+} from '../scrapers/base/interfaces';
 
 // Service Types
 export interface JobSearchOptions {
@@ -31,6 +34,16 @@ export interface JobStats {
   byLocation: Record<string, number>;
 }
 
+// Type for job data that can be used for search text generation
+export interface JobDataForSearch {
+  title?: string | null;
+  company?: string | null;
+  location?: string | null;
+  tags?: string | string[] | null;
+  salary?: string | null;
+  postedDate?: string | Date | null;
+}
+
 @Injectable()
 export class JobService {
   private readonly logger = new Logger(JobService.name);
@@ -43,10 +56,10 @@ export class JobService {
 
   // --- CRUD Operations ---
 
-  async createJob(jobData: Prisma.JobCreateInput): Promise<Job> {
+  async createJob(jobData: Prisma.JobCreateInput): Promise<PrismaJob> {
     try {
       // Add searchable text for better search
-      const searchText = this.generateSearchText(jobData);
+      const searchText = this.generateSearchText(jobData as JobDataForSearch);
       const jobWithSearch = { ...jobData, searchText };
 
       return await this.jobRepository.createJob(jobWithSearch);
@@ -56,7 +69,7 @@ export class JobService {
     }
   }
 
-  async getJobById(id: number): Promise<Job | null> {
+  async getJobById(id: number): Promise<PrismaJob | null> {
     try {
       return await this.jobRepository.getJobById(id);
     } catch (error) {
@@ -65,14 +78,19 @@ export class JobService {
     }
   }
 
-  async updateJob(id: number, updateData: Prisma.JobUpdateInput): Promise<Job> {
+  async updateJob(
+    id: number,
+    updateData: Prisma.JobUpdateInput,
+  ): Promise<PrismaJob> {
     try {
       // Update search text if relevant fields changed
       if (updateData.title || updateData.company || updateData.tags) {
         const existingJob = await this.jobRepository.getJobById(id);
         if (existingJob) {
           const updatedData = { ...existingJob, ...updateData };
-          updateData.searchText = this.generateSearchText(updatedData);
+          updateData.searchText = this.generateSearchText(
+            updatedData as JobDataForSearch,
+          );
         }
       }
 
@@ -83,7 +101,7 @@ export class JobService {
     }
   }
 
-  async deleteJob(id: number): Promise<Job> {
+  async deleteJob(id: number): Promise<PrismaJob> {
     try {
       return await this.jobRepository.deleteJob(id);
     } catch (error) {
@@ -94,7 +112,7 @@ export class JobService {
 
   // --- Search and Filtering ---
 
-  async searchJobs(options: JobSearchOptions): Promise<Job[]> {
+  async searchJobs(options: JobSearchOptions): Promise<PrismaJob[]> {
     try {
       const { query, filters = {}, pagination = {} } = options;
 
@@ -122,21 +140,21 @@ export class JobService {
   async getJobsByStatus(
     status: JobStatus,
     pagination?: PaginationOptions,
-  ): Promise<Job[]> {
+  ): Promise<PrismaJob[]> {
     return this.searchJobs({
       filters: { status },
       pagination,
     });
   }
 
-  async getAppliedJobs(pagination?: PaginationOptions): Promise<Job[]> {
+  async getAppliedJobs(pagination?: PaginationOptions): Promise<PrismaJob[]> {
     return this.searchJobs({
       filters: { applied: true },
       pagination,
     });
   }
 
-  async getActiveJobs(pagination?: PaginationOptions): Promise<Job[]> {
+  async getActiveJobs(pagination?: PaginationOptions): Promise<PrismaJob[]> {
     return this.searchJobs({
       filters: { status: 'ACTIVE' },
       pagination,
@@ -148,7 +166,7 @@ export class JobService {
   async applyToJob(
     id: number,
     applicationData?: JobApplicationData,
-  ): Promise<Job> {
+  ): Promise<PrismaJob> {
     try {
       const updateData: Prisma.JobUpdateInput = {
         applied: true,
@@ -166,8 +184,7 @@ export class JobService {
   async updateApplicationStatus(
     id: number,
     status: JobStatus,
-    notes?: string,
-  ): Promise<Job> {
+  ): Promise<PrismaJob> {
     try {
       const updateData: Prisma.JobUpdateInput = {
         status,
@@ -199,7 +216,7 @@ export class JobService {
         options,
       });
 
-      let scrapedJobs: any[] = [];
+      let scrapedJobs: ScrapedJob[] = [];
 
       // Use the scraper factory to get the appropriate scraper
       if (source.toLowerCase() === 'all') {
@@ -324,7 +341,7 @@ export class JobService {
 
   // --- Utility Methods ---
 
-  private generateSearchText(jobData: any): string {
+  private generateSearchText(jobData: JobDataForSearch): string {
     const searchableFields = [
       jobData.title,
       jobData.company,
@@ -337,7 +354,9 @@ export class JobService {
     return searchableFields.join(' ').toLowerCase();
   }
 
-  async findDuplicateJobs(jobData: Prisma.JobCreateInput): Promise<Job[]> {
+  async findDuplicateJobs(
+    jobData: Prisma.JobCreateInput,
+  ): Promise<PrismaJob[]> {
     try {
       // Look for jobs with the same apply link or similar title/company
       const filters: JobFilter = {

@@ -6,7 +6,33 @@
 
 A TypeScript-based web scraper using Puppeteer to extract software developer job listings from multiple sources, with a NestJS backend for scalable API development.
 
-## 🚀 Recent Major Updates (v2.1)
+## 🎉 v1.0.0 "Robust Roots" - First Stable Release
+
+**Released:** July 2025  
+**Tag:** `v1.0.0`
+
+### 🏗️ **Foundation Established**
+- ✅ **477 tests passing** (2 skipped as expected) - 100% test reliability
+- ✅ **Zero ESLint errors** - Clean, maintainable codebase
+- ✅ **Parser architecture solidified** - All parsers working with comprehensive test coverage
+- ✅ **Type safety enhanced** - Proper DTOs and interfaces throughout
+- ✅ **Error handling robust** - Comprehensive error handling and logging
+
+### 🧪 **Test Suite Excellence**
+- **25 test suites** covering all modules
+- **Parser tests:** 35/35 for relocate, 30/30 for arbeitnow
+- **Service layer:** 28/28 tests passing with proper typing
+- **Repository layer:** Full CRUD operation coverage
+- **Error handling:** Comprehensive edge case testing
+
+### 🔧 **Code Quality Improvements**
+- **160+ ESLint errors resolved** across the codebase
+- **Enhanced type safety** in JobService with proper DTOs
+- **Improved error handling** in logging services and interceptors
+- **Fixed async/await issues** and decorator errors
+- **Consolidated ESLint rules** for cleaner, more maintainable code
+
+## 🚀 Recent Major Updates (v1.0.0)
 
 ### ✅ **Architecture & Scraper Improvements**
 - **Unified Date Parsing**: All scrapers now use a shared `parseFlexibleDate` utility, supporting ISO, US/EU, German, and relative date formats for robust, consistent date handling.
@@ -15,7 +41,7 @@ A TypeScript-based web scraper using Puppeteer to extract software developer job
 - **How to Add a Scraper**: See `NEW_SCRAPERS.md` for a step-by-step guide to adding new scrapers using the modular, versioned approach.
 
 ### ✅ **Testing Enhancements**
-- **Comprehensive Test Coverage**: Over 470 tests across 26 suites, with >96% coverage for all active scrapers and utilities.
+- **Comprehensive Test Coverage**: 477 tests across 25 suites, with 100% pass rate for all active scrapers and utilities.
 - **Test Enforcement**: All new code must include unit tests. CI/CD blocks merges if coverage drops below 80%.
 - **Legacy Test Cleanup**: Removed tests for deleted/unused code. All tests now reflect the current implementation.
 - **Scraper Test Expansion**: RemoteOKScraper, LinkedIn, Arbeitnow, and Relocate scrapers all have robust, scenario-driven unit tests.

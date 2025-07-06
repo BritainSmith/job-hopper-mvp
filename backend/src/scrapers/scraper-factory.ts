@@ -186,9 +186,7 @@ export class ScraperFactory {
     const metrics: Record<string, ScrapingMetrics> = {};
 
     for (const scraper of this.getAllScrapers()) {
-      if ('getMetrics' in scraper) {
-        metrics[scraper.name] = (scraper as any).getMetrics();
-      }
+      metrics[scraper.name] = scraper.getMetrics();
     }
 
     return metrics;

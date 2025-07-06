@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { Job, Prisma } from '@prisma/client';
+import { Job, JobStatus, Prisma } from '@prisma/client';
 
 // Type Definitions
 export type JobCreateInput = Prisma.JobCreateInput;
@@ -9,7 +9,7 @@ export type JobUpdateInput = Prisma.JobUpdateInput;
 export interface JobFilter {
   company?: string;
   location?: string;
-  status?: string;
+  status?: JobStatus;
   applied?: boolean;
   source?: string;
   tags?: string[];
@@ -44,7 +44,7 @@ export class JobRepository {
     const where: Prisma.JobWhereInput = {
       company: filter.company,
       location: filter.location,
-      status: filter.status as any,
+      status: filter.status,
       applied: filter.applied,
       source: filter.source,
       tags: filter.tags ? { contains: filter.tags.join(',') } : undefined,

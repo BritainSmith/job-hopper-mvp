@@ -1,19 +1,19 @@
-import { utilities as nestWinstonModuleUtilities } from 'nest-winston';
 import * as winston from 'winston';
 import { ConfigService } from '@nestjs/config';
+import type { TransformableInfo } from 'logform';
 
 export const createLoggerConfig = (configService: ConfigService) => {
-  const isDevelopment = configService.get('NODE_ENV') === 'development';
-  const logLevel = configService.get('LOG_LEVEL', 'info');
+  const isDevelopment = configService.get<string>('NODE_ENV') === 'development';
+  const logLevel = configService.get<string>('LOG_LEVEL', 'info');
 
   // Define log format
   const logFormat = winston.format.combine(
     winston.format.timestamp(),
     winston.format.errors({ stack: true }),
     winston.format.json(),
-    winston.format.printf((info: any) => {
+    winston.format.printf((info: TransformableInfo) => {
       const { timestamp, level, message, stack, ...meta } = info;
-      const logEntry: any = {
+      const logEntry: TransformableInfo = {
         timestamp,
         level,
         message,
@@ -33,12 +33,15 @@ export const createLoggerConfig = (configService: ConfigService) => {
     format: winston.format.combine(
       winston.format.colorize(),
       winston.format.timestamp(),
-      winston.format.printf(({ timestamp, level, message, stack, ...meta }) => {
+      winston.format.printf((info: TransformableInfo) => {
+        const { timestamp, level, message, stack, ...meta } = info;
         const metaStr = Object.keys(meta).length
           ? JSON.stringify(meta, null, 2)
           : '';
-        const stackStr = stack ? `\n${stack}` : '';
-        return `${timestamp} [${level}]: ${message}${metaStr}${stackStr}`;
+        const stackStr = stack
+          ? `\n${typeof stack === 'string' ? stack : JSON.stringify(stack)}`
+          : '';
+        return `${String(timestamp)} [${String(level)}]: ${String(message)}${metaStr}${stackStr}`;
       }),
     ),
   });
@@ -96,15 +99,16 @@ export const createServiceLogger = (serviceName: string) => {
         format: winston.format.combine(
           winston.format.colorize(),
           winston.format.timestamp(),
-          winston.format.printf(
-            ({ timestamp, level, message, service, stack, ...meta }) => {
-              const metaStr = Object.keys(meta).length
-                ? JSON.stringify(meta, null, 2)
-                : '';
-              const stackStr = stack ? `\n${stack}` : '';
-              return `${timestamp} [${level}] [${service}]: ${message}${metaStr}${stackStr}`;
-            },
-          ),
+          winston.format.printf((info: TransformableInfo) => {
+            const { timestamp, level, message, service, stack, ...meta } = info;
+            const metaStr = Object.keys(meta).length
+              ? JSON.stringify(meta, null, 2)
+              : '';
+            const stackStr = stack
+              ? `\n${typeof stack === 'string' ? stack : JSON.stringify(stack)}`
+              : '';
+            return `${String(timestamp)} [${String(level)}] [${String(service)}]: ${String(message)}${metaStr}${stackStr}`;
+          }),
         ),
       }),
       new winston.transports.File({

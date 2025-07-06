@@ -1,5 +1,3 @@
-import { Logger } from '@nestjs/common';
-
 // Global test setup
 beforeAll(() => {
   // Suppress console logs during tests unless explicitly needed

@@ -6,6 +6,37 @@ export interface IScraper {
   scrapeJobs(options?: ScrapingOptions): Promise<Job[]>;
   isHealthy(): Promise<boolean>;
   getRateLimit(): RateLimitConfig;
+  getMetrics(): ScrapingMetrics;
+}
+
+export interface IJobParser {
+  /**
+   * Parse HTML content and extract job listings
+   * @param html - Raw HTML string from the job board
+   * @returns Array of parsed Job objects
+   */
+  parseJobs(html: string): Job[];
+
+  /**
+   * Parse a single job card element
+   * @param card - DOM element representing a job card
+   * @returns Parsed Job object or null if parsing fails
+   */
+  parseJobCard(card: Element): Job | null;
+
+  /**
+   * Check if there are more pages to scrape (optional)
+   * @param html - Raw HTML string from the current page
+   * @returns true if there are more pages, false otherwise
+   */
+  hasNextPage?(html: string): boolean;
+
+  /**
+   * Get the current page number (optional)
+   * @param html - Raw HTML string from the current page
+   * @returns Current page number, defaults to 1
+   */
+  getCurrentPage?(html: string): number;
 }
 
 export interface RateLimitConfig {

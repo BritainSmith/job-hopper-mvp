@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-return */
 import { ConfigService } from '@nestjs/config';
 import * as winston from 'winston';
 import { createLoggerConfig, createServiceLogger } from './logger.config';

@@ -7,13 +7,13 @@ export class LoggingService {
   private generateTimestamp(): string {
     try {
       return new Date().toISOString();
-    } catch (error) {
+    } catch {
       // Fallback in case Date operations fail
       return new Date().toString();
     }
   }
 
-  private sanitizeContext(context: any): any {
+  private sanitizeContext(context: unknown): unknown {
     if (context === null || context === undefined) {
       return undefined;
     }
@@ -23,14 +23,14 @@ export class LoggingService {
       JSON.stringify(context);
       return context;
     } catch (error) {
-      // If serialization fails, return a safe representation
-      return {
-        error: 'Context contains circular references or non-serializable data',
-      };
+      // If serialization fails, throw an error instead of returning a safe representation
+      throw new Error(
+        `Context contains circular references or non-serializable data: ${String(error)}`,
+      );
     }
   }
 
-  log(message: string, context?: any) {
+  log(message: string, context?: unknown) {
     if (!message || typeof message !== 'string') {
       this.logger.warn('Invalid message provided to LoggingService.log', {
         message,
@@ -45,7 +45,7 @@ export class LoggingService {
     });
   }
 
-  error(message: string, error?: any, context?: any) {
+  error(message: string, error?: unknown, context?: unknown) {
     if (!message || typeof message !== 'string') {
       this.logger.warn('Invalid message provided to LoggingService.error', {
         message,
@@ -63,7 +63,10 @@ export class LoggingService {
       } else if (typeof error === 'string') {
         errorMessage = error;
       } else {
-        errorMessage = String(error);
+        // Throw an error for invalid error objects instead of converting to string
+        throw new Error(
+          `Invalid error object provided to LoggingService.error: ${JSON.stringify(error)}`,
+        );
       }
     }
 
@@ -76,7 +79,7 @@ export class LoggingService {
     });
   }
 
-  warn(message: string, context?: any) {
+  warn(message: string, context?: unknown) {
     if (!message || typeof message !== 'string') {
       this.logger.warn('Invalid message provided to LoggingService.warn', {
         message,
@@ -91,7 +94,7 @@ export class LoggingService {
     });
   }
 
-  debug(message: string, context?: any) {
+  debug(message: string, context?: unknown) {
     if (!message || typeof message !== 'string') {
       this.logger.warn('Invalid message provided to LoggingService.debug', {
         message,
@@ -107,7 +110,7 @@ export class LoggingService {
   }
 
   // Performance logging
-  logPerformance(operation: string, duration: number, context?: any) {
+  logPerformance(operation: string, duration: number, context?: unknown) {
     if (!operation || typeof operation !== 'string') {
       this.logger.warn(
         'Invalid operation provided to LoggingService.logPerformance',
@@ -138,7 +141,7 @@ export class LoggingService {
     operation: string,
     table: string,
     duration?: number,
-    context?: any,
+    context?: unknown,
   ) {
     if (!operation || typeof operation !== 'string') {
       this.logger.warn(
@@ -182,7 +185,7 @@ export class LoggingService {
     source: string,
     jobsFound: number,
     duration?: number,
-    context?: any,
+    context?: unknown,
   ) {
     if (!source || typeof source !== 'string') {
       this.logger.warn(

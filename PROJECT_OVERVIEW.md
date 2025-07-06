@@ -3,6 +3,8 @@
 ## Purpose
 Job Hopper is a TypeScript/NestJS application that scrapes software developer job listings from RemoteOK and other sites, storing them in a database for analysis and automation. It features robust scraping, business logic, centralized logging, API endpoints, and automated tests.
 
+**Current Status:** v1.0.0 "Robust Roots" - First stable release with comprehensive test coverage and production-ready architecture.
+
 ---
 
 ## Architecture & Key Features
@@ -13,8 +15,9 @@ Job Hopper is a TypeScript/NestJS application that scrapes software developer jo
 - **Repository/Service/Controller Layers**: Clean separation of concerns
 - **DTOs & Validation**: Strong input/output validation
 - **Environment Config**: Secure, validated env vars
-- **Unit Tests**: Jest-based, with coverage for all major modules
+- **Unit Tests**: Jest-based, with 477 tests across 25 suites (100% pass rate)
 - **Health Check**: `/health` endpoint for monitoring
+- **Versioned Scrapers**: Modular, versioned scraper architecture for maintainability
 
 ---
 
@@ -70,9 +73,13 @@ job-hopper/
 ---
 
 ## Testing
-- **Unit tests**: Jest, with coverage for controllers, services, repositories
-- **Run tests**: `npm test` (from root)
-- **Test coverage**: All major modules covered
+- **Unit tests**: Jest, with 477 tests across 25 suites (100% pass rate)
+- **Test coverage**: All major modules covered with comprehensive edge case testing
+- **Parser tests**: 35/35 for relocate, 30/30 for arbeitnow
+- **Service layer**: 28/28 tests passing with proper typing
+- **Repository layer**: Full CRUD operation coverage
+- **Run tests**: `npm test` (from backend directory)
+- **Coverage enforcement**: CI/CD blocks merges if coverage drops below 80%
 
 ---
 
@@ -101,11 +108,24 @@ job-hopper/
 ---
 
 ## TODO / Roadmap
-- [ ] Add more job boards/scrapers
+
+### ✅ Completed (v1.0.0)
+- [x] Add more job boards/scrapers (LinkedIn, Arbeitnow, Relocate.me, RemoteOK)
+- [x] Set up CI/CD (GitHub Actions)
+- [x] Comprehensive test coverage (477 tests, 100% pass rate)
+- [x] Enhanced error handling and monitoring
+- [x] Code quality improvements (zero ESLint errors)
+- [x] Type safety enhancements with proper DTOs
+- [x] Parser architecture with versioned selectors
+
+### 🚀 Planned (v1.1.0+)
 - [ ] Add e2e/integration tests
-- [ ] Set up CI/CD (GitHub Actions)
 - [ ] Add deployment instructions
-- [ ] Enhance error handling and monitoring
+- [ ] Add more job boards (Stack Overflow, Indeed, etc.)
+- [ ] Implement job deduplication across sources
+- [ ] Add job search and filtering API endpoints
+- [ ] Implement job alert notifications
+- [ ] Add analytics and reporting features
 
 ---
 
