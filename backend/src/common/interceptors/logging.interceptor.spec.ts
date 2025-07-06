@@ -2,6 +2,7 @@ import { LoggingInterceptor } from './logging.interceptor';
 import { ExecutionContext, CallHandler } from '@nestjs/common';
 import { of, throwError } from 'rxjs';
 
+/* eslint-disable @typescript-eslint/no-unsafe-return */
 describe('LoggingInterceptor', () => {
   let interceptor: LoggingInterceptor;
   let mockContext: ExecutionContext;
