@@ -1,4 +1,3 @@
-import { TestingModule } from '@nestjs/testing';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { WinstonModule } from 'nest-winston';
 import { WinstonConfigModule } from './winston.module';
@@ -12,7 +11,7 @@ describe('WinstonConfigModule', () => {
   let mockWinstonModule: any;
   let mockCreateLoggerConfig: any;
 
-  beforeEach(async () => {
+  beforeEach(() => {
     jest.clearAllMocks();
 
     // Mock WinstonModule

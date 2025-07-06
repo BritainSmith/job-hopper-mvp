@@ -18,7 +18,6 @@ const mockPrismaService = {
 
 describe('JobRepository', () => {
   let repository: JobRepository;
-  let prisma: PrismaService;
 
   const mockJob: Job = {
     id: 1,
@@ -48,7 +47,6 @@ describe('JobRepository', () => {
     }).compile();
 
     repository = module.get<JobRepository>(JobRepository);
-    prisma = module.get<PrismaService>(PrismaService);
   });
 
   afterEach(() => {
@@ -60,6 +58,7 @@ describe('JobRepository', () => {
   });
 
   it('should call prisma.job.create on createJob', async () => {
+    /* eslint-disable @typescript-eslint/no-unsafe-argument */
     const data = {
       title: 'Test',
       company: 'TestCo',
@@ -74,6 +73,7 @@ describe('JobRepository', () => {
     };
     await repository.createJob(data as any);
     expect(mockPrismaService.job.create).toHaveBeenCalledWith({ data });
+    /* eslint-enable @typescript-eslint/no-unsafe-argument */
   });
 
   describe('createJob', () => {
@@ -102,6 +102,7 @@ describe('JobRepository', () => {
     });
 
     it('should handle create job errors', async () => {
+      /* eslint-disable @typescript-eslint/no-unsafe-argument */
       const jobData = { title: 'Test' } as any;
       const error = new Error('Database error');
       mockPrismaService.job.create.mockRejectedValue(error);
@@ -112,6 +113,7 @@ describe('JobRepository', () => {
       expect(mockPrismaService.job.create).toHaveBeenCalledWith({
         data: jobData,
       });
+      /* eslint-enable @typescript-eslint/no-unsafe-argument */
     });
   });
 
@@ -514,6 +516,7 @@ describe('JobRepository', () => {
     });
 
     it('should handle upsert job errors', async () => {
+      /* eslint-disable @typescript-eslint/no-unsafe-argument */
       const jobData = { title: 'Test' } as any;
       const error = new Error('Database error');
       mockPrismaService.job.upsert.mockRejectedValue(error);
@@ -526,6 +529,7 @@ describe('JobRepository', () => {
         update: jobData,
         create: jobData,
       });
+      /* eslint-enable @typescript-eslint/no-unsafe-argument */
     });
   });
 

@@ -9,7 +9,7 @@ jest.mock('@nestjs/common', () => ({
     error: jest.fn(),
     warn: jest.fn(),
   })),
-  Injectable: () => (target: any) => target,
+  Injectable: () => (target: unknown) => target,
 }));
 
 describe('RemoteOKV1Parser', () => {
@@ -61,8 +61,10 @@ describe('RemoteOKV1Parser', () => {
       expect(jobs[0].sourceId).toBe('backend-dev-globex');
     });
     it('should return empty array on parse error', () => {
+      /* eslint-disable @typescript-eslint/no-unsafe-argument */
       const jobs = parser.parseJobs(null as any);
       expect(jobs).toEqual([]);
+      /* eslint-enable @typescript-eslint/no-unsafe-argument */
     });
   });
 
@@ -73,7 +75,9 @@ describe('RemoteOKV1Parser', () => {
       expect(parser.parseJobCard(card!)).toBeNull();
     });
     it('should handle error in job card parsing gracefully', () => {
+      /* eslint-disable @typescript-eslint/no-unsafe-argument */
       expect(parser.parseJobCard(undefined as any)).toBeNull();
+      /* eslint-enable @typescript-eslint/no-unsafe-argument */
     });
   });
 
@@ -174,7 +178,9 @@ describe('RemoteOKV1Parser', () => {
       expect(parser.hasNextPage(html)).toBe(false);
     });
     it('should handle error and return false', () => {
+      /* eslint-disable @typescript-eslint/no-unsafe-argument */
       expect(parser.hasNextPage(undefined as any)).toBe(false);
+      /* eslint-enable @typescript-eslint/no-unsafe-argument */
     });
   });
 
@@ -190,7 +196,9 @@ describe('RemoteOKV1Parser', () => {
       expect(parser.getCurrentPage(html)).toBe(1);
     });
     it('should handle error and return 1', () => {
+      /* eslint-disable @typescript-eslint/no-unsafe-argument */
       expect(parser.getCurrentPage(undefined as any)).toBe(1);
+      /* eslint-enable @typescript-eslint/no-unsafe-argument */
     });
   });
 });

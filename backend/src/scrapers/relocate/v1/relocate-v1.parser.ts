@@ -94,7 +94,8 @@ export class RelocateV1Parser implements IJobParser {
 
   private extractText(element: Element, selector: string): string {
     const found = element.querySelector(selector);
-    return found?.textContent?.trim() || '';
+    const result = found?.textContent?.trim() || '';
+    return result;
   }
 
   private extractAttribute(

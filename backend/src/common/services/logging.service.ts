@@ -22,11 +22,11 @@ export class LoggingService {
       // Try to serialize to check for circular references
       JSON.stringify(context);
       return context;
-    } catch {
-      // If serialization fails, return a safe representation
-      return {
-        error: 'Context contains circular references or non-serializable data',
-      };
+    } catch (error) {
+      // If serialization fails, throw an error instead of returning a safe representation
+      throw new Error(
+        `Context contains circular references or non-serializable data: ${String(error)}`,
+      );
     }
   }
 
@@ -63,7 +63,10 @@ export class LoggingService {
       } else if (typeof error === 'string') {
         errorMessage = error;
       } else {
-        errorMessage = String(error);
+        // Throw an error for invalid error objects instead of converting to string
+        throw new Error(
+          `Invalid error object provided to LoggingService.error: ${JSON.stringify(error)}`,
+        );
       }
     }
 

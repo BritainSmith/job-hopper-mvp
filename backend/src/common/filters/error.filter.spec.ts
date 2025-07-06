@@ -1,11 +1,23 @@
 import { GlobalExceptionFilter } from './error.filter';
-import { HttpException, HttpStatus } from '@nestjs/common';
-import { ArgumentsHost } from '@nestjs/common';
+import { HttpException, HttpStatus, ArgumentsHost } from '@nestjs/common';
+import { Response, Request } from 'express';
+
+interface MockResponse {
+  status: jest.Mock;
+  json: jest.Mock;
+}
+
+interface MockRequest {
+  method: string;
+  url: string;
+  ip: string;
+  headers: Record<string, string>;
+}
 
 describe('GlobalExceptionFilter', () => {
   let filter: GlobalExceptionFilter;
-  let mockResponse: any;
-  let mockRequest: any;
+  let mockResponse: MockResponse;
+  let mockRequest: MockRequest;
   let mockHost: ArgumentsHost;
 
   beforeEach(() => {
@@ -30,7 +42,12 @@ describe('GlobalExceptionFilter', () => {
         getResponse: jest.fn().mockReturnValue(mockResponse),
         getRequest: jest.fn().mockReturnValue(mockRequest),
       }),
-    } as any;
+      getArgs: jest.fn(),
+      getArgByIndex: jest.fn(),
+      switchToRpc: jest.fn(),
+      switchToWs: jest.fn(),
+      getType: jest.fn(),
+    } as ArgumentsHost;
   });
 
   afterEach(() => {

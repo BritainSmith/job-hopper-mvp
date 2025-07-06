@@ -8,8 +8,8 @@ class TestScraper extends BaseScraper {
   version = 'v1';
   baseUrl = 'https://test.com';
 
-  async scrapeJobs(): Promise<Job[]> {
-    return [];
+  scrapeJobs(): Promise<Job[]> {
+    return Promise.resolve([]);
   }
 
   getRateLimit(): RateLimitConfig {

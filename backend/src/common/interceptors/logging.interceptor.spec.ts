@@ -250,6 +250,7 @@ describe('LoggingInterceptor', () => {
       interceptor.intercept(mockContext, mockCallHandler).subscribe({
         next: () => {
           const requestLog = loggerSpy.mock.calls[0][0];
+
           const responseLog = loggerSpy.mock.calls[1][0];
 
           // Verify timestamps are valid ISO strings

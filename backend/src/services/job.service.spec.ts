@@ -7,9 +7,6 @@ import { Job, Prisma } from '@prisma/client';
 
 describe('JobService', () => {
   let service: JobService;
-  let repository: JobRepository;
-  let scraperFactory: ScraperFactory;
-  let loggingService: LoggingService;
 
   const mockJob: Job = {
     id: 1,
@@ -74,9 +71,6 @@ describe('JobService', () => {
     }).compile();
 
     service = module.get<JobService>(JobService);
-    repository = module.get<JobRepository>(JobRepository);
-    scraperFactory = module.get<ScraperFactory>(ScraperFactory);
-    loggingService = module.get<LoggingService>(LoggingService);
   });
 
   afterEach(() => {
