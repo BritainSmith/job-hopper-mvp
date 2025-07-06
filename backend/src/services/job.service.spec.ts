@@ -3,7 +3,7 @@ import { JobService } from './job.service';
 import { JobRepository } from '../repositories/job.repository';
 import { ScraperFactory } from '../scrapers/scraper-factory';
 import { LoggingService } from '../common/services/logging.service';
-import { Job, JobStatus, Prisma } from '@prisma/client';
+import { Job, Prisma } from '@prisma/client';
 
 describe('JobService', () => {
   let service: JobService;
@@ -106,7 +106,7 @@ describe('JobService', () => {
         postedDate: '2d ago',
       };
       const result = await service.createJob(jobData);
-      expect(repository.createJob).toHaveBeenCalled();
+      expect(mockJobRepository.createJob).toHaveBeenCalled();
       expect(result).toEqual(mockJob);
     });
     it('should handle errors', async () => {
@@ -136,7 +136,7 @@ describe('JobService', () => {
     it('should call repository.getJobById and return job', async () => {
       mockJobRepository.getJobById.mockResolvedValue(mockJob);
       const result = await service.getJobById(1);
-      expect(repository.getJobById).toHaveBeenCalledWith(1);
+      expect(mockJobRepository.getJobById).toHaveBeenCalledWith(1);
       expect(result).toEqual(mockJob);
     });
     it('should handle errors', async () => {
@@ -152,7 +152,7 @@ describe('JobService', () => {
       mockJobRepository.getJobById.mockResolvedValue(mockJob);
       mockJobRepository.updateJob.mockResolvedValue(mockJob);
       const result = await service.updateJob(1, { title: 'Updated' });
-      expect(repository.updateJob).toHaveBeenCalled();
+      expect(mockJobRepository.updateJob).toHaveBeenCalled();
       expect(result).toEqual(mockJob);
     });
     it('should handle errors', async () => {
@@ -167,7 +167,7 @@ describe('JobService', () => {
     it('should call repository.deleteJob and return job', async () => {
       mockJobRepository.deleteJob.mockResolvedValue(mockJob);
       const result = await service.deleteJob(1);
-      expect(repository.deleteJob).toHaveBeenCalledWith(1);
+      expect(mockJobRepository.deleteJob).toHaveBeenCalledWith(1);
       expect(result).toEqual(mockJob);
     });
     it('should handle errors', async () => {
@@ -182,7 +182,7 @@ describe('JobService', () => {
     it('should call repository.getJobs and return jobs', async () => {
       mockJobRepository.getJobs.mockResolvedValue([mockJob]);
       const result = await service.searchJobs({ query: 'test' });
-      expect(repository.getJobs).toHaveBeenCalled();
+      expect(mockJobRepository.getJobs).toHaveBeenCalled();
       expect(result).toEqual([mockJob]);
     });
     it('should handle errors', async () => {
@@ -264,19 +264,19 @@ describe('JobService', () => {
       mockScraperFactory.scrapeSpecific.mockResolvedValue([mockJob]);
       mockJobRepository.upsertJob.mockResolvedValue(mockJob);
       const result = await service.scrapeAndSaveJobs('remoteok');
-      expect(scraperFactory.scrapeSpecific).toHaveBeenCalledWith(
+      expect(mockScraperFactory.scrapeSpecific).toHaveBeenCalledWith(
         ['remoteok'],
         undefined,
       );
-      expect(repository.upsertJob).toHaveBeenCalled();
+      expect(mockJobRepository.upsertJob).toHaveBeenCalled();
       expect(result).toEqual({ scraped: 1, saved: 1 });
     });
     it('should scrape and save jobs from all sources', async () => {
       mockScraperFactory.scrapeAll.mockResolvedValue([mockJob]);
       mockJobRepository.upsertJob.mockResolvedValue(mockJob);
       const result = await service.scrapeAndSaveJobs('all');
-      expect(scraperFactory.scrapeAll).toHaveBeenCalledWith(undefined);
-      expect(repository.upsertJob).toHaveBeenCalled();
+      expect(mockScraperFactory.scrapeAll).toHaveBeenCalledWith(undefined);
+      expect(mockJobRepository.upsertJob).toHaveBeenCalled();
       expect(result).toEqual({ scraped: 1, saved: 1 });
     });
     it('should handle errors during scraping', async () => {
@@ -359,7 +359,7 @@ describe('JobService', () => {
         postedDate: '2d ago',
       };
       const result = await service.findDuplicateJobs(jobData);
-      expect(repository.getJobs).toHaveBeenCalled();
+      expect(mockJobRepository.getJobs).toHaveBeenCalled();
       expect(result).toEqual([mockJob]);
     });
     it('should handle errors', async () => {

@@ -6,6 +6,7 @@ export interface IScraper {
   scrapeJobs(options?: ScrapingOptions): Promise<Job[]>;
   isHealthy(): Promise<boolean>;
   getRateLimit(): RateLimitConfig;
+  getMetrics(): ScrapingMetrics;
 }
 
 export interface IJobParser {

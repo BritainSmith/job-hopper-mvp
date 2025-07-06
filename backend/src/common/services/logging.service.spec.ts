@@ -36,12 +36,10 @@ describe('LoggingService', () => {
   });
 
   describe('log', () => {
-    it('should log a message with timestamp', () => {
+    it('should log a message with context', () => {
       const message = 'Test log message';
       const context = { userId: 123 };
-
-      service.log(message, context);
-
+      (() => service.log(message, context))();
       expect(mockLogger.log).toHaveBeenCalledWith({
         message,
         context,
@@ -52,7 +50,7 @@ describe('LoggingService', () => {
     it('should log a message without context', () => {
       const message = 'Test log message';
 
-      service.log(message);
+      (() => service.log(message))();
 
       expect(mockLogger.log).toHaveBeenCalledWith({
         message,
@@ -64,17 +62,17 @@ describe('LoggingService', () => {
     it('should generate valid ISO timestamp', () => {
       const message = 'Test timestamp';
 
-      service.log(message);
+      (() => service.log(message))();
 
       const call = mockLogger.log.mock.calls[0][0];
       expect(new Date(call.timestamp).toISOString()).toBe(call.timestamp);
     });
 
     it('should handle invalid message gracefully', () => {
-      service.log('' as any);
-      service.log(null as any);
-      service.log(undefined as any);
-      service.log(123 as any);
+      (() => service.log('' as any))();
+      (() => service.log(null as any))();
+      (() => service.log(undefined as any))();
+      (() => service.log(123 as any))();
 
       expect(mockLogger.warn).toHaveBeenCalledTimes(4);
       expect(mockLogger.log).not.toHaveBeenCalled();
@@ -84,7 +82,7 @@ describe('LoggingService', () => {
       const circularObj: any = { name: 'test' };
       circularObj.self = circularObj;
 
-      service.log('test', circularObj);
+      (() => service.log('test', circularObj))();
 
       expect(mockLogger.log).toHaveBeenCalledWith({
         message: 'test',
@@ -102,9 +100,7 @@ describe('LoggingService', () => {
       const message = 'Test error message';
       const error = new Error('Something went wrong');
       const context = { operation: 'test' };
-
-      service.error(message, error, context);
-
+      (() => service.error(message, error, context))();
       expect(mockLogger.error).toHaveBeenCalledWith({
         message,
         error: error.message,
@@ -187,9 +183,7 @@ describe('LoggingService', () => {
     it('should log a warning with timestamp', () => {
       const message = 'Test warning message';
       const context = { level: 'high' };
-
-      service.warn(message, context);
-
+      (() => service.warn(message, context))();
       expect(mockLogger.warn).toHaveBeenCalledWith({
         message,
         context,
@@ -236,9 +230,7 @@ describe('LoggingService', () => {
     it('should log a debug message with timestamp', () => {
       const message = 'Test debug message';
       const context = { debugLevel: 3 };
-
-      service.debug(message, context);
-
+      (() => service.debug(message, context))();
       expect(mockLogger.debug).toHaveBeenCalledWith({
         message,
         context,

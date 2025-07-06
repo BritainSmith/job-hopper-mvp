@@ -1,7 +1,3 @@
-import * as core from '@nestjs/core';
-import * as common from '@nestjs/common';
-import * as swagger from '@nestjs/swagger';
-
 jest.mock('@nestjs/core');
 jest.mock('@nestjs/common');
 jest.mock('@nestjs/swagger');

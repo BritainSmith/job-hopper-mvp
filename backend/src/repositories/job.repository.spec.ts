@@ -73,7 +73,7 @@ describe('JobRepository', () => {
       source: 'remoteok',
     };
     await repository.createJob(data as any);
-    expect(prisma.job.create).toHaveBeenCalledWith({ data });
+    expect(mockPrismaService.job.create).toHaveBeenCalledWith({ data });
   });
 
   describe('createJob', () => {
@@ -95,7 +95,9 @@ describe('JobRepository', () => {
 
       const result = await repository.createJob(jobData);
 
-      expect(prisma.job.create).toHaveBeenCalledWith({ data: jobData });
+      expect(mockPrismaService.job.create).toHaveBeenCalledWith({
+        data: jobData,
+      });
       expect(result).toEqual(mockJob);
     });
 
@@ -107,7 +109,9 @@ describe('JobRepository', () => {
       await expect(repository.createJob(jobData)).rejects.toThrow(
         'Database error',
       );
-      expect(prisma.job.create).toHaveBeenCalledWith({ data: jobData });
+      expect(mockPrismaService.job.create).toHaveBeenCalledWith({
+        data: jobData,
+      });
     });
   });
 
@@ -117,7 +121,9 @@ describe('JobRepository', () => {
 
       const result = await repository.getJobById(1);
 
-      expect(prisma.job.findUnique).toHaveBeenCalledWith({ where: { id: 1 } });
+      expect(mockPrismaService.job.findUnique).toHaveBeenCalledWith({
+        where: { id: 1 },
+      });
       expect(result).toEqual(mockJob);
     });
 
@@ -126,7 +132,7 @@ describe('JobRepository', () => {
 
       const result = await repository.getJobById(999);
 
-      expect(prisma.job.findUnique).toHaveBeenCalledWith({
+      expect(mockPrismaService.job.findUnique).toHaveBeenCalledWith({
         where: { id: 999 },
       });
       expect(result).toBeNull();
@@ -137,7 +143,9 @@ describe('JobRepository', () => {
       mockPrismaService.job.findUnique.mockRejectedValue(error);
 
       await expect(repository.getJobById(1)).rejects.toThrow('Database error');
-      expect(prisma.job.findUnique).toHaveBeenCalledWith({ where: { id: 1 } });
+      expect(mockPrismaService.job.findUnique).toHaveBeenCalledWith({
+        where: { id: 1 },
+      });
     });
   });
 
@@ -148,7 +156,7 @@ describe('JobRepository', () => {
 
       const result = await repository.getJobs();
 
-      expect(prisma.job.findMany).toHaveBeenCalledWith({
+      expect(mockPrismaService.job.findMany).toHaveBeenCalledWith({
         where: {
           company: undefined,
           location: undefined,
@@ -171,7 +179,7 @@ describe('JobRepository', () => {
 
       const result = await repository.getJobs({ company: 'TestCo' });
 
-      expect(prisma.job.findMany).toHaveBeenCalledWith({
+      expect(mockPrismaService.job.findMany).toHaveBeenCalledWith({
         where: {
           company: 'TestCo',
           location: undefined,
@@ -194,7 +202,7 @@ describe('JobRepository', () => {
 
       const result = await repository.getJobs({ location: 'Remote' });
 
-      expect(prisma.job.findMany).toHaveBeenCalledWith({
+      expect(mockPrismaService.job.findMany).toHaveBeenCalledWith({
         where: {
           company: undefined,
           location: 'Remote',
@@ -217,7 +225,7 @@ describe('JobRepository', () => {
 
       const result = await repository.getJobs({ status: 'ACTIVE' });
 
-      expect(prisma.job.findMany).toHaveBeenCalledWith({
+      expect(mockPrismaService.job.findMany).toHaveBeenCalledWith({
         where: {
           company: undefined,
           location: undefined,
@@ -240,7 +248,7 @@ describe('JobRepository', () => {
 
       const result = await repository.getJobs({ applied: true });
 
-      expect(prisma.job.findMany).toHaveBeenCalledWith({
+      expect(mockPrismaService.job.findMany).toHaveBeenCalledWith({
         where: {
           company: undefined,
           location: undefined,
@@ -263,7 +271,7 @@ describe('JobRepository', () => {
 
       const result = await repository.getJobs({ source: 'remoteok' });
 
-      expect(prisma.job.findMany).toHaveBeenCalledWith({
+      expect(mockPrismaService.job.findMany).toHaveBeenCalledWith({
         where: {
           company: undefined,
           location: undefined,
@@ -288,7 +296,7 @@ describe('JobRepository', () => {
         tags: ['typescript', 'react'],
       });
 
-      expect(prisma.job.findMany).toHaveBeenCalledWith({
+      expect(mockPrismaService.job.findMany).toHaveBeenCalledWith({
         where: {
           company: undefined,
           location: undefined,
@@ -313,7 +321,7 @@ describe('JobRepository', () => {
         searchText: 'software engineer',
       });
 
-      expect(prisma.job.findMany).toHaveBeenCalledWith({
+      expect(mockPrismaService.job.findMany).toHaveBeenCalledWith({
         where: {
           company: undefined,
           location: undefined,
@@ -339,7 +347,7 @@ describe('JobRepository', () => {
         { skip: 10, take: 20, orderBy: { dateScraped: 'desc' } },
       );
 
-      expect(prisma.job.findMany).toHaveBeenCalledWith({
+      expect(mockPrismaService.job.findMany).toHaveBeenCalledWith({
         where: {
           company: undefined,
           location: undefined,
@@ -373,7 +381,7 @@ describe('JobRepository', () => {
         { skip: 0, take: 10 },
       );
 
-      expect(prisma.job.findMany).toHaveBeenCalledWith({
+      expect(mockPrismaService.job.findMany).toHaveBeenCalledWith({
         where: {
           company: 'TestCo',
           location: 'Remote',
@@ -406,7 +414,7 @@ describe('JobRepository', () => {
 
       const result = await repository.updateJob(1, updateData);
 
-      expect(prisma.job.update).toHaveBeenCalledWith({
+      expect(mockPrismaService.job.update).toHaveBeenCalledWith({
         where: { id: 1 },
         data: updateData,
       });
@@ -421,7 +429,7 @@ describe('JobRepository', () => {
       await expect(repository.updateJob(1, updateData)).rejects.toThrow(
         'Database error',
       );
-      expect(prisma.job.update).toHaveBeenCalledWith({
+      expect(mockPrismaService.job.update).toHaveBeenCalledWith({
         where: { id: 1 },
         data: updateData,
       });
@@ -434,7 +442,9 @@ describe('JobRepository', () => {
 
       const result = await repository.deleteJob(1);
 
-      expect(prisma.job.delete).toHaveBeenCalledWith({ where: { id: 1 } });
+      expect(mockPrismaService.job.delete).toHaveBeenCalledWith({
+        where: { id: 1 },
+      });
       expect(result).toEqual(mockJob);
     });
 
@@ -443,7 +453,9 @@ describe('JobRepository', () => {
       mockPrismaService.job.delete.mockRejectedValue(error);
 
       await expect(repository.deleteJob(1)).rejects.toThrow('Database error');
-      expect(prisma.job.delete).toHaveBeenCalledWith({ where: { id: 1 } });
+      expect(mockPrismaService.job.delete).toHaveBeenCalledWith({
+        where: { id: 1 },
+      });
     });
   });
 
@@ -466,7 +478,7 @@ describe('JobRepository', () => {
 
       const result = await repository.upsertJob(jobData);
 
-      expect(prisma.job.upsert).toHaveBeenCalledWith({
+      expect(mockPrismaService.job.upsert).toHaveBeenCalledWith({
         where: { applyLink: jobData.applyLink },
         update: jobData,
         create: jobData,
@@ -493,7 +505,7 @@ describe('JobRepository', () => {
 
       const result = await repository.upsertJob(jobData);
 
-      expect(prisma.job.upsert).toHaveBeenCalledWith({
+      expect(mockPrismaService.job.upsert).toHaveBeenCalledWith({
         where: { applyLink: jobData.applyLink },
         update: jobData,
         create: jobData,
@@ -509,7 +521,7 @@ describe('JobRepository', () => {
       await expect(repository.upsertJob(jobData)).rejects.toThrow(
         'Database error',
       );
-      expect(prisma.job.upsert).toHaveBeenCalledWith({
+      expect(mockPrismaService.job.upsert).toHaveBeenCalledWith({
         where: { applyLink: jobData.applyLink },
         update: jobData,
         create: jobData,
@@ -543,13 +555,13 @@ describe('JobRepository', () => {
 
       const result = await repository.getJobStats();
 
-      expect(prisma.job.count).toHaveBeenCalledTimes(3);
+      expect(mockPrismaService.job.count).toHaveBeenCalledTimes(3);
       // Check that all expected calls were made (order doesn't matter due to Promise.all)
       const calls = mockPrismaService.job.count.mock.calls;
       expect(calls).toContainEqual([]); // no arguments
       expect(calls).toContainEqual([{ where: { applied: true } }]);
       expect(calls).toContainEqual([{ where: { applied: false } }]);
-      expect(prisma.job.groupBy).toHaveBeenCalledWith({
+      expect(mockPrismaService.job.groupBy).toHaveBeenCalledWith({
         by: ['status'],
         _count: { status: true },
       });

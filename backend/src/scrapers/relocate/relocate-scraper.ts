@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { BaseScraper } from '../base/base-scraper.abstract';
 import { RateLimitConfig, ScrapingOptions, Job } from '../base/interfaces';
 import { RelocateV1Parser } from './v1/relocate-v1.parser';
@@ -45,7 +45,7 @@ export class RelocateScraper extends BaseScraper {
         maxJobs,
       );
       allJobs.push(...jobs);
-    } catch (error) {
+    } catch {
       this.logger.warn(
         `Current version ${this.currentVersion} failed, attempting version detection`,
       );
