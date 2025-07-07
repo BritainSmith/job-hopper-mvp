@@ -10,7 +10,13 @@ import { ScrapersModule } from '../scrapers/scrapers.module';
 @Module({
   imports: [ScrapersModule],
   controllers: [JobsController],
-  providers: [JobService, JobDeduplicationService, DataCleaningService, JobRepository, LoggingService],
+  providers: [
+    JobService,
+    JobDeduplicationService,
+    DataCleaningService,
+    JobRepository,
+    LoggingService,
+  ],
   exports: [JobService, JobDeduplicationService, DataCleaningService],
 })
 export class JobsModule {}

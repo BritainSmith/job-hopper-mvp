@@ -11,6 +11,7 @@ import {
   ScrapingOptions,
   Job as ScrapedJob,
 } from '../scrapers/base/interfaces';
+import { IJobService } from '../interfaces/job.service.interface';
 
 // Service Types
 export interface JobSearchOptions {
@@ -45,7 +46,7 @@ export interface JobDataForSearch {
 }
 
 @Injectable()
-export class JobService {
+export class JobService implements IJobService {
   private readonly logger = new Logger(JobService.name);
 
   constructor(

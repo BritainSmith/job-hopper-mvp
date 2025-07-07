@@ -219,7 +219,10 @@ export class ScrapeResultDto {
 }
 
 export class DeduplicationOptionsDto {
-  @ApiPropertyOptional({ description: 'Minimum similarity score for duplicates', default: 0.8 })
+  @ApiPropertyOptional({
+    description: 'Minimum similarity score for duplicates',
+    default: 0.8,
+  })
   @IsOptional()
   @IsNumber()
   minSimilarityScore?: number;
@@ -229,27 +232,42 @@ export class DeduplicationOptionsDto {
   @IsBoolean()
   enableFuzzyMatching?: boolean;
 
-  @ApiPropertyOptional({ description: 'Check apply link for duplicates', default: true })
+  @ApiPropertyOptional({
+    description: 'Check apply link for duplicates',
+    default: true,
+  })
   @IsOptional()
   @IsBoolean()
   checkApplyLink?: boolean;
 
-  @ApiPropertyOptional({ description: 'Check title and company for duplicates', default: true })
+  @ApiPropertyOptional({
+    description: 'Check title and company for duplicates',
+    default: true,
+  })
   @IsOptional()
   @IsBoolean()
   checkTitleCompany?: boolean;
 
-  @ApiPropertyOptional({ description: 'Check location for duplicates', default: true })
+  @ApiPropertyOptional({
+    description: 'Check location for duplicates',
+    default: true,
+  })
   @IsOptional()
   @IsBoolean()
   checkLocation?: boolean;
 
-  @ApiPropertyOptional({ description: 'Check salary for duplicates', default: false })
+  @ApiPropertyOptional({
+    description: 'Check salary for duplicates',
+    default: false,
+  })
   @IsOptional()
   @IsBoolean()
   checkSalary?: boolean;
 
-  @ApiPropertyOptional({ description: 'Enable AI-ready processing', default: true })
+  @ApiPropertyOptional({
+    description: 'Enable AI-ready processing',
+    default: true,
+  })
   @IsOptional()
   @IsBoolean()
   enableAIReady?: boolean;
@@ -270,7 +288,10 @@ export class DeduplicationResultDto {
     matchedFields: string[];
   }>;
 
-  @ApiProperty({ description: 'Recommended action', enum: ['create', 'update', 'skip'] })
+  @ApiProperty({
+    description: 'Recommended action',
+    enum: ['create', 'update', 'skip'],
+  })
   recommendedAction: 'create' | 'update' | 'skip';
 
   @ApiProperty({ description: 'Reason for the recommendation' })

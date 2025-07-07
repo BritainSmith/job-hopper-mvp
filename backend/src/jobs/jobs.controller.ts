@@ -31,10 +31,12 @@ import {
   DataQualityMetricsDto,
   CleanedJobDataDto,
 } from './dto/job.dto';
+import { IJobsController } from '../interfaces/jobs.controller.interface';
+import { JobStatus } from '@prisma/client';
 
 @ApiTags('jobs')
 @Controller('jobs')
-export class JobsController {
+export class JobsController implements IJobsController {
   constructor(
     private jobService: JobService,
     private jobDeduplicationService: JobDeduplicationService,
@@ -82,7 +84,7 @@ export class JobsController {
     };
 
     if (status) {
-      return this.jobService.getJobsByStatus(status as any, pagination);
+      return this.jobService.getJobsByStatus(status as JobStatus, pagination);
     }
 
     return this.jobService.searchJobs({
@@ -185,7 +187,8 @@ export class JobsController {
   @Post('deduplicate/process')
   @ApiOperation({
     summary: 'Process jobs with deduplication',
-    description: 'Process multiple jobs with deduplication and return statistics',
+    description:
+      'Process multiple jobs with deduplication and return statistics',
   })
   @ApiBody({ type: [CreateJobDto] })
   @ApiResponse({
@@ -197,7 +200,10 @@ export class JobsController {
     @Body() jobs: CreateJobDto[],
     @Query() options: DeduplicationOptionsDto,
   ): Promise<DeduplicationStatsDto> {
-    return this.jobDeduplicationService.processJobsWithDeduplication(jobs, options);
+    return this.jobDeduplicationService.processJobsWithDeduplication(
+      jobs,
+      options,
+    );
   }
 
   @Get('deduplicate/stats')
@@ -231,7 +237,8 @@ export class JobsController {
   @Get('data-quality/export')
   @ApiOperation({
     summary: 'Export cleaned data for AI processing',
-    description: 'Export all jobs with cleaned and normalized data for AI processing',
+    description:
+      'Export all jobs with cleaned and normalized data for AI processing',
   })
   @ApiResponse({
     status: HttpStatus.OK,
