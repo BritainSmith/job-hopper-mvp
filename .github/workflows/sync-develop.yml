@@ -76,8 +76,7 @@ jobs:
             --title "🔄 Auto-sync develop with main" \
             --body "Automatic sync of develop branch with latest main changes. All CI/CD checks must pass before merge." \
             --base develop \
-            --head $SYNC_BRANCH \
-            --label "automated,sync"
+            --head $SYNC_BRANCH
 
       - name: Auto-merge sync PR
         if: steps.check-sync.outputs.needs_sync == 'true'
