@@ -5,7 +5,14 @@ module.exports = {
   transform: {
     '^.+\\.(t|j)s$': 'ts-jest',
   },
-  collectCoverageFrom: ['**/*.(t|j)s'],
+  collectCoverageFrom: [
+    '**/*.(t|j)s',
+    '!**/index.ts',
+    '!**/*.spec.ts',
+    '!**/*.e2e-spec.ts',
+    '!**/test/**/*',
+    '!**/bootstrap-app.ts'
+  ],
   coverageDirectory: '../coverage',
   testEnvironment: 'node',
   setupFilesAfterEnv: ['<rootDir>/test/setup.ts'],
