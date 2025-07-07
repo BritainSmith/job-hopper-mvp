@@ -9,7 +9,7 @@ For solo projects where you can't approve your own PRs, use this setup with **0 
 #### **For `main` branch:**
 ```
 ✅ Require a pull request before merging
-✅ Require approvals: 0 (for solo development)
+❌ Require approvals: DISABLE THIS (uncheck the box)
 ✅ Require status checks to pass before merging:
    - CI/CD Pipeline
    - PR Quality Check
