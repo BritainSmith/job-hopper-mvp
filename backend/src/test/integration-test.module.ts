@@ -10,7 +10,7 @@ import { databaseConfig, appConfig } from '../config/env.config';
     ConfigModule.forRoot({
       isGlobal: true,
       load: [databaseConfig, appConfig],
-      envFilePath: '.env.test',
+      ignoreEnvFile: true,
     }),
     PrismaModule,
     JobsModule,
