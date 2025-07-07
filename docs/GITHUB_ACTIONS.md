@@ -6,28 +6,7 @@ This project uses GitHub Actions to enforce code quality, maintain test coverage
 
 ## Workflow Files
 
-### 1. Pull Request Quality Check (`pr-check.yml`)
-
-**Purpose**: Enforce quality standards on every pull request before merging.
-
-**Triggers**:
-- Pull requests to `main` or `develop` branches
-
-**Enforced Standards**:
-- ✅ All tests must pass (100% success rate)
-- 📊 Test coverage must be above 80%
-- 🏗️ Application must build successfully
-- 🔍 Code must pass ESLint checks
-- 🎨 Code formatting must be correct (Prettier)
-- 🔒 Security audit must pass (no moderate+ vulnerabilities)
-
-**Benefits**:
-- Prevents broken code from being merged
-- Maintains consistent code quality
-- Ensures test coverage doesn't degrade
-- Catches security issues early
-
-### 2. Full CI/CD Pipeline (`ci.yml`)
+### 1. Full CI/CD Pipeline (`ci.yml`)
 
 **Purpose**: Comprehensive testing and validation for all code changes.
 
@@ -49,6 +28,18 @@ This project uses GitHub Actions to enforce code quality, maintain test coverage
 - Parallel job execution for faster feedback
 - Coverage reporting to Codecov
 - Database schema validation
+
+### 2. PR Title Check (`pr-title-check.yml`)
+
+**Purpose**: Enforce PR title format using conventional commits.
+
+**Triggers**:
+- Pull requests to `main` or `develop` branches
+
+**Features**:
+- Checks PR title format and length
+- Warns for common issues (uppercase, punctuation, etc.)
+- Ensures descriptive, consistent PR titles
 
 ### 3. Production Deployment (`deploy.yml`)
 
@@ -73,23 +64,11 @@ This project uses GitHub Actions to enforce code quality, maintain test coverage
 - Manual dispatch (for urgent syncs)
 
 **Features**:
-- **API-Based Operations**: Uses GitHub API directly to avoid permission issues
-- **Branch Protection Compliance**: Works with strict branch protection rules
-- **Automatic PR Creation**: Creates sync pull requests automatically
-- **Immediate Auto-Merge**: Merges PRs when all checks pass
-- **Detailed Logging**: Comprehensive error handling and response validation
-
-**Technical Implementation**:
-- **Permissions**: `contents: write`, `pull-requests: write`, `issues: write`
-- **Authentication**: Uses `GITHUB_TOKEN` with `PAT_TOKEN` fallback
-- **API Calls**: Direct GitHub API via `curl` for PR creation and merging
-- **Error Handling**: Captures and logs all API responses for debugging
-
-**Safety Features**:
-- ✅ Main branch remains locked throughout the process
-- ✅ All CI/CD checks must pass before merge
-- ✅ Clean git history with squash merges
-- ✅ Detailed audit trail of all sync operations
+- API-Based Operations: Uses GitHub API directly to avoid permission issues
+- Branch Protection Compliance: Works with strict branch protection rules
+- Automatic PR Creation: Creates sync pull requests automatically
+- Immediate Auto-Merge: Merges PRs when all checks pass
+- Detailed Logging: Comprehensive error handling and response validation
 
 ## Quality Gates
 
@@ -109,9 +88,9 @@ The pipeline enforces strict quality standards through multiple gates:
 The repository enforces branch protection on `main` and `develop`:
 
 ### Required Status Checks
-- ✅ **Pull Request Quality Check** must pass
 - ✅ **Full CI/CD Pipeline** must pass
 - ✅ **Test Coverage** must be above 80%
+- ✅ **PR Title Check** must pass
 
 ### Pull Request Requirements
 - ✅ **Require pull request reviews** before merging
