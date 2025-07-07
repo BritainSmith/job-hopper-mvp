@@ -60,6 +60,28 @@ With disabled approval requirements, you can:
 - **Unlock only for critical security fixes**
 - **Maximum protection for production code**
 
+## 🔄 **Automated Sync Workflow**
+
+The repository includes an automated sync workflow that keeps develop up to date with main **without unlocking main**:
+
+### **How It Works:**
+1. **Runs weekly** (every Sunday at 2 AM UTC)
+2. **Checks if sync is needed** - compares develop and main commits
+3. **Creates sync PR** - if develop is behind main
+4. **Auto-merges** - when all checks pass
+5. **Keeps main locked** - throughout the entire process
+
+### **Manual Trigger:**
+- **Go to Actions tab** → **Auto-Sync Develop with Main**
+- **Click "Run workflow"** to trigger sync manually
+
+### **Benefits:**
+- ✅ **Never unlock main** for regular syncs
+- ✅ **Automatic weekly syncs** keep develop current
+- ✅ **All quality checks enforced** on sync PRs
+- ✅ **Clean git history** with squash merges
+- ✅ **Emergency sync capability** when needed
+
 ## 🔄 **Workflow for Solo Development**
 
 1. **Create feature branch**: `git checkout -b feature/new-feature`
@@ -82,6 +104,7 @@ Even with disabled approval requirements, you still get:
 - ✅ **Code review workflow** when collaborating
 - ✅ **Emergency override capability** (develop branch)
 - ✅ **Maximum production protection** (main branch locked)
+- ✅ **Automated sync** without unlocking main
 
 ## 🔧 **For Future Collaboration**
 
