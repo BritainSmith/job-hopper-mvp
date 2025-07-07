@@ -1,5 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { JobDeduplicationService, DeduplicationOptions } from './job-deduplication.service';
+import {
+  JobDeduplicationService,
+  DeduplicationOptions,
+} from './job-deduplication.service';
 import { JobRepository } from '../repositories/job.repository';
 import { Job, JobStatus } from '@prisma/client';
 
@@ -284,7 +287,9 @@ describe('JobDeduplicationService', () => {
       // Assert
       expect(result.isDuplicate).toBe(true);
       expect(result.similarJobs).toHaveLength(2);
-      expect(result.similarJobs[0].score).toBeGreaterThanOrEqual(result.similarJobs[1].score);
+      expect(result.similarJobs[0].score).toBeGreaterThanOrEqual(
+        result.similarJobs[1].score,
+      );
     });
 
     it('should handle errors gracefully', async () => {
@@ -517,4 +522,4 @@ describe('JobDeduplicationService', () => {
       expect(result.confidence).toBeGreaterThan(0.8);
     });
   });
-}); 
+});
