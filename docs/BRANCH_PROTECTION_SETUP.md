@@ -11,8 +11,8 @@ For solo projects where you can't approve your own PRs, use this setup with **di
 ✅ Require a pull request before merging
 ❌ Require approvals: DISABLE THIS (uncheck the box)
 ✅ Require status checks to pass before merging:
-   - CI/CD Pipeline
-   - PR Quality Check
+   - CI/CD Pipeline (ci.yml)
+   - PR Title Check (pr-title-check.yml)
    - Test Coverage
 ✅ Require branches to be up to date before merging
 ✅ Require conversation resolution before merging
@@ -26,8 +26,8 @@ For solo projects where you can't approve your own PRs, use this setup with **di
 ✅ Require a pull request before merging
 ❌ Require approvals: DISABLE THIS (uncheck the box)
 ✅ Require status checks to pass before merging:
-   - CI/CD Pipeline
-   - PR Quality Check
+   - CI/CD Pipeline (ci.yml)
+   - PR Title Check (pr-title-check.yml)
    - Test Coverage
 ✅ Require branches to be up to date before merging
 ✅ Require conversation resolution before merging
