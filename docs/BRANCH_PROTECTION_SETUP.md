@@ -2,28 +2,15 @@
 
 ## 🎯 **Recommended Configuration**
 
-For solo projects where you can't approve your own PRs, use this setup:
+For solo projects where you can't approve your own PRs, use this setup with code owner overrides:
 
 ### **Branch Protection Rules**
 
 #### **For `main` branch:**
 ```
 ✅ Require a pull request before merging
-✅ Require approvals: 0 (for solo development)
-✅ Require status checks to pass before merging:
-   - CI/CD Pipeline
-   - PR Quality Check
-   - Test Coverage
-✅ Require branches to be up to date before merging
-✅ Require conversation resolution before merging
-✅ Restrict pushes that create files larger than 100MB
-✅ Do not allow bypassing the above settings
-```
-
-#### **For `develop` branch:**
-```
-✅ Require a pull request before merging
-✅ Require approvals: 0 (for solo development)
+✅ Require approvals: 1
+✅ Dismiss stale PR approvals when new commits are pushed
 ✅ Require status checks to pass before merging:
    - CI/CD Pipeline
    - PR Quality Check
@@ -32,21 +19,55 @@ For solo projects where you can't approve your own PRs, use this setup:
 ✅ Require conversation resolution before merging
 ✅ Restrict pushes that create files larger than 100MB
 ✅ Allow specified actors to bypass required pull requests
-   - Add @BritainSmith for emergency fixes
+   - Add @BritainSmith (code owner)
+✅ Allow specified actors to dismiss reviews
+   - Add @BritainSmith (code owner)
 ```
 
-## 🤖 **Auto-Merge Setup**
+#### **For `develop` branch:**
+```
+✅ Require a pull request before merging
+✅ Require approvals: 1
+✅ Dismiss stale PR approvals when new commits are pushed
+✅ Require status checks to pass before merging:
+   - CI/CD Pipeline
+   - PR Quality Check
+   - Test Coverage
+✅ Require branches to be up to date before merging
+✅ Require conversation resolution before merging
+✅ Restrict pushes that create files larger than 100MB
+✅ Allow specified actors to bypass required pull requests
+   - Add @BritainSmith (code owner)
+✅ Allow specified actors to dismiss reviews
+   - Add @BritainSmith (code owner)
+```
 
-The repository includes an auto-merge GitHub Action that will automatically merge PRs when:
-- All status checks pass
-- The PR is created by @BritainSmith
-- No merge conflicts exist
+## 🛡️ **Code Owner Override Setup**
 
-### **How it works:**
-1. Create a PR from a feature branch
-2. All CI/CD checks run automatically
-3. If all checks pass, the PR is auto-merged
-4. If checks fail, you can fix and push - it will re-run
+As the code owner (@BritainSmith), you can:
+
+### **Bypass Pull Request Requirements**
+- ✅ **Direct push to protected branches** (emergency fixes)
+- ✅ **Merge without approval** (when you're the only contributor)
+- ✅ **Dismiss reviews** (if needed)
+
+### **How to Use Overrides:**
+
+#### **Option 1: Merge Without Approval**
+1. Create your PR normally
+2. When ready to merge, click "Merge pull request"
+3. GitHub will show a warning about bypassing requirements
+4. Click "I understand, merge anyway" (only available to code owners)
+
+#### **Option 2: Direct Push (Emergency Only)**
+```bash
+# Only use for emergency fixes
+git push origin develop --force-with-lease
+```
+
+#### **Option 3: Dismiss Reviews**
+- If a review is blocking your PR, you can dismiss it
+- Only available to code owners with dismiss permissions
 
 ## 🔄 **Workflow for Solo Development**
 
@@ -54,33 +75,48 @@ The repository includes an auto-merge GitHub Action that will automatically merg
 2. **Make changes and commit**: `git commit -m "feat: add new feature"`
 3. **Push branch**: `git push origin feature/new-feature`
 4. **Create PR**: Use GitHub's "Compare & pull request" button
-5. **Auto-merge**: If all checks pass, PR merges automatically
-6. **Clean up**: Delete the feature branch after merge
+5. **Review your own code**: Add comments, check the diff
+6. **Merge with override**: Use "I understand, merge anyway"
+7. **Clean up**: Delete the feature branch after merge
 
 ## 🛡️ **Security Benefits**
 
-Even with 0 required approvals, you still get:
+With code owner overrides, you still get:
 - ✅ **Status check enforcement** (tests, linting, coverage)
 - ✅ **PR history** for all changes
-- ✅ **Branch protection** against direct pushes
+- ✅ **Branch protection** against accidental direct pushes
 - ✅ **Conversation tracking** for future reference
 - ✅ **Code review workflow** when collaborating
+- ✅ **Emergency override capability** for urgent fixes
 
 ## 🔧 **For Future Collaboration**
 
 When you add collaborators:
-1. Increase required approvals to 1 or more
-2. Remove auto-merge for non-solo PRs
-3. Keep all other protections in place
+1. Keep required approvals at 1 or more
+2. Remove your bypass permissions (or keep for emergencies)
+3. Collaborators will need your approval to merge
+4. You can still override when needed
 
-## 📝 **Alternative: Manual Merge**
+## 📝 **Best Practices**
 
-If you prefer manual control:
-1. Disable auto-merge
-2. Set required approvals to 0
-3. Manually merge PRs after reviewing them
-4. Use "Squash and merge" for clean history
+### **When to Use Overrides:**
+- ✅ **Normal development**: Create PRs and merge with override
+- ✅ **Emergency fixes**: Direct push to main/develop
+- ✅ **Documentation updates**: Direct push for minor docs
+
+### **When NOT to Use Overrides:**
+- ❌ **Major features**: Always use PR workflow
+- ❌ **Breaking changes**: Always use PR workflow
+- ❌ **Security updates**: Always use PR workflow
+
+## 🎯 **GitHub Settings Location**
+
+1. Go to your repository: `https://github.com/BritainSmith/job-hopper-mvp`
+2. Click **Settings** → **Branches**
+3. Click **Add rule** or edit existing rules
+4. Configure as shown above
+5. Add `@BritainSmith` to both bypass lists
 
 ---
 
-**Note**: This setup maintains professional development practices while being practical for solo development. 
+**Note**: This setup gives you the flexibility of solo development while maintaining professional practices and preparing for future collaboration. 
