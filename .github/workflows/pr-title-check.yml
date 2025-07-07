@@ -1,0 +1,106 @@
+name: PR Title Check
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+    branches:
+      - develop
+      - main
+
+jobs:
+  check-pr-title:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check PR Title Format
+        run: |
+          # Get the PR title
+          PR_TITLE="${{ github.event.pull_request.title }}"
+          
+          echo "Checking PR title: '$PR_TITLE'"
+          
+          # Define allowed prefixes
+          ALLOWED_PREFIXES=("feat" "fix" "docs" "style" "refactor" "test" "chore" "hotfix" "perf" "ci" "build" "revert")
+          
+          # Check if title starts with any allowed prefix
+          TITLE_VALID=false
+          for prefix in "${ALLOWED_PREFIXES[@]}"; do
+            if [[ "$PR_TITLE" =~ ^$prefix(/[a-z0-9-]+)?: ]]; then
+              TITLE_VALID=true
+              break
+            fi
+          done
+          
+          if [ "$TITLE_VALID" = false ]; then
+            echo "❌ PR title does not follow conventional commit format!"
+            echo ""
+            echo "Expected format: <type>(<scope>): <description>"
+            echo ""
+            echo "Allowed types:"
+            for prefix in "${ALLOWED_PREFIXES[@]}"; do
+              echo "  - $prefix"
+            done
+            echo ""
+            echo "Examples:"
+            echo "  - feat: add job deduplication service"
+            echo "  - fix(scraper): resolve timeout issues"
+            echo "  - docs: update API documentation"
+            echo "  - chore: update dependencies"
+            echo "  - hotfix: fix critical security issue"
+            echo ""
+            echo "Please update your PR title to follow this format."
+            exit 1
+          fi
+          
+          echo "✅ PR title follows conventional commit format!"
+          
+          # Additional checks for specific types
+          if [[ "$PR_TITLE" =~ ^feat: ]]; then
+            echo "🎉 New feature detected!"
+          elif [[ "$PR_TITLE" =~ ^fix: ]]; then
+            echo "🔧 Bug fix detected!"
+          elif [[ "$PR_TITLE" =~ ^docs: ]]; then
+            echo "📚 Documentation update detected!"
+          elif [[ "$PR_TITLE" =~ ^chore: ]]; then
+            echo "🧹 Maintenance task detected!"
+          elif [[ "$PR_TITLE" =~ ^hotfix: ]]; then
+            echo "🚨 Hotfix detected!"
+          fi
+
+      - name: Check PR Title Length
+        run: |
+          PR_TITLE="${{ github.event.pull_request.title }}"
+          TITLE_LENGTH=${#PR_TITLE}
+          
+          echo "PR title length: $TITLE_LENGTH characters"
+          
+          if [ $TITLE_LENGTH -gt 72 ]; then
+            echo "⚠️  Warning: PR title is longer than 72 characters"
+            echo "   Consider making it more concise for better readability."
+          elif [ $TITLE_LENGTH -lt 10 ]; then
+            echo "⚠️  Warning: PR title is very short"
+            echo "   Consider adding more descriptive information."
+          else
+            echo "✅ PR title length is appropriate!"
+          fi
+
+      - name: Check for Common Issues
+        run: |
+          PR_TITLE="${{ github.event.pull_request.title }}"
+          
+          # Check for common issues
+          if [[ "$PR_TITLE" =~ [A-Z] ]]; then
+            echo "⚠️  Warning: PR title contains uppercase letters"
+            echo "   Conventional commits use lowercase for better consistency."
+          fi
+          
+          if [[ "$PR_TITLE" =~ \.$ ]]; then
+            echo "⚠️  Warning: PR title ends with a period"
+            echo "   Conventional commits typically don't end with punctuation."
+          fi
+          
+          if [[ "$PR_TITLE" =~ ^[a-z]+$ ]]; then
+            echo "⚠️  Warning: PR title is very short"
+            echo "   Consider adding a description after the type."
+          fi
+          
+          echo "✅ PR title format checks completed!" 

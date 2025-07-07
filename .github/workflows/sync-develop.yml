@@ -10,21 +10,30 @@ on:
 jobs:
   sync-develop:
     runs-on: ubuntu-latest
+<<<<<<< HEAD
+=======
     permissions:
       contents: write
       pull-requests: write
       issues: write
+>>>>>>> main
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+<<<<<<< HEAD
+          token: ${{ secrets.GITHUB_TOKEN }}
+=======
+>>>>>>> main
 
       - name: Configure Git
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
+<<<<<<< HEAD
+=======
       - name: Setup GitHub CLI
         run: |
           # Try to use PAT if available, otherwise fall back to GITHUB_TOKEN
@@ -34,6 +43,7 @@ jobs:
             echo "${{ secrets.GITHUB_TOKEN }}" | gh auth login --with-token
           fi
 
+>>>>>>> main
       - name: Fetch all branches
         run: |
           git fetch --all
@@ -64,7 +74,10 @@ jobs:
           fi
 
       - name: Create sync PR
+<<<<<<< HEAD
+=======
         id: create-sync-pr
+>>>>>>> main
         if: steps.check-sync.outputs.needs_sync == 'true'
         run: |
           # Create a new branch for the sync
@@ -77,6 +90,29 @@ jobs:
           # Push the sync branch
           git push origin $SYNC_BRANCH
           
+<<<<<<< HEAD
+          # Create PR using GitHub CLI with simple body
+          gh pr create \
+            --title "🔄 Auto-sync develop with main" \
+            --body "Automatic sync of develop branch with latest main changes. All CI/CD checks must pass before merge." \
+            --base develop \
+            --head $SYNC_BRANCH \
+            --label "automated,sync" \
+            --assignee "@me"
+
+      - name: Auto-merge sync PR
+        if: steps.check-sync.outputs.needs_sync == 'true'
+        run: |
+          # Wait a moment for PR to be created
+          sleep 10
+          
+          # Get the PR number
+          PR_NUMBER=$(gh pr list --head "sync/develop-with-main-*" --json number --jq '.[0].number')
+          
+          if [ ! -z "$PR_NUMBER" ]; then
+            echo "Enabling auto-merge for PR #$PR_NUMBER"
+            gh pr merge $PR_NUMBER --auto --squash
+=======
           # Create PR using GitHub API with curl
           PR_RESPONSE=$(curl -s -X POST \
             -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
@@ -120,6 +156,7 @@ jobs:
                 "commit_title": "🔄 Auto-sync develop with main",
                 "commit_message": "Automatic sync of develop branch with latest main changes"
               }'
+>>>>>>> main
           fi
 
       - name: Skip sync

@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Job as PrismaJob, Prisma } from '@prisma/client';
 import { JobRepository } from '../repositories/job.repository';
+import { IJobDeduplicationService } from '../interfaces/job-deduplication.service.interface';
 
 // Strong typing for deduplication
 export interface JobSimilarityScore {
@@ -49,7 +50,7 @@ export interface DeduplicationStats {
 }
 
 @Injectable()
-export class JobDeduplicationService {
+export class JobDeduplicationService implements IJobDeduplicationService {
   private readonly logger = new Logger(JobDeduplicationService.name);
 
   // Default configuration
