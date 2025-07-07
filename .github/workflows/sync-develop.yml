@@ -27,7 +27,12 @@ jobs:
 
       - name: Setup GitHub CLI
         run: |
-          echo "${{ secrets.GITHUB_TOKEN }}" | gh auth login --with-token
+          # Try to use PAT if available, otherwise fall back to GITHUB_TOKEN
+          if [ -n "${{ secrets.PAT_TOKEN }}" ]; then
+            echo "${{ secrets.PAT_TOKEN }}" | gh auth login --with-token
+          else
+            echo "${{ secrets.GITHUB_TOKEN }}" | gh auth login --with-token
+          fi
 
       - name: Fetch all branches
         run: |
@@ -59,6 +64,7 @@ jobs:
           fi
 
       - name: Create sync PR
+        id: create-sync-pr
         if: steps.check-sync.outputs.needs_sync == 'true'
         run: |
           # Create a new branch for the sync
@@ -71,25 +77,49 @@ jobs:
           # Push the sync branch
           git push origin $SYNC_BRANCH
           
-          # Create PR using GitHub CLI with simple body
-          gh pr create \
-            --title "🔄 Auto-sync develop with main" \
-            --body "Automatic sync of develop branch with latest main changes. All CI/CD checks must pass before merge." \
-            --base develop \
-            --head $SYNC_BRANCH
+          # Create PR using GitHub API with curl
+          PR_RESPONSE=$(curl -s -X POST \
+            -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Accept: application/vnd.github.v3+json" \
+            https://api.github.com/repos/${{ github.repository }}/pulls \
+            -d '{
+              "title": "🔄 Auto-sync develop with main",
+              "body": "Automatic sync of develop branch with latest main changes. All CI/CD checks must pass before merge.",
+              "base": "develop",
+              "head": "'$SYNC_BRANCH'"
+            }')
+          
+          echo "PR Response: $PR_RESPONSE"
+          
+          # Extract PR number from response
+          PR_NUMBER=$(echo "$PR_RESPONSE" | jq -r '.number // empty')
+          
+          if [ ! -z "$PR_NUMBER" ]; then
+            echo "PR created successfully: #$PR_NUMBER"
+            echo "pr_number=$PR_NUMBER" >> $GITHUB_OUTPUT
+          else
+            echo "Failed to create PR"
+            echo "pr_number=" >> $GITHUB_OUTPUT
+          fi
 
       - name: Auto-merge sync PR
-        if: steps.check-sync.outputs.needs_sync == 'true'
+        if: steps.check-sync.outputs.needs_sync == 'true' && steps.create-sync-pr.outputs.pr_number != ''
         run: |
-          # Wait a moment for PR to be created
-          sleep 10
-          
-          # Get the PR number
-          PR_NUMBER=$(gh pr list --head "sync/develop-with-main-*" --json number --jq '.[0].number')
+          PR_NUMBER="${{ steps.create-sync-pr.outputs.pr_number }}"
           
           if [ ! -z "$PR_NUMBER" ]; then
             echo "Enabling auto-merge for PR #$PR_NUMBER"
-            gh pr merge $PR_NUMBER --auto --squash
+            
+            # Enable auto-merge using GitHub API
+            curl -s -X PUT \
+              -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+              -H "Accept: application/vnd.github.v3+json" \
+              https://api.github.com/repos/${{ github.repository }}/pulls/$PR_NUMBER/merge \
+              -d '{
+                "merge_method": "squash",
+                "commit_title": "🔄 Auto-sync develop with main",
+                "commit_message": "Automatic sync of develop branch with latest main changes"
+              }'
           fi
 
       - name: Skip sync
