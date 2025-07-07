@@ -1,32 +1,65 @@
-## Description
-Brief description of changes made in this PR.
+## 📋 **Pull Request Description**
 
-## Type of Change
-- [ ] Bug fix (non-breaking change which fixes an issue)
-- [ ] New feature (non-breaking change which adds functionality)
-- [ ] Breaking change (fix or feature that would cause existing functionality to not work as expected)
+### 🎯 **What does this PR do?**
+<!-- Describe the changes and why they're needed -->
+
+### 🔧 **Changes Made**
+- [ ] Feature addition
+- [ ] Bug fix
 - [ ] Documentation update
-- [ ] Test update
+- [ ] Test addition/update
+- [ ] Refactoring
+- [ ] Performance improvement
+- [ ] Security enhancement
 
-## Testing
-- [ ] All existing tests pass
-- [ ] New tests added for new functionality
-- [ ] Test coverage maintained above 80%
+### 🧪 **Testing**
+- [ ] Unit tests pass
+- [ ] Integration tests pass
+- [ ] E2E tests pass
 - [ ] Manual testing completed
+- [ ] No new linting errors
 
-## Checklist
-- [ ] Code follows the project's style guidelines
-- [ ] Self-review of code completed
-- [ ] Code is commented, particularly in hard-to-understand areas
-- [ ] Documentation updated (if applicable)
-- [ ] No console.log statements left in production code
-- [ ] No hardcoded secrets or sensitive data
+### 📊 **Test Coverage**
+- [ ] Coverage maintained or improved
+- [ ] New code has adequate test coverage
 
-## Screenshots (if applicable)
-Add screenshots to help explain your changes.
+### 🔍 **Code Quality**
+- [ ] Code follows project conventions
+- [ ] TypeScript types are properly defined
+- [ ] Error handling is appropriate
+- [ ] Logging is sufficient
+- [ ] No console.log statements in production code
 
-## Additional Notes
-Any additional information that reviewers should know.
+### 📚 **Documentation**
+- [ ] README updated if needed
+- [ ] API documentation updated if needed
+- [ ] Code comments added where necessary
 
-## Related Issues
-Closes #(issue number) 
+### 🚨 **Breaking Changes**
+- [ ] No breaking changes
+- [ ] Breaking changes documented
+- [ ] Migration guide provided if needed
+
+### 🔒 **Security**
+- [ ] No sensitive data exposed
+- [ ] Environment variables used appropriately
+- [ ] Input validation implemented
+
+### 📝 **Additional Notes**
+<!-- Any other information that reviewers should know -->
+
+---
+
+## ✅ **Checklist**
+- [ ] I have read and followed the project's contributing guidelines
+- [ ] My code follows the project's style guidelines
+- [ ] I have tested my changes thoroughly
+- [ ] I have updated documentation as needed
+- [ ] My changes generate no new warnings
+- [ ] I have added tests that prove my fix is effective or that my feature works
+- [ ] New and existing unit tests pass locally with my changes
+- [ ] Any dependent changes have been merged and published
+
+## 🎯 **Related Issues**
+Closes #(issue number)
+Related to #(issue number) 

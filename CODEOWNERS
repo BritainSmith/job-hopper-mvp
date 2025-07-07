@@ -1,0 +1,35 @@
+# Global owners
+* @BritainSmith
+
+# Backend specific files
+/backend/ @BritainSmith
+
+# Scrapers (critical components)
+/backend/src/scrapers/ @BritainSmith
+
+# Database and migrations
+/backend/prisma/ @BritainSmith
+/backend/src/repositories/ @BritainSmith
+
+# Services and business logic
+/backend/src/services/ @BritainSmith
+
+# API controllers
+/backend/src/*/controllers/ @BritainSmith
+
+# Configuration files
+/backend/src/config/ @BritainSmith
+/backend/*.config.* @BritainSmith
+
+# Test files
+/backend/src/**/*.spec.ts @BritainSmith
+/backend/test/ @BritainSmith
+
+# Documentation
+*.md @BritainSmith
+/docs/ @BritainSmith
+
+# CI/CD and deployment
+/.github/ @BritainSmith
+*.yml @BritainSmith
+*.yaml @BritainSmith 
