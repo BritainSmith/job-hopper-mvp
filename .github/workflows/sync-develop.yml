@@ -22,15 +22,24 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
+      - name: Fetch all branches
+        run: |
+          git fetch --all
+          git branch -a
+
       - name: Check if sync is needed
         id: check-sync
         run: |
-          # Fetch latest changes
-          git fetch origin main develop
+          # Fetch latest changes from both branches
+          git fetch origin main
+          git fetch origin develop
           
           # Check if develop is behind main
           DEVELOP_COMMIT=$(git rev-parse origin/develop)
           MAIN_COMMIT=$(git rev-parse origin/main)
+          
+          echo "Develop commit: $DEVELOP_COMMIT"
+          echo "Main commit: $MAIN_COMMIT"
           
           if [ "$DEVELOP_COMMIT" != "$MAIN_COMMIT" ]; then
             echo "develop is behind main, sync needed"
