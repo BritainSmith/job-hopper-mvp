@@ -1,0 +1,85 @@
+name: Auto-Sync Develop with Main
+
+on:
+  schedule:
+    # Run every Sunday at 2 AM UTC
+    - cron: '0 2 * * 0'
+  workflow_dispatch:
+    # Allow manual triggering
+
+jobs:
+  sync-develop:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Check if sync is needed
+        id: check-sync
+        run: |
+          # Fetch latest changes
+          git fetch origin main develop
+          
+          # Check if develop is behind main
+          DEVELOP_COMMIT=$(git rev-parse origin/develop)
+          MAIN_COMMIT=$(git rev-parse origin/main)
+          
+          if [ "$DEVELOP_COMMIT" != "$MAIN_COMMIT" ]; then
+            echo "develop is behind main, sync needed"
+            echo "needs_sync=true" >> $GITHUB_OUTPUT
+            echo "develop_commit=$DEVELOP_COMMIT" >> $GITHUB_OUTPUT
+            echo "main_commit=$MAIN_COMMIT" >> $GITHUB_OUTPUT
+          else
+            echo "develop is up to date with main"
+            echo "needs_sync=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create sync PR
+        if: steps.check-sync.outputs.needs_sync == 'true'
+        run: |
+          # Create a new branch for the sync
+          SYNC_BRANCH="sync/develop-with-main-$(date +%Y%m%d-%H%M%S)"
+          git checkout -b $SYNC_BRANCH
+          
+          # Merge main into the sync branch
+          git merge origin/main --no-edit
+          
+          # Push the sync branch
+          git push origin $SYNC_BRANCH
+          
+          # Create PR using GitHub CLI with simple body
+          gh pr create \
+            --title "🔄 Auto-sync develop with main" \
+            --body "Automatic sync of develop branch with latest main changes. All CI/CD checks must pass before merge." \
+            --base develop \
+            --head $SYNC_BRANCH \
+            --label "automated,sync" \
+            --assignee "@me"
+
+      - name: Auto-merge sync PR
+        if: steps.check-sync.outputs.needs_sync == 'true'
+        run: |
+          # Wait a moment for PR to be created
+          sleep 10
+          
+          # Get the PR number
+          PR_NUMBER=$(gh pr list --head "sync/develop-with-main-*" --json number --jq '.[0].number')
+          
+          if [ ! -z "$PR_NUMBER" ]; then
+            echo "Enabling auto-merge for PR #$PR_NUMBER"
+            gh pr merge $PR_NUMBER --auto --squash
+          fi
+
+      - name: Skip sync
+        if: steps.check-sync.outputs.needs_sync == 'false'
+        run: |
+          echo "✅ Develop is already up to date with main"
+          echo "No sync needed at $(date -u +"%Y-%m-%d %H:%M:%S UTC")" 
