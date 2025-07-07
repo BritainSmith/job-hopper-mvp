@@ -64,6 +64,33 @@ This project uses GitHub Actions to enforce code quality, maintain test coverage
 - Artifact upload for deployment
 - Deployment to production environment
 
+### 4. Automated Sync Workflow (`sync-develop.yml`)
+
+**Purpose**: Keep the `develop` branch automatically synchronized with `main` without unlocking the main branch.
+
+**Triggers**:
+- Scheduled: Every Sunday at 2 AM UTC
+- Manual dispatch (for urgent syncs)
+
+**Features**:
+- **API-Based Operations**: Uses GitHub API directly to avoid permission issues
+- **Branch Protection Compliance**: Works with strict branch protection rules
+- **Automatic PR Creation**: Creates sync pull requests automatically
+- **Immediate Auto-Merge**: Merges PRs when all checks pass
+- **Detailed Logging**: Comprehensive error handling and response validation
+
+**Technical Implementation**:
+- **Permissions**: `contents: write`, `pull-requests: write`, `issues: write`
+- **Authentication**: Uses `GITHUB_TOKEN` with `PAT_TOKEN` fallback
+- **API Calls**: Direct GitHub API via `curl` for PR creation and merging
+- **Error Handling**: Captures and logs all API responses for debugging
+
+**Safety Features**:
+- ✅ Main branch remains locked throughout the process
+- ✅ All CI/CD checks must pass before merge
+- ✅ Clean git history with squash merges
+- ✅ Detailed audit trail of all sync operations
+
 ## Quality Gates
 
 The pipeline enforces strict quality standards through multiple gates:
@@ -192,6 +219,15 @@ npm run format            # Auto-fix formatting issues
 - Update vulnerable dependencies
 - Review security advisories
 - Consider alternative packages if needed
+
+#### 5. Sync Workflow Failures
+**Problem**: Automated sync workflow fails to create or merge PRs
+**Solution**:
+- Check workflow permissions in `.github/workflows/sync-develop.yml`
+- Verify branch protection rules don't block automation
+- Review API response logs for specific error messages
+- Ensure `GITHUB_TOKEN` has required scopes
+- Check for merge conflicts in sync branches
 
 ### Debugging Workflows
 
