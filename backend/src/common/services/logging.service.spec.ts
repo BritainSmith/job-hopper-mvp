@@ -68,7 +68,6 @@ describe('LoggingService', () => {
       expect(new Date(call.timestamp).toISOString()).toBe(call.timestamp);
     });
 
-    /* eslint-disable @typescript-eslint/no-unsafe-argument */
     it('should handle invalid message gracefully', () => {
       (() => service.log('' as any))();
       (() => service.log(null as any))();
@@ -78,7 +77,6 @@ describe('LoggingService', () => {
       expect(mockLogger.warn).toHaveBeenCalledTimes(4);
       expect(mockLogger.log).not.toHaveBeenCalled();
     });
-    /* eslint-enable @typescript-eslint/no-unsafe-argument */
 
     it('should sanitize circular reference context', () => {
       const circularObj: any = { name: 'test' };
@@ -149,7 +147,6 @@ describe('LoggingService', () => {
       });
     });
 
-    /* eslint-disable @typescript-eslint/no-unsafe-argument */
     it('should handle invalid message gracefully', () => {
       service.error('' as any);
       service.error(null as any);
@@ -158,7 +155,6 @@ describe('LoggingService', () => {
       expect(mockLogger.warn).toHaveBeenCalledTimes(3);
       expect(mockLogger.error).not.toHaveBeenCalled();
     });
-    /* eslint-enable @typescript-eslint/no-unsafe-argument */
 
     it('should handle non-Error objects by throwing an error', () => {
       const message = 'Test error message';
@@ -194,7 +190,6 @@ describe('LoggingService', () => {
       });
     });
 
-    /* eslint-disable @typescript-eslint/no-unsafe-argument */
     it('should handle invalid message gracefully', () => {
       service.warn('' as any);
       service.warn(null as any);
@@ -216,7 +211,6 @@ describe('LoggingService', () => {
       );
       // No structured log should be called
     });
-    /* eslint-enable @typescript-eslint/no-unsafe-argument */
   });
 
   describe('debug', () => {
@@ -243,7 +237,6 @@ describe('LoggingService', () => {
       });
     });
 
-    /* eslint-disable @typescript-eslint/no-unsafe-argument */
     it('should handle invalid message gracefully', () => {
       service.debug('' as any);
       service.debug(null as any);
@@ -252,7 +245,6 @@ describe('LoggingService', () => {
       expect(mockLogger.warn).toHaveBeenCalledTimes(3);
       expect(mockLogger.debug).not.toHaveBeenCalled();
     });
-    /* eslint-enable @typescript-eslint/no-unsafe-argument */
   });
 
   describe('logPerformance', () => {
@@ -302,7 +294,6 @@ describe('LoggingService', () => {
       });
     });
 
-    /* eslint-disable @typescript-eslint/no-unsafe-argument */
     it('should handle invalid operation gracefully', () => {
       service.logPerformance('' as any, 100);
       service.logPerformance(null as any, 100);
@@ -311,9 +302,7 @@ describe('LoggingService', () => {
       expect(mockLogger.warn).toHaveBeenCalledTimes(3);
       expect(mockLogger.log).not.toHaveBeenCalled();
     });
-    /* eslint-enable @typescript-eslint/no-unsafe-argument */
 
-    /* eslint-disable @typescript-eslint/no-unsafe-argument */
     it('should handle invalid duration gracefully', () => {
       service.logPerformance('test', -1);
       service.logPerformance('test', 'invalid' as any);
@@ -322,7 +311,6 @@ describe('LoggingService', () => {
       expect(mockLogger.warn).toHaveBeenCalledTimes(3);
       expect(mockLogger.log).not.toHaveBeenCalled();
     });
-    /* eslint-enable @typescript-eslint/no-unsafe-argument */
   });
 
   describe('logDatabaseOperation', () => {
@@ -377,7 +365,6 @@ describe('LoggingService', () => {
       });
     });
 
-    /* eslint-disable @typescript-eslint/no-unsafe-argument */
     it('should handle invalid operation gracefully', () => {
       service.logDatabaseOperation('' as any, 'test');
       service.logDatabaseOperation(null as any, 'test');
@@ -386,9 +373,7 @@ describe('LoggingService', () => {
       expect(mockLogger.warn).toHaveBeenCalledTimes(3);
       expect(mockLogger.log).not.toHaveBeenCalled();
     });
-    /* eslint-enable @typescript-eslint/no-unsafe-argument */
 
-    /* eslint-disable @typescript-eslint/no-unsafe-argument */
     it('should handle invalid table gracefully', () => {
       service.logDatabaseOperation('SELECT', '' as any);
       service.logDatabaseOperation('SELECT', null as any);
@@ -397,9 +382,7 @@ describe('LoggingService', () => {
       expect(mockLogger.warn).toHaveBeenCalledTimes(3);
       expect(mockLogger.log).not.toHaveBeenCalled();
     });
-    /* eslint-enable @typescript-eslint/no-unsafe-argument */
 
-    /* eslint-disable @typescript-eslint/no-unsafe-argument */
     it('should handle invalid duration gracefully', () => {
       service.logDatabaseOperation('SELECT', 'test', -1);
       service.logDatabaseOperation('SELECT', 'test', 'invalid' as any);
@@ -407,7 +390,6 @@ describe('LoggingService', () => {
       expect(mockLogger.warn).toHaveBeenCalledTimes(2);
       expect(mockLogger.log).not.toHaveBeenCalled();
     });
-    /* eslint-enable @typescript-eslint/no-unsafe-argument */
 
     it('should allow undefined duration', () => {
       service.logDatabaseOperation('SELECT', 'test', undefined);
@@ -493,7 +475,6 @@ describe('LoggingService', () => {
       });
     });
 
-    /* eslint-disable @typescript-eslint/no-unsafe-argument */
     it('should handle invalid source gracefully', () => {
       service.logScrapingOperation('' as any, 10);
       service.logScrapingOperation(null as any, 10);
@@ -502,9 +483,7 @@ describe('LoggingService', () => {
       expect(mockLogger.warn).toHaveBeenCalledTimes(3);
       expect(mockLogger.log).not.toHaveBeenCalled();
     });
-    /* eslint-enable @typescript-eslint/no-unsafe-argument */
 
-    /* eslint-disable @typescript-eslint/no-unsafe-argument */
     it('should handle invalid jobsFound gracefully', () => {
       service.logScrapingOperation('test', -1);
       service.logScrapingOperation('test', 'invalid' as any);
@@ -513,9 +492,7 @@ describe('LoggingService', () => {
       expect(mockLogger.warn).toHaveBeenCalledTimes(3);
       expect(mockLogger.log).not.toHaveBeenCalled();
     });
-    /* eslint-enable @typescript-eslint/no-unsafe-argument */
 
-    /* eslint-disable @typescript-eslint/no-unsafe-argument */
     it('should handle invalid duration gracefully', () => {
       service.logScrapingOperation('test', 10, -1);
       service.logScrapingOperation('test', 10, 'invalid' as any);
@@ -524,7 +501,6 @@ describe('LoggingService', () => {
       expect(mockLogger.warn).toHaveBeenCalledTimes(3);
       expect(mockLogger.log).not.toHaveBeenCalled();
     });
-    /* eslint-enable @typescript-eslint/no-unsafe-argument */
 
     it('should allow undefined duration', () => {
       service.logScrapingOperation('test', 10, undefined);
