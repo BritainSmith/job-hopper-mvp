@@ -27,7 +27,7 @@ jobs:
 
       - name: Setup GitHub CLI
         run: |
-          gh auth status
+          echo "${{ secrets.GITHUB_TOKEN }}" | gh auth login --with-token
 
       - name: Fetch all branches
         run: |
