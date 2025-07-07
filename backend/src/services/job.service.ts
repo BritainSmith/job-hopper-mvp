@@ -161,6 +161,15 @@ export class JobService {
     });
   }
 
+  async getAllJobs(): Promise<PrismaJob[]> {
+    try {
+      return await this.jobRepository.getJobs();
+    } catch (error) {
+      this.logger.error('Error getting all jobs:', error);
+      throw new Error('Failed to get all jobs');
+    }
+  }
+
   // --- Application Tracking ---
 
   async applyToJob(

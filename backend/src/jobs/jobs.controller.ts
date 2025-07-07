@@ -16,6 +16,8 @@ import {
   ApiBody,
 } from '@nestjs/swagger';
 import { JobService } from '../services/job.service';
+import { JobDeduplicationService } from '../services/job-deduplication.service';
+import { DataCleaningService } from '../services/data-cleaning.service';
 import {
   JobDto,
   CreateJobDto,
@@ -23,12 +25,21 @@ import {
   ScrapeJobsDto,
   JobStatsDto,
   ScrapeResultDto,
+  DeduplicationOptionsDto,
+  DeduplicationResultDto,
+  DeduplicationStatsDto,
+  DataQualityMetricsDto,
+  CleanedJobDataDto,
 } from './dto/job.dto';
 
 @ApiTags('jobs')
 @Controller('jobs')
 export class JobsController {
-  constructor(private jobService: JobService) {}
+  constructor(
+    private jobService: JobService,
+    private jobDeduplicationService: JobDeduplicationService,
+    private dataCleaningService: DataCleaningService,
+  ) {}
 
   @Get()
   @ApiOperation({
@@ -151,5 +162,103 @@ export class JobsController {
   })
   async createJob(@Body() createJobDto: CreateJobDto): Promise<JobDto> {
     return this.jobService.createJob(createJobDto);
+  }
+
+  @Post('deduplicate/check')
+  @ApiOperation({
+    summary: 'Check for duplicates',
+    description: 'Check if a job is a duplicate of existing jobs',
+  })
+  @ApiBody({ type: CreateJobDto })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Duplicate check completed successfully',
+    type: DeduplicationResultDto,
+  })
+  async checkForDuplicates(
+    @Body() jobData: CreateJobDto,
+    @Query() options: DeduplicationOptionsDto,
+  ): Promise<DeduplicationResultDto> {
+    return this.jobDeduplicationService.checkForDuplicates(jobData, options);
+  }
+
+  @Post('deduplicate/process')
+  @ApiOperation({
+    summary: 'Process jobs with deduplication',
+    description: 'Process multiple jobs with deduplication and return statistics',
+  })
+  @ApiBody({ type: [CreateJobDto] })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Jobs processed with deduplication successfully',
+    type: DeduplicationStatsDto,
+  })
+  async processJobsWithDeduplication(
+    @Body() jobs: CreateJobDto[],
+    @Query() options: DeduplicationOptionsDto,
+  ): Promise<DeduplicationStatsDto> {
+    return this.jobDeduplicationService.processJobsWithDeduplication(jobs, options);
+  }
+
+  @Get('deduplicate/stats')
+  @ApiOperation({
+    summary: 'Get deduplication statistics',
+    description: 'Get overall deduplication statistics for the database',
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Deduplication statistics retrieved successfully',
+  })
+  async getDeduplicationStats() {
+    return this.jobDeduplicationService.getDeduplicationStats();
+  }
+
+  @Get('data-quality/metrics')
+  @ApiOperation({
+    summary: 'Get data quality metrics',
+    description: 'Get comprehensive data quality metrics for all jobs',
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Data quality metrics retrieved successfully',
+    type: DataQualityMetricsDto,
+  })
+  async getDataQualityMetrics(): Promise<DataQualityMetricsDto> {
+    const jobs = await this.jobService.getAllJobs();
+    return this.dataCleaningService.getDataQualityMetrics(jobs);
+  }
+
+  @Get('data-quality/export')
+  @ApiOperation({
+    summary: 'Export cleaned data for AI processing',
+    description: 'Export all jobs with cleaned and normalized data for AI processing',
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Cleaned data exported successfully',
+    type: [CleanedJobDataDto],
+  })
+  async exportCleanedData(): Promise<CleanedJobDataDto[]> {
+    const jobs = await this.jobService.getAllJobs();
+    return this.dataCleaningService.exportCleanedData(jobs);
+  }
+
+  @Get('data-quality/clean/:id')
+  @ApiOperation({
+    summary: 'Clean specific job data',
+    description: 'Clean and normalize data for a specific job',
+  })
+  @ApiParam({ name: 'id', description: 'Job ID', type: Number })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Job data cleaned successfully',
+    type: CleanedJobDataDto,
+  })
+  async cleanJobData(@Param('id') id: string): Promise<CleanedJobDataDto> {
+    const job = await this.jobService.getJobById(parseInt(id));
+    if (!job) {
+      throw new Error('Job not found');
+    }
+    return this.dataCleaningService.cleanJobData(job);
   }
 }

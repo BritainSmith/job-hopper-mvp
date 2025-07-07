@@ -217,3 +217,154 @@ export class ScrapeResultDto {
   @ApiProperty({ description: 'Number of jobs saved to database' })
   saved: number;
 }
+
+export class DeduplicationOptionsDto {
+  @ApiPropertyOptional({ description: 'Minimum similarity score for duplicates', default: 0.8 })
+  @IsOptional()
+  @IsNumber()
+  minSimilarityScore?: number;
+
+  @ApiPropertyOptional({ description: 'Enable fuzzy matching', default: true })
+  @IsOptional()
+  @IsBoolean()
+  enableFuzzyMatching?: boolean;
+
+  @ApiPropertyOptional({ description: 'Check apply link for duplicates', default: true })
+  @IsOptional()
+  @IsBoolean()
+  checkApplyLink?: boolean;
+
+  @ApiPropertyOptional({ description: 'Check title and company for duplicates', default: true })
+  @IsOptional()
+  @IsBoolean()
+  checkTitleCompany?: boolean;
+
+  @ApiPropertyOptional({ description: 'Check location for duplicates', default: true })
+  @IsOptional()
+  @IsBoolean()
+  checkLocation?: boolean;
+
+  @ApiPropertyOptional({ description: 'Check salary for duplicates', default: false })
+  @IsOptional()
+  @IsBoolean()
+  checkSalary?: boolean;
+
+  @ApiPropertyOptional({ description: 'Enable AI-ready processing', default: true })
+  @IsOptional()
+  @IsBoolean()
+  enableAIReady?: boolean;
+}
+
+export class DeduplicationResultDto {
+  @ApiProperty({ description: 'Whether the job is a duplicate' })
+  isDuplicate: boolean;
+
+  @ApiProperty({ description: 'Confidence score of the duplicate detection' })
+  confidence: number;
+
+  @ApiProperty({ description: 'List of similar jobs with scores' })
+  similarJobs: Array<{
+    jobId: number;
+    score: number;
+    reason: string;
+    matchedFields: string[];
+  }>;
+
+  @ApiProperty({ description: 'Recommended action', enum: ['create', 'update', 'skip'] })
+  recommendedAction: 'create' | 'update' | 'skip';
+
+  @ApiProperty({ description: 'Reason for the recommendation' })
+  reason: string;
+}
+
+export class DeduplicationStatsDto {
+  @ApiProperty({ description: 'Total number of jobs processed' })
+  totalJobsProcessed: number;
+
+  @ApiProperty({ description: 'Number of duplicates found' })
+  duplicatesFound: number;
+
+  @ApiProperty({ description: 'Number of jobs created' })
+  jobsCreated: number;
+
+  @ApiProperty({ description: 'Number of jobs updated' })
+  jobsUpdated: number;
+
+  @ApiProperty({ description: 'Number of jobs skipped' })
+  jobsSkipped: number;
+
+  @ApiProperty({ description: 'Average similarity score' })
+  averageSimilarityScore: number;
+
+  @ApiProperty({ description: 'Processing time in milliseconds' })
+  processingTimeMs: number;
+}
+
+export class DataQualityMetricsDto {
+  @ApiProperty({ description: 'Total number of jobs' })
+  totalJobs: number;
+
+  @ApiProperty({ description: 'Number of jobs with complete data' })
+  jobsWithCompleteData: number;
+
+  @ApiProperty({ description: 'Number of jobs with salary information' })
+  jobsWithSalary: number;
+
+  @ApiProperty({ description: 'Number of jobs with skills/tags' })
+  jobsWithSkills: number;
+
+  @ApiProperty({ description: 'Average quality score' })
+  averageQualityScore: number;
+
+  @ApiProperty({ description: 'Common data quality issues' })
+  commonIssues: Array<{
+    issue: string;
+    count: number;
+    percentage: number;
+  }>;
+}
+
+export class CleanedJobDataDto {
+  @ApiProperty({ description: 'Job ID' })
+  id: number;
+
+  @ApiProperty({ description: 'Original job title' })
+  title: string;
+
+  @ApiProperty({ description: 'Normalized job title for AI processing' })
+  normalizedTitle: string;
+
+  @ApiProperty({ description: 'Original company name' })
+  company: string;
+
+  @ApiProperty({ description: 'Normalized company name' })
+  normalizedCompany: string;
+
+  @ApiProperty({ description: 'Original location' })
+  location: string;
+
+  @ApiProperty({ description: 'Normalized location' })
+  normalizedLocation: string;
+
+  @ApiProperty({ description: 'Extracted skills from job' })
+  extractedSkills: string[];
+
+  @ApiProperty({ description: 'Parsed salary range' })
+  salaryRange?: {
+    min: number;
+    max: number;
+    currency: string;
+  } | null;
+
+  @ApiProperty({ description: 'Extracted experience level' })
+  experienceLevel?: 'entry' | 'mid' | 'senior' | 'lead' | 'unknown';
+
+  @ApiProperty({ description: 'Extracted job type' })
+  jobType?: 'full-time' | 'part-time' | 'contract' | 'internship' | 'unknown';
+
+  @ApiProperty({ description: 'Extracted remote type' })
+  remoteType?: 'remote' | 'hybrid' | 'onsite' | 'unknown';
+
+  @ApiProperty({ description: 'Quality score (0-100)' })
+  qualityScore: number;
+}
