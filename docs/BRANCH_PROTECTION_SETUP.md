@@ -2,11 +2,11 @@
 
 ## 🎯 **Recommended Configuration**
 
-For solo projects where you can't approve your own PRs, use this setup with **0 required approvals**:
+For solo projects where you can't approve your own PRs, use this setup with **disabled approval requirements** and **main branch locking**:
 
 ### **Branch Protection Rules**
 
-#### **For `main` branch:**
+#### **For `main` branch (Production):**
 ```
 ✅ Require a pull request before merging
 ❌ Require approvals: DISABLE THIS (uncheck the box)
@@ -18,12 +18,13 @@ For solo projects where you can't approve your own PRs, use this setup with **0 
 ✅ Require conversation resolution before merging
 ✅ Restrict pushes that create files larger than 100MB
 ✅ Do not allow bypassing the above settings
+🔒 LOCK BRANCH (maximum protection)
 ```
 
-#### **For `develop` branch:**
+#### **For `develop` branch (Development):**
 ```
 ✅ Require a pull request before merging
-✅ Require approvals: 0 (for solo development)
+❌ Require approvals: DISABLE THIS (uncheck the box)
 ✅ Require status checks to pass before merging:
    - CI/CD Pipeline
    - PR Quality Check
@@ -33,11 +34,12 @@ For solo projects where you can't approve your own PRs, use this setup with **0 
 ✅ Restrict pushes that create files larger than 100MB
 ✅ Allow specified actors to bypass required pull requests
    - Add @BritainSmith (for emergency fixes)
+❌ DON'T LOCK (keep flexible for development)
 ```
 
 ## 🛡️ **Solo Development Workflow**
 
-With 0 required approvals, you can:
+With disabled approval requirements, you can:
 
 ### **Normal Development Flow**
 1. Create feature branch
@@ -52,25 +54,34 @@ With 0 required approvals, you can:
 - Only available on develop, not main
 - Use sparingly for true emergencies
 
+### **Main Branch Protection**
+- **Locked** - No direct pushes possible
+- **All changes must go through PR workflow**
+- **Unlock only for critical security fixes**
+- **Maximum protection for production code**
+
 ## 🔄 **Workflow for Solo Development**
 
 1. **Create feature branch**: `git checkout -b feature/new-feature`
 2. **Make changes and commit**: `git commit -m "feat: add new feature"`
 3. **Push branch**: `git push origin feature/new-feature`
-4. **Create PR**: Use GitHub's "Compare & pull request" button
+4. **Create PR to develop**: Use GitHub's "Compare & pull request" button
 5. **Wait for checks**: All CI/CD checks run automatically
-6. **Merge immediately**: Click "Merge pull request" when checks pass
-7. **Clean up**: Delete the feature branch after merge
+6. **Merge to develop**: Click "Merge pull request" when checks pass
+7. **Create PR to main**: When ready for production
+8. **Merge to main**: After thorough testing on develop
+9. **Clean up**: Delete the feature branch after merge
 
 ## 🛡️ **Security Benefits**
 
-Even with 0 required approvals, you still get:
+Even with disabled approval requirements, you still get:
 - ✅ **Status check enforcement** (tests, linting, coverage)
 - ✅ **PR history** for all changes
 - ✅ **Branch protection** against accidental direct pushes
 - ✅ **Conversation tracking** for future reference
 - ✅ **Code review workflow** when collaborating
 - ✅ **Emergency override capability** (develop branch)
+- ✅ **Maximum production protection** (main branch locked)
 
 ## 🔧 **For Future Collaboration**
 
@@ -79,6 +90,7 @@ When you add collaborators:
 2. **Remove bypass permissions** (or keep for emergencies)
 3. **Collaborators will need your approval** to merge
 4. **You can still override** when needed (if you keep bypass permissions)
+5. **Keep main branch locked** for maximum production safety
 
 ## 📝 **Best Practices**
 
@@ -93,10 +105,15 @@ When you add collaborators:
 - ✅ **CI/CD fixes** - When PRs can't be created
 - ✅ **Documentation typos** - Minor text fixes
 
+### **When to Unlock Main Branch:**
+- ✅ **Critical security vulnerabilities** - Immediate fixes needed
+- ✅ **CI/CD pipeline breaks** - When PRs can't be created
+- ✅ **Database migrations** - When direct access is required
+
 ### **When NOT to Use Direct Push:**
 - ❌ **Feature development** - Always use PRs
 - ❌ **Breaking changes** - Always use PRs
-- ❌ **Main branch** - Never direct push to main
+- ❌ **Main branch** - Never direct push to main (it's locked anyway)
 
 ## 🎯 **GitHub Settings Location**
 
@@ -104,7 +121,8 @@ When you add collaborators:
 2. Click **Settings** → **Branches**
 3. Click **Add rule** or edit existing rules
 4. Configure as shown above
-5. **Key**: Set "Require approvals" to **0** for solo development
+5. **Key**: Disable "Require approvals" for solo development
+6. **Key**: Lock the main branch for maximum protection
 
 ## 🔄 **Migration Path for Collaboration**
 
@@ -123,8 +141,13 @@ When you're ready to add collaborators:
    - Keep @BritainSmith for emergency fixes
    ```
 
-3. **Update CODEOWNERS** to include new collaborators
+3. **Keep main branch locked**:
+   ```
+   🔒 LOCK BRANCH (maintain maximum protection)
+   ```
+
+4. **Update CODEOWNERS** to include new collaborators
 
 ---
 
-**Note**: This setup gives you immediate merge capability while maintaining professional development practices and preparing for future collaboration. 
+**Note**: This setup gives you immediate merge capability while maintaining professional development practices and maximum production protection. 
