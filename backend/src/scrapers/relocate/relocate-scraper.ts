@@ -1,19 +1,28 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { BaseScraper } from '../base/base-scraper.abstract';
 import { RateLimitConfig, ScrapingOptions, Job } from '../base/interfaces';
 import { RelocateV1Parser } from './v1/relocate-v1.parser';
 
 @Injectable()
 export class RelocateScraper extends BaseScraper {
+  protected readonly logger = new Logger(RelocateScraper.name);
+  readonly baseUrl: string;
+
   readonly name = 'Relocate.me';
   readonly version = 'v1';
-  readonly baseUrl = 'https://relocate.me';
 
   private currentVersion: string = 'v1';
   private versions: Map<string, RelocateV1Parser> = new Map();
 
-  constructor(private readonly relocateV1Parser: RelocateV1Parser) {
+  constructor(
+    protected configService: ConfigService,
+    private readonly relocateV1Parser: RelocateV1Parser,
+  ) {
     super();
+    this.baseUrl =
+      this.configService.get<string>('RELOCATE_BASE_URL') ||
+      'https://relocate.me';
     this.versions.set('v1', relocateV1Parser);
 
     // Update metrics version

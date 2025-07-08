@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { ConfigService } from '@nestjs/config';
 import { LinkedInScraper } from './linkedin-scraper';
 import { LinkedInV1Parser } from './v1/linkedin-v1.parser';
 import { Job } from '../base/interfaces';
@@ -38,6 +39,12 @@ describe('LinkedInScraper', () => {
         {
           provide: LinkedInV1Parser,
           useValue: mockParser,
+        },
+        {
+          provide: ConfigService,
+          useValue: {
+            get: jest.fn().mockReturnValue('https://linkedin.com/jobs'),
+          },
         },
       ],
     }).compile();

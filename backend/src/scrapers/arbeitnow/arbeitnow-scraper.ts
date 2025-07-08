@@ -1,19 +1,28 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { BaseScraper } from '../base/base-scraper.abstract';
 import { RateLimitConfig, ScrapingOptions, Job } from '../base/interfaces';
 import { ArbeitnowV1Parser } from './v1/arbeitnow-v1.parser';
 
 @Injectable()
 export class ArbeitnowScraper extends BaseScraper {
+  protected readonly logger = new Logger(ArbeitnowScraper.name);
+  readonly baseUrl: string;
+
   readonly name = 'Arbeitnow';
   readonly version = 'v1';
-  readonly baseUrl = 'https://www.arbeitnow.com';
 
   private currentVersion: string = 'v1';
   private versions: Map<string, ArbeitnowV1Parser> = new Map();
 
-  constructor(private readonly arbeitnowV1Parser: ArbeitnowV1Parser) {
+  constructor(
+    protected configService: ConfigService,
+    private readonly arbeitnowV1Parser: ArbeitnowV1Parser,
+  ) {
     super();
+    this.baseUrl =
+      this.configService.get<string>('ARBEITNOW_BASE_URL') ||
+      'https://www.arbeitnow.com';
     this.versions.set('v1', arbeitnowV1Parser);
 
     // Update metrics version

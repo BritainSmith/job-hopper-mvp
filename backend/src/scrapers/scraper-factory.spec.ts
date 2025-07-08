@@ -1,9 +1,13 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { ConfigService } from '@nestjs/config';
 import { ScraperFactory } from './scraper-factory';
 import { RemoteOKScraper } from './remoteok/remoteok-scraper';
 import { LinkedInScraper } from './linkedin/linkedin-scraper';
 import { ArbeitnowScraper } from './arbeitnow/arbeitnow-scraper';
 import { RelocateScraper } from './relocate/relocate-scraper';
+import { LinkedInV1Parser } from './linkedin/v1/linkedin-v1.parser';
+import { ArbeitnowV1Parser } from './arbeitnow/v1/arbeitnow-v1.parser';
+import { RelocateV1Parser } from './relocate/v1/relocate-v1.parser';
 import { Job, IScraper } from './base/interfaces';
 
 // Mock interface for testing
@@ -35,7 +39,83 @@ describe('ScraperFactory', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [ScraperFactory],
+      providers: [
+        ScraperFactory,
+        {
+          provide: ConfigService,
+          useValue: {
+            get: jest.fn().mockImplementation((key: string) => {
+              const configs = {
+                REMOTEOK_BASE_URL: 'https://remoteok.com',
+                LINKEDIN_BASE_URL: 'https://linkedin.com/jobs',
+                ARBEITNOW_BASE_URL: 'https://www.arbeitnow.com',
+                RELOCATE_BASE_URL: 'https://relocate.me',
+              };
+              return configs[key as keyof typeof configs];
+            }),
+          },
+        },
+        {
+          provide: RemoteOKScraper,
+          useValue: {
+            name: 'RemoteOK',
+            version: 'v1',
+            baseUrl: 'https://remoteok.com',
+            scrapeJobs: jest.fn().mockResolvedValue([]),
+            isHealthy: jest.fn().mockResolvedValue(true),
+            getMetrics: jest.fn().mockReturnValue({}),
+            getRateLimit: jest.fn().mockReturnValue({}),
+          },
+        },
+        {
+          provide: LinkedInScraper,
+          useValue: {
+            name: 'LinkedIn',
+            version: 'v1',
+            baseUrl: 'https://linkedin.com/jobs',
+            scrapeJobs: jest.fn().mockResolvedValue([]),
+            isHealthy: jest.fn().mockResolvedValue(true),
+            getMetrics: jest.fn().mockReturnValue({}),
+            getRateLimit: jest.fn().mockReturnValue({}),
+          },
+        },
+        {
+          provide: ArbeitnowScraper,
+          useValue: {
+            name: 'Arbeitnow',
+            version: 'v1',
+            baseUrl: 'https://www.arbeitnow.com',
+            scrapeJobs: jest.fn().mockResolvedValue([]),
+            isHealthy: jest.fn().mockResolvedValue(true),
+            getMetrics: jest.fn().mockReturnValue({}),
+            getRateLimit: jest.fn().mockReturnValue({}),
+          },
+        },
+        {
+          provide: RelocateScraper,
+          useValue: {
+            name: 'Relocate.me',
+            version: 'v1',
+            baseUrl: 'https://relocate.me',
+            scrapeJobs: jest.fn().mockResolvedValue([]),
+            isHealthy: jest.fn().mockResolvedValue(true),
+            getMetrics: jest.fn().mockReturnValue({}),
+            getRateLimit: jest.fn().mockReturnValue({}),
+          },
+        },
+        {
+          provide: LinkedInV1Parser,
+          useValue: {},
+        },
+        {
+          provide: ArbeitnowV1Parser,
+          useValue: {},
+        },
+        {
+          provide: RelocateV1Parser,
+          useValue: {},
+        },
+      ],
     }).compile();
 
     factory = module.get<ScraperFactory>(ScraperFactory);
@@ -72,10 +152,15 @@ describe('ScraperFactory', () => {
       const arbeitnowScraper = factory.getScraper('arbeitnow');
       const relocateScraper = factory.getScraper('relocate');
 
-      expect(remoteokScraper).toBeInstanceOf(RemoteOKScraper);
-      expect(linkedinScraper).toBeInstanceOf(LinkedInScraper);
-      expect(arbeitnowScraper).toBeInstanceOf(ArbeitnowScraper);
-      expect(relocateScraper).toBeInstanceOf(RelocateScraper);
+      expect(remoteokScraper).toBeDefined();
+      expect(linkedinScraper).toBeDefined();
+      expect(arbeitnowScraper).toBeDefined();
+      expect(relocateScraper).toBeDefined();
+
+      expect(remoteokScraper.name).toBe('RemoteOK');
+      expect(linkedinScraper.name).toBe('LinkedIn');
+      expect(arbeitnowScraper.name).toBe('Arbeitnow');
+      expect(relocateScraper.name).toBe('Relocate.me');
     });
 
     it('should throw error for unknown scraper', () => {

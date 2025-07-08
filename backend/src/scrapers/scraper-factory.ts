@@ -8,11 +8,9 @@ import {
 } from './base/interfaces';
 import { RemoteOKScraper } from './remoteok/remoteok-scraper';
 import { LinkedInScraper } from './linkedin/linkedin-scraper';
-import { LinkedInV1Parser } from './linkedin/v1/linkedin-v1.parser';
 import { ArbeitnowScraper } from './arbeitnow/arbeitnow-scraper';
-import { ArbeitnowV1Parser } from './arbeitnow/v1/arbeitnow-v1.parser';
 import { RelocateScraper } from './relocate/relocate-scraper';
-import { RelocateV1Parser } from './relocate/v1/relocate-v1.parser';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class ScraperFactory {
@@ -20,26 +18,23 @@ export class ScraperFactory {
   private scrapers: Map<string, IScraper> = new Map();
   private configs: Map<string, ScraperConfig> = new Map();
 
-  constructor() {
+  constructor(
+    private readonly configService: ConfigService,
+    private readonly remoteOKScraper: RemoteOKScraper,
+    private readonly linkedInScraper: LinkedInScraper,
+    private readonly arbeitnowScraper: ArbeitnowScraper,
+    private readonly relocateScraper: RelocateScraper,
+  ) {
     this.initializeScrapers();
     this.initializeConfigs();
   }
 
   private initializeScrapers() {
-    // Register all scrapers
-    this.registerScraper('remoteok', new RemoteOKScraper());
-    this.registerScraper(
-      'linkedin',
-      new LinkedInScraper(new LinkedInV1Parser()),
-    );
-    this.registerScraper(
-      'arbeitnow',
-      new ArbeitnowScraper(new ArbeitnowV1Parser()),
-    );
-    this.registerScraper(
-      'relocate',
-      new RelocateScraper(new RelocateV1Parser()),
-    );
+    // Register all scrapers using injected instances
+    this.registerScraper('remoteok', this.remoteOKScraper);
+    this.registerScraper('linkedin', this.linkedInScraper);
+    this.registerScraper('arbeitnow', this.arbeitnowScraper);
+    this.registerScraper('relocate', this.relocateScraper);
     // Add more scrapers as needed:
     // this.registerScraper('weworkremotely', new WeWorkRemotelyScraper());
     // this.registerScraper('stackoverflow', new StackOverflowScraper());

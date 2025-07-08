@@ -3,6 +3,7 @@ import { AppModule } from './app.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ConfigService } from '@nestjs/config';
+import { AIService } from './services/ai.service';
 
 describe('AppModule', () => {
   it('should be defined', () => {
@@ -22,7 +23,30 @@ describe('AppModule', () => {
   it('should import required modules', async () => {
     const module = await Test.createTestingModule({
       imports: [AppModule],
-    }).compile();
+    })
+      .overrideProvider(AIService)
+      .useValue({
+        isAvailable: jest.fn().mockReturnValue(false),
+        getStatus: jest.fn().mockReturnValue({
+          available: false,
+          model: 'gpt-4o-mini',
+          configured: false,
+        }),
+        analyzeJob: jest.fn().mockResolvedValue({
+          classification: {
+            seniorityLevel: 'unknown',
+            requiredSkills: [],
+            remoteType: 'unknown',
+            jobType: 'unknown',
+            companySize: 'unknown',
+            confidence: 0,
+            reasoning: 'Mock AI service for app module tests',
+          },
+          processingTime: 0,
+          costEstimate: 0,
+        }),
+      })
+      .compile();
 
     // Check that the module can be instantiated
     expect(module).toBeDefined();
@@ -31,7 +55,30 @@ describe('AppModule', () => {
   it('should have AppController registered', async () => {
     const module = await Test.createTestingModule({
       imports: [AppModule],
-    }).compile();
+    })
+      .overrideProvider(AIService)
+      .useValue({
+        isAvailable: jest.fn().mockReturnValue(false),
+        getStatus: jest.fn().mockReturnValue({
+          available: false,
+          model: 'gpt-4o-mini',
+          configured: false,
+        }),
+        analyzeJob: jest.fn().mockResolvedValue({
+          classification: {
+            seniorityLevel: 'unknown',
+            requiredSkills: [],
+            remoteType: 'unknown',
+            jobType: 'unknown',
+            companySize: 'unknown',
+            confidence: 0,
+            reasoning: 'Mock AI service for app module tests',
+          },
+          processingTime: 0,
+          costEstimate: 0,
+        }),
+      })
+      .compile();
 
     const appController = module.get<AppController>(AppController);
     expect(appController).toBeDefined();
@@ -41,7 +88,30 @@ describe('AppModule', () => {
   it('should have AppService registered', async () => {
     const module = await Test.createTestingModule({
       imports: [AppModule],
-    }).compile();
+    })
+      .overrideProvider(AIService)
+      .useValue({
+        isAvailable: jest.fn().mockReturnValue(false),
+        getStatus: jest.fn().mockReturnValue({
+          available: false,
+          model: 'gpt-4o-mini',
+          configured: false,
+        }),
+        analyzeJob: jest.fn().mockResolvedValue({
+          classification: {
+            seniorityLevel: 'unknown',
+            requiredSkills: [],
+            remoteType: 'unknown',
+            jobType: 'unknown',
+            companySize: 'unknown',
+            confidence: 0,
+            reasoning: 'Mock AI service for app module tests',
+          },
+          processingTime: 0,
+          costEstimate: 0,
+        }),
+      })
+      .compile();
 
     const appService = module.get<AppService>(AppService);
     expect(appService).toBeDefined();
@@ -51,7 +121,30 @@ describe('AppModule', () => {
   it('should have ConfigModule with global configuration', async () => {
     const module = await Test.createTestingModule({
       imports: [AppModule],
-    }).compile();
+    })
+      .overrideProvider(AIService)
+      .useValue({
+        isAvailable: jest.fn().mockReturnValue(false),
+        getStatus: jest.fn().mockReturnValue({
+          available: false,
+          model: 'gpt-4o-mini',
+          configured: false,
+        }),
+        analyzeJob: jest.fn().mockResolvedValue({
+          classification: {
+            seniorityLevel: 'unknown',
+            requiredSkills: [],
+            remoteType: 'unknown',
+            jobType: 'unknown',
+            companySize: 'unknown',
+            confidence: 0,
+            reasoning: 'Mock AI service for app module tests',
+          },
+          processingTime: 0,
+          costEstimate: 0,
+        }),
+      })
+      .compile();
 
     // ConfigModule should be available globally
     const configService = module.get<ConfigService>(ConfigService);
@@ -62,7 +155,30 @@ describe('AppModule', () => {
   it('should have all required modules imported', async () => {
     const module = await Test.createTestingModule({
       imports: [AppModule],
-    }).compile();
+    })
+      .overrideProvider(AIService)
+      .useValue({
+        isAvailable: jest.fn().mockReturnValue(false),
+        getStatus: jest.fn().mockReturnValue({
+          available: false,
+          model: 'gpt-4o-mini',
+          configured: false,
+        }),
+        analyzeJob: jest.fn().mockResolvedValue({
+          classification: {
+            seniorityLevel: 'unknown',
+            requiredSkills: [],
+            remoteType: 'unknown',
+            jobType: 'unknown',
+            companySize: 'unknown',
+            confidence: 0,
+            reasoning: 'Mock AI service for app module tests',
+          },
+          processingTime: 0,
+          costEstimate: 0,
+        }),
+      })
+      .compile();
 
     // Check that all expected modules are available by testing a few key services
     const appController = module.get<AppController>(AppController);
@@ -89,7 +205,30 @@ describe('AppModule', () => {
     it('should inject AppService into AppController', async () => {
       const module = await Test.createTestingModule({
         imports: [AppModule],
-      }).compile();
+      })
+        .overrideProvider(AIService)
+        .useValue({
+          isAvailable: jest.fn().mockReturnValue(false),
+          getStatus: jest.fn().mockReturnValue({
+            available: false,
+            model: 'gpt-4o-mini',
+            configured: false,
+          }),
+          analyzeJob: jest.fn().mockResolvedValue({
+            classification: {
+              seniorityLevel: 'unknown',
+              requiredSkills: [],
+              remoteType: 'unknown',
+              jobType: 'unknown',
+              companySize: 'unknown',
+              confidence: 0,
+              reasoning: 'Mock AI service for app module tests',
+            },
+            processingTime: 0,
+            costEstimate: 0,
+          }),
+        })
+        .compile();
 
       const appController = module.get<AppController>(AppController);
       const appService = module.get<AppService>(AppService);
@@ -102,7 +241,30 @@ describe('AppModule', () => {
     it('should have proper module initialization', async () => {
       const module = await Test.createTestingModule({
         imports: [AppModule],
-      }).compile();
+      })
+        .overrideProvider(AIService)
+        .useValue({
+          isAvailable: jest.fn().mockReturnValue(false),
+          getStatus: jest.fn().mockReturnValue({
+            available: false,
+            model: 'gpt-4o-mini',
+            configured: false,
+          }),
+          analyzeJob: jest.fn().mockResolvedValue({
+            classification: {
+              seniorityLevel: 'unknown',
+              requiredSkills: [],
+              remoteType: 'unknown',
+              jobType: 'unknown',
+              companySize: 'unknown',
+              confidence: 0,
+              reasoning: 'Mock AI service for app module tests',
+            },
+            processingTime: 0,
+            costEstimate: 0,
+          }),
+        })
+        .compile();
 
       // Module should be properly initialized
       expect(module).toBeDefined();
