@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { ConfigService } from '@nestjs/config';
 import { ArbeitnowScraper } from './arbeitnow-scraper';
 import { ArbeitnowV1Parser } from './v1/arbeitnow-v1.parser';
 import { Job } from '../base/interfaces';
@@ -38,6 +39,12 @@ describe('ArbeitnowScraper', () => {
         {
           provide: ArbeitnowV1Parser,
           useValue: mockParser,
+        },
+        {
+          provide: ConfigService,
+          useValue: {
+            get: jest.fn().mockReturnValue('https://www.arbeitnow.com'),
+          },
         },
       ],
     }).compile();

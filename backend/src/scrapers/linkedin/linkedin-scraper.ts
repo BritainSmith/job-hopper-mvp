@@ -1,19 +1,28 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { BaseScraper } from '../base/base-scraper.abstract';
 import { RateLimitConfig, ScrapingOptions, Job } from '../base/interfaces';
 import { LinkedInV1Parser } from './v1/linkedin-v1.parser';
 
 @Injectable()
 export class LinkedInScraper extends BaseScraper {
+  protected readonly logger = new Logger(LinkedInScraper.name);
+  readonly baseUrl: string;
+
   readonly name = 'LinkedIn';
   readonly version = 'v1';
-  readonly baseUrl = 'https://linkedin.com/jobs';
-
   private currentVersion: string = 'v1';
   private versions: Map<string, LinkedInV1Parser> = new Map();
 
-  constructor(private readonly linkedInV1Parser: LinkedInV1Parser) {
+  constructor(
+    protected configService: ConfigService,
+    private readonly linkedInV1Parser: LinkedInV1Parser,
+  ) {
     super();
+    this.baseUrl =
+      this.configService.get<string>('LINKEDIN_BASE_URL') ||
+      'https://linkedin.com/jobs';
+
     this.versions.set('v1', this.linkedInV1Parser);
 
     // Update metrics version

@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { ConfigService } from '@nestjs/config';
 import { RelocateScraper } from './relocate-scraper';
 import { RelocateV1Parser } from './v1/relocate-v1.parser';
 import { Job } from '../base/interfaces';
@@ -44,6 +45,12 @@ describe('RelocateScraper', () => {
         {
           provide: RelocateV1Parser,
           useValue: mockParser,
+        },
+        {
+          provide: ConfigService,
+          useValue: {
+            get: jest.fn().mockReturnValue('https://relocate.me'),
+          },
         },
       ],
     }).compile();
