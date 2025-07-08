@@ -1,24 +1,27 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { BaseScraper } from '../base/base-scraper.abstract';
 import { RateLimitConfig, ScrapingOptions, Job } from '../base/interfaces';
 import { RemoteOKV1Parser } from './v1/remoteok-v1.parser';
 
 @Injectable()
 export class RemoteOKScraper extends BaseScraper {
+  protected readonly logger = new Logger(RemoteOKScraper.name);
+  readonly baseUrl: string;
+
   readonly name = 'RemoteOK';
   readonly version = 'v1';
-  readonly baseUrl = 'https://remoteok.com';
 
   private currentVersion: string = 'v1';
   private versions: Map<string, RemoteOKV1Parser> = new Map();
 
-  constructor() {
+  constructor(protected configService: ConfigService) {
     super();
+    this.baseUrl =
+      this.configService.get<string>('REMOTEOK_BASE_URL') ||
+      'https://remoteok.com';
     this.versions.set('v1', new RemoteOKV1Parser());
     // When v2 is implemented, add: this.versions.set('v2', new RemoteOKV2Parser());
-
-    // Update metrics version
-    this.metrics.version = this.currentVersion;
   }
 
   getRateLimit(): RateLimitConfig {

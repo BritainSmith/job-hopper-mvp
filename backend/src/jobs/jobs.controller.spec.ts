@@ -5,6 +5,7 @@ import { JobsController } from './jobs.controller';
 import { JobService } from '../services/job.service';
 import { DataCleaningService } from '../services/data-cleaning.service';
 import { JobDeduplicationService } from '../services/job-deduplication.service';
+import { AIService } from '../services/ai.service';
 
 describe('JobsController', () => {
   let app: INestApplication;
@@ -46,6 +47,27 @@ describe('JobsController', () => {
     processJobsWithDeduplication: jest.fn().mockResolvedValue({}),
   };
 
+  const mockAIService = {
+    analyzeJob: jest.fn().mockResolvedValue({
+      classification: {
+        seniorityLevel: 'senior',
+        requiredSkills: ['JavaScript'],
+        remoteType: 'remote',
+        jobType: 'full-time',
+        confidence: 0.8,
+        reasoning: 'Test analysis',
+      },
+      processingTime: 100,
+      costEstimate: 0.001,
+    }),
+    isAvailable: jest.fn().mockReturnValue(true),
+    getStatus: jest.fn().mockReturnValue({
+      available: true,
+      model: 'gpt-4o-mini',
+      configured: true,
+    }),
+  };
+
   beforeAll(async () => {
     const moduleRef: TestingModule = await Test.createTestingModule({
       controllers: [JobsController],
@@ -56,6 +78,7 @@ describe('JobsController', () => {
           provide: JobDeduplicationService,
           useValue: mockJobDeduplicationService,
         },
+        { provide: AIService, useValue: mockAIService },
       ],
     }).compile();
 
@@ -133,6 +156,98 @@ describe('JobsController', () => {
         .get('/jobs/data-quality/clean/1')
         .expect(200)
         .expect({});
+    });
+  });
+
+  describe('AI Analysis endpoints', () => {
+    it('/jobs/ai/status (GET) should return AI service status', () => {
+      return request(app.getHttpServer())
+        .get('/jobs/ai/status')
+        .expect(200)
+        .expect({
+          available: true,
+          model: 'gpt-4o-mini',
+          configured: true,
+        });
+    });
+
+    it('/jobs/ai/analyze (POST) should analyze job with AI', () => {
+      const jobData = {
+        jobTitle: 'Senior Software Engineer',
+        company: 'Tech Corp',
+        location: 'San Francisco, CA',
+        description: 'We are looking for a senior engineer...',
+        salary: '$120k - $180k',
+        tags: 'JavaScript, React, Node.js',
+      };
+
+      return request(app.getHttpServer())
+        .post('/jobs/ai/analyze')
+        .send(jobData)
+        .expect(201)
+        .expect({
+          classification: {
+            seniorityLevel: 'senior',
+            requiredSkills: ['JavaScript'],
+            remoteType: 'remote',
+            jobType: 'full-time',
+            confidence: 0.8,
+            reasoning: 'Test analysis',
+          },
+          processingTime: 100,
+          costEstimate: 0.001,
+        });
+    });
+
+    it('/jobs/ai/analyze/batch (POST) should analyze multiple jobs', () => {
+      const batchData = {
+        jobs: [
+          {
+            jobTitle: 'Frontend Developer',
+            company: 'Startup',
+            location: 'Remote',
+          },
+          {
+            jobTitle: 'Backend Developer',
+            company: 'Enterprise',
+            location: 'New York',
+          },
+        ],
+        enableCaching: true,
+      };
+
+      return request(app.getHttpServer())
+        .post('/jobs/ai/analyze/batch')
+        .send(batchData)
+        .expect(201)
+        .expect((res) => {
+          expect(res.body.results).toHaveLength(2);
+          expect(res.body.totalProcessingTime).toBeGreaterThanOrEqual(0);
+          expect(res.body.totalCostEstimate).toBeGreaterThan(0);
+          expect(res.body.jobsProcessed).toBe(2);
+          expect(res.body.jobsCached).toBe(0);
+          expect(res.body.results[0]).toHaveProperty('classification');
+          expect(res.body.results[0]).toHaveProperty('processingTime');
+          expect(res.body.results[0]).toHaveProperty('costEstimate');
+        });
+    });
+
+    it('/jobs/:id/ai-analysis (GET) should analyze existing job', () => {
+      return request(app.getHttpServer())
+        .get('/jobs/1/ai-analysis')
+        .expect(200)
+        .expect({
+          classification: {
+            seniorityLevel: 'senior',
+            requiredSkills: ['JavaScript'],
+            remoteType: 'remote',
+            jobType: 'full-time',
+            confidence: 0.8,
+            reasoning: 'Test analysis',
+          },
+          processingTime: 100,
+          costEstimate: 0.001,
+        });
     });
   });
 });

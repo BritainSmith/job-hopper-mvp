@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-return */
 import { Test, TestingModule } from '@nestjs/testing';
 import { Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { RemoteOKScraper } from './remoteok-scraper';
 import { Job, ScrapingOptions } from '../base/interfaces';
 
@@ -93,7 +94,15 @@ describe('RemoteOKScraper', () => {
 
     // Create testing module
     const module: TestingModule = await Test.createTestingModule({
-      providers: [RemoteOKScraper],
+      providers: [
+        RemoteOKScraper,
+        {
+          provide: ConfigService,
+          useValue: {
+            get: jest.fn().mockReturnValue('https://remoteok.com'),
+          },
+        },
+      ],
     }).compile();
 
     scraper = module.get<RemoteOKScraper>(RemoteOKScraper);

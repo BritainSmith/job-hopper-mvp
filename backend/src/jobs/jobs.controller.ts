@@ -18,6 +18,7 @@ import {
 import { JobService } from '../services/job.service';
 import { JobDeduplicationService } from '../services/job-deduplication.service';
 import { DataCleaningService } from '../services/data-cleaning.service';
+import { AIService } from '../services/ai.service';
 import {
   JobDto,
   CreateJobDto,
@@ -31,6 +32,13 @@ import {
   DataQualityMetricsDto,
   CleanedJobDataDto,
 } from './dto/job.dto';
+import {
+  AIAnalysisRequestDto,
+  AIAnalysisResponseDto,
+  AIStatusDto,
+  BatchAIAnalysisRequestDto,
+  BatchAIAnalysisResponseDto,
+} from './dto/ai.dto';
 import { IJobsController } from '../interfaces/jobs.controller.interface';
 import { JobStatus } from '@prisma/client';
 
@@ -41,6 +49,7 @@ export class JobsController implements IJobsController {
     private jobService: JobService,
     private jobDeduplicationService: JobDeduplicationService,
     private dataCleaningService: DataCleaningService,
+    private aiService: AIService,
   ) {}
 
   @Get()
@@ -267,5 +276,127 @@ export class JobsController implements IJobsController {
       throw new Error('Job not found');
     }
     return this.dataCleaningService.cleanJobData(job);
+  }
+
+  // AI Analysis Endpoints
+
+  @Get('ai/status')
+  @ApiOperation({
+    summary: 'Get AI service status',
+    description: 'Check if AI service is available and configured',
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'AI service status retrieved successfully',
+    type: AIStatusDto,
+  })
+  getAIStatus(): AIStatusDto {
+    return this.aiService.getStatus();
+  }
+
+  @Post('ai/analyze')
+  @ApiOperation({
+    summary: 'Analyze job with AI',
+    description:
+      'Analyze a job posting using AI for classification and insights',
+  })
+  @ApiBody({ type: AIAnalysisRequestDto })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Job analyzed successfully',
+    type: AIAnalysisResponseDto,
+  })
+  @ApiResponse({
+    status: HttpStatus.SERVICE_UNAVAILABLE,
+    description: 'AI service not available',
+  })
+  async analyzeJob(
+    @Body() request: AIAnalysisRequestDto,
+  ): Promise<AIAnalysisResponseDto> {
+    return this.aiService.analyzeJob(request);
+  }
+
+  @Post('ai/analyze/batch')
+  @ApiOperation({
+    summary: 'Analyze multiple jobs with AI',
+    description: 'Analyze multiple job postings using AI with optional caching',
+  })
+  @ApiBody({ type: BatchAIAnalysisRequestDto })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Jobs analyzed successfully',
+    type: BatchAIAnalysisResponseDto,
+  })
+  async analyzeJobsBatch(
+    @Body() request: BatchAIAnalysisRequestDto,
+  ): Promise<BatchAIAnalysisResponseDto> {
+    const startTime = Date.now();
+    const results: AIAnalysisResponseDto[] = [];
+    let totalCost = 0;
+    const jobsCached = 0;
+
+    for (const job of request.jobs) {
+      try {
+        const result = await this.aiService.analyzeJob(job);
+        results.push(result);
+        totalCost += result.costEstimate;
+      } catch (error) {
+        // Add error result
+        const errorMessage =
+          error instanceof Error ? error.message : 'Unknown error';
+        results.push({
+          classification: {
+            seniorityLevel: 'unknown',
+            requiredSkills: [],
+            remoteType: 'unknown',
+            jobType: 'unknown',
+            confidence: 0,
+            reasoning: `Analysis failed: ${errorMessage}`,
+          },
+          processingTime: 0,
+          costEstimate: 0,
+        });
+      }
+    }
+
+    return {
+      results,
+      totalProcessingTime: Date.now() - startTime,
+      totalCostEstimate: totalCost,
+      jobsProcessed: results.length,
+      jobsCached,
+    };
+  }
+
+  @Get(':id/ai-analysis')
+  @ApiOperation({
+    summary: 'Analyze existing job with AI',
+    description: 'Analyze an existing job from the database using AI',
+  })
+  @ApiParam({ name: 'id', description: 'Job ID', type: Number })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Job analyzed successfully',
+    type: AIAnalysisResponseDto,
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Job not found',
+  })
+  async analyzeExistingJob(
+    @Param('id') id: string,
+  ): Promise<AIAnalysisResponseDto> {
+    const job = await this.jobService.getJobById(parseInt(id));
+    if (!job) {
+      throw new Error('Job not found');
+    }
+
+    return this.aiService.analyzeJob({
+      jobTitle: job.title,
+      company: job.company,
+      location: job.location,
+      salary: job.salary || undefined,
+      tags: job.tags || undefined,
+    });
   }
 }
