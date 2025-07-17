@@ -20,6 +20,11 @@ import { JobDeduplicationService } from '../services/job-deduplication.service';
 import { DataCleaningService } from '../services/data-cleaning.service';
 import { AIService } from '../services/ai.service';
 import {
+  AIJobFilterService,
+  AIFilterResult,
+  JobRecommendationResult,
+} from '../services/ai-job-filter.service';
+import {
   JobDto,
   CreateJobDto,
   JobQueryDto,
@@ -38,6 +43,10 @@ import {
   AIStatusDto,
   BatchAIAnalysisRequestDto,
   BatchAIAnalysisResponseDto,
+  AIJobFilterRequestDto,
+  AIJobFilterResponseDto,
+  AIJobRecommendationRequestDto,
+  AIJobRecommendationResponseDto,
 } from './dto/ai.dto';
 import { IJobsController } from '../interfaces/jobs.controller.interface';
 import { JobStatus } from '@prisma/client';
@@ -50,6 +59,7 @@ export class JobsController implements IJobsController {
     private jobDeduplicationService: JobDeduplicationService,
     private dataCleaningService: DataCleaningService,
     private aiService: AIService,
+    private aiJobFilterService: AIJobFilterService,
   ) {}
 
   @Get()
@@ -398,5 +408,56 @@ export class JobsController implements IJobsController {
       salary: job.salary || undefined,
       tags: job.tags || undefined,
     });
+  }
+
+  // AI-Powered Job Filtering Endpoints
+
+  @Post('ai/filter')
+  @ApiOperation({
+    summary: 'Filter jobs using AI analysis',
+    description:
+      'Filter jobs based on AI insights like seniority level, skills, remote type, etc.',
+  })
+  @ApiBody({ type: AIJobFilterRequestDto })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Jobs filtered successfully',
+    type: AIJobFilterResponseDto,
+  })
+  @ApiResponse({
+    status: HttpStatus.SERVICE_UNAVAILABLE,
+    description: 'AI service not available',
+  })
+  async filterJobsWithAI(
+    @Body() request: AIJobFilterRequestDto,
+  ): Promise<AIFilterResult> {
+    return this.aiJobFilterService.filterJobsWithAI(request);
+  }
+
+  @Post('ai/recommendations')
+  @ApiOperation({
+    summary: 'Get personalized job recommendations',
+    description:
+      'Get job recommendations based on user profile and AI analysis',
+  })
+  @ApiBody({ type: AIJobRecommendationRequestDto })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Job recommendations generated successfully',
+    type: AIJobRecommendationResponseDto,
+  })
+  @ApiResponse({
+    status: HttpStatus.SERVICE_UNAVAILABLE,
+    description: 'AI service not available',
+  })
+  async getJobRecommendations(
+    @Body() request: AIJobRecommendationRequestDto,
+  ): Promise<JobRecommendationResult> {
+    // Debug log for troubleshooting
+    console.log(
+      'DEBUG: getJobRecommendations request body:',
+      JSON.stringify(request),
+    );
+    return this.aiJobFilterService.getJobRecommendations(request);
   }
 }

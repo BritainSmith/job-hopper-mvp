@@ -6,6 +6,7 @@ import { JobService } from '../services/job.service';
 import { DataCleaningService } from '../services/data-cleaning.service';
 import { JobDeduplicationService } from '../services/job-deduplication.service';
 import { AIService } from '../services/ai.service';
+import { AIJobFilterService } from '../services/ai-job-filter.service';
 
 describe('JobsController', () => {
   let app: INestApplication;
@@ -68,6 +69,32 @@ describe('JobsController', () => {
     }),
   };
 
+  const mockAIJobFilterService = {
+    filterJobsWithAI: jest.fn().mockResolvedValue({
+      jobs: [],
+      totalJobs: 0,
+      jobsAnalyzed: 0,
+      processingTime: 100,
+      totalCost: 0.001,
+      filterSummary: {
+        appliedFilters: [],
+        confidenceDistribution: {},
+        seniorityDistribution: {},
+        remoteTypeDistribution: {},
+      },
+    }),
+    getJobRecommendations: jest.fn().mockResolvedValue({
+      recommendations: [],
+      processingTime: 100,
+      totalCost: 0.001,
+      summary: {
+        totalJobsAnalyzed: 0,
+        averageMatchScore: 0,
+        topMatchReasons: [],
+      },
+    }),
+  };
+
   beforeAll(async () => {
     const moduleRef: TestingModule = await Test.createTestingModule({
       controllers: [JobsController],
@@ -79,6 +106,7 @@ describe('JobsController', () => {
           useValue: mockJobDeduplicationService,
         },
         { provide: AIService, useValue: mockAIService },
+        { provide: AIJobFilterService, useValue: mockAIJobFilterService },
       ],
     }).compile();
 
