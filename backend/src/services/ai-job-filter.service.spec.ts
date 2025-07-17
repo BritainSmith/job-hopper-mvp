@@ -13,7 +13,6 @@ describe('AIJobFilterService', () => {
   let service: AIJobFilterService;
   let mockJobRepository: jest.Mocked<JobRepository>;
   let mockAIService: jest.Mocked<AIService>;
-  let mockDataCleaningService: jest.Mocked<DataCleaningService>;
 
   const mockJobs: PrismaJob[] = [
     {
@@ -96,7 +95,6 @@ describe('AIJobFilterService', () => {
     service = module.get<AIJobFilterService>(AIJobFilterService);
     mockJobRepository = module.get(JobRepository);
     mockAIService = module.get(AIService);
-    mockDataCleaningService = module.get(DataCleaningService);
   });
 
   afterEach(() => {

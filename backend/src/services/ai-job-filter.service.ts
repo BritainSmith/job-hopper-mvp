@@ -259,23 +259,21 @@ export class AIJobFilterService {
     if (!filters) return jobs;
 
     return jobs.filter((job) => {
-      if (filters.status && job.status !== filters.status) return false;
-      if (
-        filters.company &&
-        !job.company.toLowerCase().includes(filters.company.toLowerCase())
-      )
-        return false;
-      if (
-        filters.location &&
-        !job.location.toLowerCase().includes(filters.location.toLowerCase())
-      )
-        return false;
-      if (
-        filters.search &&
-        !job.searchText?.toLowerCase().includes(filters.search.toLowerCase())
-      )
-        return false;
-      return true;
+      return Object.entries(filters).every(([key, value]) => {
+        if (!value) return true;
+        switch (key) {
+          case 'status':
+            return job.status === value;
+          case 'company':
+            return job.company.toLowerCase().includes((value as string).toLowerCase());
+          case 'location':
+            return job.location.toLowerCase().includes((value as string).toLowerCase());
+          case 'search':
+            return job.searchText?.toLowerCase().includes((value as string).toLowerCase());
+          default:
+            return true;
+        }
+      });
     });
   }
 
