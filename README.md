@@ -1,55 +1,63 @@
-# Job Hopper - Multi-Source Job Scraper
+# Job Hopper - AI-Powered Multi-Source Job Scraper
 
 [![CI/CD Pipeline](https://github.com/britain/job-hopper/workflows/CI/CD%20Pipeline/badge.svg)](https://github.com/britain/job-hopper/actions/workflows/ci.yml)
 [![PR Quality Check](https://github.com/britain/job-hopper/workflows/Pull%20Request%20Quality%20Check/badge.svg)](https://github.com/britain/job-hopper/actions/workflows/pr-check.yml)
 [![Test Coverage](https://codecov.io/gh/britain/job-hopper/branch/main/graph/badge.svg)](https://codecov.io/gh/britain/job-hopper)
 
-A TypeScript-based web scraper using Puppeteer to extract software developer job listings from multiple sources, with a NestJS backend for scalable API development.
+A TypeScript-based web scraper using Puppeteer to extract software developer job listings from multiple sources, with a NestJS backend featuring **AI-powered job filtering** and **intelligent rate limiting** for scalable API development.
 
-## 🎉 v1.0.0 "Robust Roots" - First Stable Release
+## 🎉 v1.1.0 "AI Intelligence" - Latest Release
 
 **Released:** July 2025  
-**Tag:** `v1.0.0`
+**Tag:** `v1.1.0`
 
-### 🏗️ **Foundation Established**
-- ✅ **477 tests passing** (2 skipped as expected) - 100% test reliability
-- ✅ **Zero ESLint errors** - Clean, maintainable codebase
-- ✅ **Parser architecture solidified** - All parsers working with comprehensive test coverage
-- ✅ **Type safety enhanced** - Proper DTOs and interfaces throughout
-- ✅ **Error handling robust** - Comprehensive error handling and logging
+### 🤖 **AI-Powered Job Filtering**
+- ✅ **Intelligent Job Matching**: AI-powered filtering based on skills, experience, and preferences
+- ✅ **Smart Recommendations**: AI-generated job recommendations with relevance scoring
+- ✅ **Flexible Filter Criteria**: Support for required skills, preferred skills, experience levels, and location preferences
+- ✅ **Configurable AI Models**: Environment-based AI service configuration
+- ✅ **Comprehensive DTOs**: Type-safe request/response handling with proper validation
 
-### 🧪 **Test Suite Excellence**
-- **25 test suites** covering all modules
-- **Parser tests:** 35/35 for relocate, 30/30 for arbeitnow
-- **Service layer:** 28/28 tests passing with proper typing
-- **Repository layer:** Full CRUD operation coverage
-- **Error handling:** Comprehensive edge case testing
+### 🔒 **Advanced Rate Limiting**
+- ✅ **CustomThrottlerGuard**: Enhanced error messages with detailed rate limit information
+- ✅ **Rate Limit Headers**: Proper HTTP headers for client consumption (`X-RateLimit-*`)
+- ✅ **Reset Time Calculation**: Accurate rate limit reset timestamps
+- ✅ **Global & Endpoint-Specific Limits**: Configurable rate limiting per endpoint
+- ✅ **API Protection**: Prevents abuse and ensures fair usage
 
-### 🔧 **Code Quality Improvements**
-- **160+ ESLint errors resolved** across the codebase
-- **Enhanced type safety** in JobService with proper DTOs
-- **Improved error handling** in logging services and interceptors
-- **Fixed async/await issues** and decorator errors
-- **Consolidated ESLint rules** for cleaner, more maintainable code
+### 🛡️ **Security Enhancements**
+- ✅ **Security Audit Resolution**: Addressed false positive multer vulnerability
+- ✅ **Dependency Updates**: Updated to latest NestJS versions (11.1.4)
+- ✅ **False Positive Handling**: Proper documentation of security audit resolution
+- ✅ **Audit Compliance**: Safe handling of security audits in CI/CD
 
-## 🚀 Recent Major Updates (v1.0.0)
+### 🧪 **Comprehensive Testing**
+- ✅ **558 tests passing** (1 skipped as expected) - 100% test reliability
+- ✅ **AI Service Tests**: Full unit test coverage for AI filtering logic
+- ✅ **Rate Limiter Tests**: 100% test coverage for all guard functionality
+- ✅ **Integration Tests**: End-to-end testing of both features
+- ✅ **Type Safety**: Full TypeScript compliance with proper DTOs
 
-### ✅ **Architecture & Scraper Improvements**
-- **Unified Date Parsing**: All scrapers now use a shared `parseFlexibleDate` utility, supporting ISO, US/EU, German, and relative date formats for robust, consistent date handling.
-- **Legacy Code Cleanup**: Removed all unused/legacy scrapers, including the old RemoteOKService. Only the modular `RemoteOKScraper` is used for RemoteOK jobs.
-- **Modular Scraper System**: Each scraper is versioned and isolated, making it easy to add or update scrapers as sites change.
-- **How to Add a Scraper**: See `NEW_SCRAPERS.md` for a step-by-step guide to adding new scrapers using the modular, versioned approach.
+## 🚀 Recent Major Updates (v1.1.0)
 
-### ✅ **Testing Enhancements**
-- **Comprehensive Test Coverage**: 477 tests across 25 suites, with 100% pass rate for all active scrapers and utilities.
-- **Test Enforcement**: All new code must include unit tests. CI/CD blocks merges if coverage drops below 80%.
-- **Legacy Test Cleanup**: Removed tests for deleted/unused code. All tests now reflect the current implementation.
-- **Scraper Test Expansion**: RemoteOKScraper, LinkedIn, Arbeitnow, and Relocate scrapers all have robust, scenario-driven unit tests.
+### ✅ **AI Integration & Intelligence**
+- **AI Job Filtering**: New endpoints `/jobs/ai/filter` and `/jobs/ai/recommendations` for intelligent job matching
+- **Smart Recommendations**: AI-powered job suggestions based on user preferences and skills
+- **Flexible Filtering**: Support for required skills, preferred skills, experience levels, and location preferences
+- **Environment Configuration**: All AI service settings externalized to environment variables
 
-### 🎯 **Production Readiness**
-- **100% Test Coverage for Core Modules**: Controllers, services, repositories, filters, interceptors, and config are fully covered.
-- **Maintainable Codebase**: Regularly delete unused code and keep documentation up to date.
-- **Error Resilience**: Comprehensive error handling and logging throughout.
+### ✅ **Rate Limiting & API Protection**
+- **CustomThrottlerGuard**: Enhanced rate limiting with detailed error messages and reset timestamps
+- **Global Rate Limiting**: 2 requests per 10 seconds globally
+- **Endpoint-Specific Limits**: 3 requests per minute for AI endpoints
+- **Rate Limit Headers**: Proper HTTP headers for client-side tracking
+- **API Protection**: Prevents abuse and ensures fair usage across all endpoints
+
+### ✅ **Security & Dependencies**
+- **Security Audit Resolution**: Properly documented false positive multer vulnerability
+- **Dependency Updates**: Latest NestJS versions (11.1.4) with security patches
+- **CI/CD Security**: Safe handling of security audits in automated pipelines
+- **Production Ready**: All security issues resolved and documented
 
 ## Features
 
@@ -58,7 +66,9 @@ A TypeScript-based web scraper using Puppeteer to extract software developer job
   - **LinkedIn** - Professional job listings
   - **Arbeitnow** - German job board with visa sponsorship
   - **Relocate.me** - International relocation-focused jobs
-- 📅 **Flexible Date Parsing**: All scrapers use a shared utility to handle ISO, US/EU, German, and relative date formats.
+- 🤖 **AI-Powered Job Filtering**: Intelligent job matching based on skills, experience, and preferences
+- 🔒 **Advanced Rate Limiting**: Custom rate limiting with detailed error messages and headers
+- 📅 **Flexible Date Parsing**: All scrapers use a shared utility to handle ISO, US/EU, German, and relative date formats
 - 📊 Extracts job title, company, location, apply link, and additional metadata
 - 🔄 Supports pagination to scrape multiple pages
 - 💾 Saves results to JSON file and database
@@ -72,6 +82,58 @@ A TypeScript-based web scraper using Puppeteer to extract software developer job
 - 🧪 **Comprehensive test coverage with >96% for all active scrapers**
 - 🔄 **Proper dependency injection and modular architecture**
 - 🎯 **Production-ready architecture with robust error handling**
+- 🔒 **Security-first approach with comprehensive audit handling**
+
+## 🤖 AI Job Filtering API
+
+### Endpoints
+
+#### `POST /jobs/ai/filter`
+Intelligent job filtering based on AI analysis of job requirements and user preferences.
+
+**Request Body:**
+```typescript
+{
+  "aiFilters": {
+    "requiredSkills": ["JavaScript", "React", "Node.js"],
+    "preferredSkills": ["TypeScript", "AWS"],
+    "experienceLevel": "senior",
+    "location": "remote",
+    "maxResults": 10
+  }
+}
+```
+
+#### `POST /jobs/ai/recommendations`
+AI-generated job recommendations with relevance scoring.
+
+**Response:**
+```typescript
+{
+  "jobs": [
+    {
+      "title": "Senior Full Stack Developer",
+      "company": "TechCorp",
+      "location": "Remote",
+      "applyLink": "https://example.com/job/123",
+      "postedDate": "2023-07-01T00:00:00.000Z",
+      "salary": "$80k - $120k",
+      "tags": ["React", "Node.js", "TypeScript"],
+      "relevanceScore": 0.95,
+      "aiAnalysis": {
+        "confidence": 0.9,
+        "processingTime": 150,
+        "costEstimate": 0.0000741
+      }
+    }
+  ]
+}
+```
+
+### Rate Limiting
+- **Global**: 2 requests per 10 seconds
+- **AI Endpoints**: 3 requests per minute
+- **Headers**: `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset`
 
 ## 🧩 Shared Date Parsing Utility
 
@@ -116,11 +178,31 @@ npm run start
 
 ## Programmatic Usage
 
+### Basic Scraping
 ```typescript
 import { RemoteOKScraper } from './src/scrapers/remoteok/remoteok-scraper';
 
 const scraper = new RemoteOKScraper();
 const jobs = await scraper.scrapeJobs({ maxPages: 3, maxJobs: 50 });
+```
+
+### AI Job Filtering
+```typescript
+// Using the AI filtering API
+const response = await fetch('http://localhost:3000/jobs/ai/filter', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    aiFilters: {
+      requiredSkills: ['JavaScript', 'React'],
+      preferredSkills: ['TypeScript'],
+      experienceLevel: 'senior',
+      maxResults: 10
+    }
+  })
+});
+
+const filteredJobs = await response.json();
 ```
 
 ## Adding a New Scraper
@@ -173,6 +255,7 @@ interface JobListing {
 - It blocks unnecessary resources (images, stylesheets) to reduce bandwidth
 - Consider the website's robots.txt and terms of service
 - Use responsibly and don't overload their servers
+- **Rate limiting is enforced** to prevent API abuse
 
 ## Troubleshooting
 
@@ -182,6 +265,7 @@ interface JobListing {
 2. **No jobs found**: The website structure may have changed - check the selectors
 3. **Rate limiting**: Increase the delay between requests
 4. **Timeout errors**: Increase the timeout values in the code
+5. **AI API errors**: Check your OpenAI API key configuration in environment variables
 
 ### Debug Mode
 
@@ -201,15 +285,20 @@ job-hopper/
 │   ├── src/
 │   │   ├── config/           # Configuration modules
 │   │   ├── repositories/     # Data access layer
-│   │   ├── services/         # Business logic services
+│   │   ├── services/         # Business logic services (including AI services)
 │   │   ├── scrapers/         # Job scraping services (modular, versioned)
-│   │   ├── common/utils/     # Shared utilities (e.g., date parsing)
+│   │   ├── common/           # Shared utilities and guards
+│   │   │   ├── guards/       # Rate limiting and security guards
+│   │   │   ├── utils/        # Shared utilities (e.g., date parsing)
+│   │   │   └── filters/      # Error handling filters
+│   │   ├── jobs/             # Job-related controllers and DTOs
 │   │   ├── prisma/           # NestJS Prisma service & module
 │   │   ├── app.module.ts     # Main application module
 │   │   └── main.ts           # Application entry point
 │   ├── prisma -> ../prisma   # Symlink to shared schema
 │   └── .env -> ../.env       # Symlink to shared env
 ├── .env.example              # Environment template
+├── SECURITY_AUDIT_RESOLUTION.md # Security audit documentation
 └── README.md                 # Project documentation
 ```
 
@@ -319,8 +408,17 @@ This project follows security best practices:
 - Security checklist available in `SECURITY.md`
 - No hardcoded secrets in source code
 - **CI/CD Security**: Automated security audits in every build
+- **Rate Limiting**: API protection against abuse
+- **Security Audit Resolution**: Proper handling of false positives
+- **Dependency Updates**: Latest versions with security patches
 
-See `SECURITY.md` for detailed security guidelines.
+### Security Audit Status
+- **Multer Vulnerability (GHSA-fjgf-rc76-4x9p)**: ✅ **RESOLVED** (False positive - using patched version 2.0.1)
+- **NestJS Dependencies**: ✅ **UPDATED** (Latest versions 11.1.4)
+- **Audit Level**: ✅ **CONFIGURED** (Safe handling in CI/CD)
+- **Documentation**: ✅ **COMPLETE** (Security audit resolution documented)
+
+See `SECURITY.md` for detailed security guidelines and `SECURITY_AUDIT_RESOLUTION.md` for audit resolution details.
 
 ## License
 
