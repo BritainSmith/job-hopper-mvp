@@ -418,11 +418,50 @@ export class JobsController implements IJobsController {
     description:
       'Filter jobs based on AI insights like seniority level, skills, remote type, etc.',
   })
-  @ApiBody({ type: AIJobFilterRequestDto })
+  @ApiBody({
+    type: AIJobFilterRequestDto,
+    examples: {
+      basic: {
+        summary: 'Basic AI filter',
+        value: {
+          aiFilters: {
+            seniorityLevel: 'mid',
+            requiredSkills: ['TypeScript', 'React'],
+            remoteType: 'remote',
+            jobType: 'full-time',
+            companySize: 'medium',
+            minConfidence: 0.7,
+          },
+          traditionalFilters: {
+            status: 'active',
+            company: 'Tech Corp',
+            location: 'Remote',
+            search: 'frontend',
+          },
+          pagination: {
+            limit: 10,
+            skip: 0,
+          },
+        },
+      },
+      minimal: {
+        summary: 'Minimal AI filter',
+        value: {
+          aiFilters: {
+            requiredSkills: ['Node.js'],
+          },
+        },
+      },
+    },
+  })
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Jobs filtered successfully',
     type: AIJobFilterResponseDto,
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'Invalid filter parameters or validation errors',
   })
   @ApiResponse({
     status: HttpStatus.SERVICE_UNAVAILABLE,
@@ -440,11 +479,41 @@ export class JobsController implements IJobsController {
     description:
       'Get job recommendations based on user profile and AI analysis',
   })
-  @ApiBody({ type: AIJobRecommendationRequestDto })
+  @ApiBody({
+    type: AIJobRecommendationRequestDto,
+    examples: {
+      basic: {
+        summary: 'Basic recommendation',
+        value: {
+          userProfile: {
+            preferredSeniorityLevel: 'senior',
+            preferredSkills: ['JavaScript', 'React'],
+            preferredRemoteType: 'remote',
+            preferredJobType: 'full-time',
+            preferredCompanySize: 'medium',
+            location: 'Remote',
+            experienceYears: 5,
+          },
+          limit: 5,
+          minMatchScore: 0.6,
+        },
+      },
+      minimal: {
+        summary: 'Minimal recommendation',
+        value: {
+          userProfile: {},
+        },
+      },
+    },
+  })
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Job recommendations generated successfully',
     type: AIJobRecommendationResponseDto,
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'Invalid user profile or validation errors',
   })
   @ApiResponse({
     status: HttpStatus.SERVICE_UNAVAILABLE,

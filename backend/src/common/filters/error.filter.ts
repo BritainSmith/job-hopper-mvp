@@ -5,6 +5,7 @@ import {
   HttpException,
   HttpStatus,
   Logger,
+  BadRequestException,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
 
@@ -20,6 +21,11 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     let status = HttpStatus.INTERNAL_SERVER_ERROR;
     let message = 'Internal server error';
     let errorDetails = {};
+    let validationErrors: Array<{
+      field: string;
+      message: string;
+      value?: any;
+    }> = [];
 
     if (exception instanceof HttpException) {
       status = exception.getStatus();
@@ -28,10 +34,19 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       if (typeof exceptionResponse === 'string') {
         message = exceptionResponse;
       } else if (typeof exceptionResponse === 'object') {
-        message =
-          (exceptionResponse as { message?: string }).message ||
-          exception.message;
+        const responseObj = exceptionResponse as Record<string, unknown>;
+        message = (responseObj.message as string) || exception.message;
         errorDetails = exceptionResponse;
+
+        // Handle validation errors specifically
+        if (exception instanceof BadRequestException && responseObj.message) {
+          if (Array.isArray(responseObj.message)) {
+            validationErrors = this.formatValidationErrors(
+              responseObj.message as string[],
+            );
+            message = 'Validation failed';
+          }
+        }
       }
     } else if (exception instanceof Error) {
       message = exception.message;
@@ -52,15 +67,45 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       userAgent: request.headers['user-agent'],
       timestamp: new Date().toISOString(),
       details: errorDetails,
+      validationErrors,
     });
 
-    // Send error response
-    response.status(status).json({
+    // Build error response
+    const errorResponse: Record<string, unknown> = {
       statusCode: status,
       timestamp: new Date().toISOString(),
       path: request.url,
       message,
-      ...(process.env.NODE_ENV === 'development' && { details: errorDetails }),
+    };
+
+    // Add validation errors if present
+    if (validationErrors.length > 0) {
+      errorResponse.validationErrors = validationErrors;
+    }
+
+    // Add detailed error information in development
+    if (process.env.NODE_ENV === 'development') {
+      errorResponse.details = errorDetails;
+    }
+
+    // Send error response
+    response.status(status).json(errorResponse);
+  }
+
+  private formatValidationErrors(errors: string[]): Array<{
+    field: string;
+    message: string;
+    value?: any;
+  }> {
+    return errors.map((error) => {
+      // Extract field name from validation error message
+      const fieldMatch = error.match(/^([^.]+)/);
+      const field = fieldMatch ? fieldMatch[1] : 'unknown';
+
+      return {
+        field,
+        message: error,
+      };
     });
   }
 }

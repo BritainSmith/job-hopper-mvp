@@ -6,36 +6,77 @@ import {
   IsArray,
   IsEnum,
   ValidateNested,
+  IsNotEmpty,
+  Min,
+  Max,
+  MaxLength,
+  MinLength,
+  ArrayMinSize,
+  ArrayMaxSize,
 } from 'class-validator';
 import { JobDto } from './job.dto';
 import { Type } from 'class-transformer';
 
 export class AIAnalysisRequestDto {
-  @ApiProperty({ description: 'Job title' })
-  @IsString()
+  @ApiProperty({
+    description: 'Job title',
+    example: 'Senior Software Engineer',
+  })
+  @IsString({ message: 'Job title must be a string' })
+  @IsNotEmpty({ message: 'Job title is required' })
+  @MinLength(2, { message: 'Job title must be at least 2 characters long' })
+  @MaxLength(200, { message: 'Job title cannot exceed 200 characters' })
   jobTitle: string;
 
-  @ApiProperty({ description: 'Company name' })
-  @IsString()
+  @ApiProperty({
+    description: 'Company name',
+    example: 'Tech Corp',
+  })
+  @IsString({ message: 'Company name must be a string' })
+  @IsNotEmpty({ message: 'Company name is required' })
+  @MinLength(1, { message: 'Company name must be at least 1 character long' })
+  @MaxLength(100, { message: 'Company name cannot exceed 100 characters' })
   company: string;
 
-  @ApiProperty({ description: 'Job location' })
-  @IsString()
+  @ApiProperty({
+    description: 'Job location',
+    example: 'San Francisco, CA',
+  })
+  @IsString({ message: 'Job location must be a string' })
+  @IsNotEmpty({ message: 'Job location is required' })
+  @MinLength(2, { message: 'Job location must be at least 2 characters long' })
+  @MaxLength(100, { message: 'Job location cannot exceed 100 characters' })
   location: string;
 
-  @ApiPropertyOptional({ description: 'Job description' })
+  @ApiPropertyOptional({
+    description: 'Job description',
+    example: 'We are looking for a senior engineer...',
+  })
   @IsOptional()
-  @IsString()
+  @IsString({ message: 'Job description must be a string' })
+  @MaxLength(10000, {
+    message: 'Job description cannot exceed 10,000 characters',
+  })
   description?: string;
 
-  @ApiPropertyOptional({ description: 'Salary information' })
+  @ApiPropertyOptional({
+    description: 'Salary information',
+    example: '$120,000 - $150,000',
+  })
   @IsOptional()
-  @IsString()
+  @IsString({ message: 'Salary information must be a string' })
+  @MaxLength(200, {
+    message: 'Salary information cannot exceed 200 characters',
+  })
   salary?: string;
 
-  @ApiPropertyOptional({ description: 'Job tags' })
+  @ApiPropertyOptional({
+    description: 'Job tags',
+    example: 'React, TypeScript, Node.js',
+  })
   @IsOptional()
-  @IsString()
+  @IsString({ message: 'Job tags must be a string' })
+  @MaxLength(500, { message: 'Job tags cannot exceed 500 characters' })
   tags?: string;
 }
 
@@ -43,35 +84,60 @@ export class JobClassificationDto {
   @ApiProperty({
     description: 'Seniority level',
     enum: ['entry', 'mid', 'senior', 'lead', 'unknown'],
+    example: 'senior',
   })
-  @IsEnum(['entry', 'mid', 'senior', 'lead', 'unknown'])
+  @IsEnum(['entry', 'mid', 'senior', 'lead', 'unknown'], {
+    message:
+      'Seniority level must be one of: entry, mid, senior, lead, unknown',
+  })
   seniorityLevel: 'entry' | 'mid' | 'senior' | 'lead' | 'unknown';
 
-  @ApiProperty({ description: 'Required skills', type: [String] })
-  @IsArray()
-  @IsString({ each: true })
+  @ApiProperty({
+    description: 'Required skills',
+    type: [String],
+    example: ['JavaScript', 'React', 'Node.js'],
+  })
+  @IsArray({ message: 'Required skills must be an array' })
+  @IsString({ each: true, message: 'Each skill must be a string' })
+  @ArrayMinSize(1, { message: 'At least one skill is required' })
+  @ArrayMaxSize(50, { message: 'Cannot have more than 50 skills' })
+  @MaxLength(50, {
+    each: true,
+    message: 'Each skill cannot exceed 50 characters',
+  })
   requiredSkills: string[];
 
   @ApiProperty({
     description: 'Remote work type',
     enum: ['remote', 'hybrid', 'onsite', 'unknown'],
+    example: 'remote',
   })
-  @IsEnum(['remote', 'hybrid', 'onsite', 'unknown'])
+  @IsEnum(['remote', 'hybrid', 'onsite', 'unknown'], {
+    message: 'Remote work type must be one of: remote, hybrid, onsite, unknown',
+  })
   remoteType: 'remote' | 'hybrid' | 'onsite' | 'unknown';
 
   @ApiProperty({
     description: 'Job type',
     enum: ['full-time', 'part-time', 'contract', 'internship', 'unknown'],
+    example: 'full-time',
   })
-  @IsEnum(['full-time', 'part-time', 'contract', 'internship', 'unknown'])
+  @IsEnum(['full-time', 'part-time', 'contract', 'internship', 'unknown'], {
+    message:
+      'Job type must be one of: full-time, part-time, contract, internship, unknown',
+  })
   jobType: 'full-time' | 'part-time' | 'contract' | 'internship' | 'unknown';
 
   @ApiPropertyOptional({
     description: 'Company size',
     enum: ['startup', 'small', 'medium', 'large', 'enterprise', 'unknown'],
+    example: 'medium',
   })
   @IsOptional()
-  @IsEnum(['startup', 'small', 'medium', 'large', 'enterprise', 'unknown'])
+  @IsEnum(['startup', 'small', 'medium', 'large', 'enterprise', 'unknown'], {
+    message:
+      'Company size must be one of: startup, small, medium, large, enterprise, unknown',
+  })
   companySize?:
     | 'startup'
     | 'small'
@@ -80,12 +146,25 @@ export class JobClassificationDto {
     | 'enterprise'
     | 'unknown';
 
-  @ApiProperty({ description: 'Confidence score (0-1)' })
-  @IsNumber()
+  @ApiProperty({
+    description: 'Confidence score (0-1)',
+    example: 0.85,
+    minimum: 0,
+    maximum: 1,
+  })
+  @IsNumber({}, { message: 'Confidence must be a number' })
+  @Min(0, { message: 'Confidence must be at least 0' })
+  @Max(1, { message: 'Confidence cannot exceed 1' })
   confidence: number;
 
-  @ApiProperty({ description: 'Reasoning for classification' })
-  @IsString()
+  @ApiProperty({
+    description: 'Reasoning for classification',
+    example:
+      'This job requires 5+ years of experience and leadership responsibilities',
+  })
+  @IsString({ message: 'Reasoning must be a string' })
+  @IsNotEmpty({ message: 'Reasoning is required' })
+  @MaxLength(1000, { message: 'Reasoning cannot exceed 1,000 characters' })
   reasoning: string;
 }
 
@@ -187,43 +266,64 @@ export class AIJobFilterDto {
   @ApiPropertyOptional({
     description: 'Filter by seniority level',
     enum: ['entry', 'mid', 'senior', 'lead', 'unknown'],
+    example: 'senior',
   })
   @IsOptional()
-  @IsEnum(['entry', 'mid', 'senior', 'lead', 'unknown'])
+  @IsEnum(['entry', 'mid', 'senior', 'lead', 'unknown'], {
+    message:
+      'Seniority level must be one of: entry, mid, senior, lead, unknown',
+  })
   seniorityLevel?: 'entry' | 'mid' | 'senior' | 'lead' | 'unknown';
 
   @ApiPropertyOptional({
     description:
       'Filter by required skills (jobs must have ALL specified skills)',
     type: [String],
+    example: ['JavaScript', 'React'],
   })
   @IsOptional()
-  @IsArray()
-  @IsString({ each: true })
+  @IsArray({ message: 'Required skills must be an array' })
+  @IsString({ each: true, message: 'Each skill must be a string' })
+  @ArrayMaxSize(20, { message: 'Cannot filter by more than 20 skills' })
+  @MaxLength(50, {
+    each: true,
+    message: 'Each skill cannot exceed 50 characters',
+  })
   requiredSkills?: string[];
 
   @ApiPropertyOptional({
     description: 'Filter by remote work type',
     enum: ['remote', 'hybrid', 'onsite', 'unknown'],
+    example: 'remote',
   })
   @IsOptional()
-  @IsEnum(['remote', 'hybrid', 'onsite', 'unknown'])
+  @IsEnum(['remote', 'hybrid', 'onsite', 'unknown'], {
+    message: 'Remote work type must be one of: remote, hybrid, onsite, unknown',
+  })
   remoteType?: 'remote' | 'hybrid' | 'onsite' | 'unknown';
 
   @ApiPropertyOptional({
     description: 'Filter by job type',
     enum: ['full-time', 'part-time', 'contract', 'internship', 'unknown'],
+    example: 'full-time',
   })
   @IsOptional()
-  @IsEnum(['full-time', 'part-time', 'contract', 'internship', 'unknown'])
+  @IsEnum(['full-time', 'part-time', 'contract', 'internship', 'unknown'], {
+    message:
+      'Job type must be one of: full-time, part-time, contract, internship, unknown',
+  })
   jobType?: 'full-time' | 'part-time' | 'contract' | 'internship' | 'unknown';
 
   @ApiPropertyOptional({
     description: 'Filter by company size',
     enum: ['startup', 'small', 'medium', 'large', 'enterprise', 'unknown'],
+    example: 'medium',
   })
   @IsOptional()
-  @IsEnum(['startup', 'small', 'medium', 'large', 'enterprise', 'unknown'])
+  @IsEnum(['startup', 'small', 'medium', 'large', 'enterprise', 'unknown'], {
+    message:
+      'Company size must be one of: startup, small, medium, large, enterprise, unknown',
+  })
   companySize?:
     | 'startup'
     | 'small'
@@ -237,14 +337,18 @@ export class AIJobFilterDto {
     minimum: 0,
     maximum: 1,
     default: 0.7,
+    example: 0.7,
   })
   @IsOptional()
-  @IsNumber()
+  @IsNumber({}, { message: 'Minimum confidence must be a number' })
+  @Min(0, { message: 'Minimum confidence must be at least 0' })
+  @Max(1, { message: 'Minimum confidence cannot exceed 1' })
   minConfidence?: number;
 
   @ApiPropertyOptional({
     description: "Whether to analyze jobs that haven't been analyzed yet",
     default: true,
+    example: true,
   })
   @IsOptional()
   analyzeUnanalyzed?: boolean;
@@ -252,9 +356,14 @@ export class AIJobFilterDto {
   @ApiPropertyOptional({
     description: 'Maximum number of jobs to analyze (for performance)',
     default: 50,
+    example: 50,
+    minimum: 1,
+    maximum: 200,
   })
   @IsOptional()
-  @IsNumber()
+  @IsNumber({}, { message: 'Maximum jobs to analyze must be a number' })
+  @Min(1, { message: 'Maximum jobs to analyze must be at least 1' })
+  @Max(200, { message: 'Maximum jobs to analyze cannot exceed 200' })
   maxJobsToAnalyze?: number;
 }
 
@@ -312,42 +421,64 @@ export class UserProfileDto {
   @ApiPropertyOptional({
     description: 'Preferred seniority level',
     enum: ['entry', 'mid', 'senior', 'lead'],
+    example: 'senior',
   })
   @IsOptional()
-  @IsEnum(['entry', 'mid', 'senior', 'lead'])
+  @IsEnum(['entry', 'mid', 'senior', 'lead'], {
+    message:
+      'Preferred seniority level must be one of: entry, mid, senior, lead',
+  })
   preferredSeniorityLevel?: 'entry' | 'mid' | 'senior' | 'lead';
 
   @ApiPropertyOptional({
     description: 'Preferred skills',
     type: [String],
+    example: ['JavaScript', 'React', 'Node.js'],
   })
   @IsOptional()
-  @IsArray()
-  @IsString({ each: true })
+  @IsArray({ message: 'Preferred skills must be an array' })
+  @IsString({ each: true, message: 'Each preferred skill must be a string' })
+  @ArrayMaxSize(20, { message: 'Cannot have more than 20 preferred skills' })
+  @MaxLength(50, {
+    each: true,
+    message: 'Each preferred skill cannot exceed 50 characters',
+  })
   preferredSkills?: string[];
 
   @ApiPropertyOptional({
     description: 'Preferred remote work type',
     enum: ['remote', 'hybrid', 'onsite'],
+    example: 'remote',
   })
   @IsOptional()
-  @IsEnum(['remote', 'hybrid', 'onsite'])
+  @IsEnum(['remote', 'hybrid', 'onsite'], {
+    message:
+      'Preferred remote work type must be one of: remote, hybrid, onsite',
+  })
   preferredRemoteType?: 'remote' | 'hybrid' | 'onsite';
 
   @ApiPropertyOptional({
     description: 'Preferred job type',
     enum: ['full-time', 'part-time', 'contract', 'internship'],
+    example: 'full-time',
   })
   @IsOptional()
-  @IsEnum(['full-time', 'part-time', 'contract', 'internship'])
+  @IsEnum(['full-time', 'part-time', 'contract', 'internship'], {
+    message:
+      'Preferred job type must be one of: full-time, part-time, contract, internship',
+  })
   preferredJobType?: 'full-time' | 'part-time' | 'contract' | 'internship';
 
   @ApiPropertyOptional({
     description: 'Preferred company size',
     enum: ['startup', 'small', 'medium', 'large', 'enterprise'],
+    example: 'medium',
   })
   @IsOptional()
-  @IsEnum(['startup', 'small', 'medium', 'large', 'enterprise'])
+  @IsEnum(['startup', 'small', 'medium', 'large', 'enterprise'], {
+    message:
+      'Preferred company size must be one of: startup, small, medium, large, enterprise',
+  })
   preferredCompanySize?:
     | 'startup'
     | 'small'
@@ -355,18 +486,27 @@ export class UserProfileDto {
     | 'large'
     | 'enterprise';
 
-  @ApiPropertyOptional({ description: 'Preferred location' })
+  @ApiPropertyOptional({
+    description: 'Preferred location',
+    example: 'San Francisco, CA',
+  })
   @IsOptional()
-  @IsString()
+  @IsString({ message: 'Preferred location must be a string' })
+  @MaxLength(100, {
+    message: 'Preferred location cannot exceed 100 characters',
+  })
   location?: string;
 
   @ApiPropertyOptional({
     description: 'Years of experience',
     minimum: 0,
     maximum: 50,
+    example: 5,
   })
   @IsOptional()
-  @IsNumber()
+  @IsNumber({}, { message: 'Years of experience must be a number' })
+  @Min(0, { message: 'Years of experience must be at least 0' })
+  @Max(50, { message: 'Years of experience cannot exceed 50' })
   experienceYears?: number;
 }
 
@@ -374,25 +514,40 @@ export class AIJobRecommendationRequestDto {
   @ApiProperty({
     description: 'User profile for job recommendations',
     type: UserProfileDto,
+    example: {
+      preferredSeniorityLevel: 'senior',
+      preferredSkills: ['JavaScript', 'React'],
+      preferredRemoteType: 'remote',
+    },
   })
-  @ValidateNested()
+  @ValidateNested({ message: 'User profile must be a valid object' })
   @Type(() => UserProfileDto)
   userProfile: UserProfileDto;
 
   @ApiPropertyOptional({
     description: 'Number of recommendations to return',
     default: 10,
+    example: 10,
+    minimum: 1,
+    maximum: 100,
   })
   @IsOptional()
-  @IsNumber()
+  @IsNumber({}, { message: 'Limit must be a number' })
+  @Min(1, { message: 'Limit must be at least 1' })
+  @Max(100, { message: 'Limit cannot exceed 100' })
   limit?: number;
 
   @ApiPropertyOptional({
     description: 'Minimum match score (0-1)',
     default: 0.6,
+    example: 0.6,
+    minimum: 0,
+    maximum: 1,
   })
   @IsOptional()
-  @IsNumber()
+  @IsNumber({}, { message: 'Minimum match score must be a number' })
+  @Min(0, { message: 'Minimum match score must be at least 0' })
+  @Max(1, { message: 'Minimum match score cannot exceed 1' })
   minMatchScore?: number;
 }
 

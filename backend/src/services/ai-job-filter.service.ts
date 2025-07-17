@@ -265,11 +265,11 @@ export class AIJobFilterService {
           case 'status':
             return job.status === value;
           case 'company':
-            return job.company.toLowerCase().includes((value as string).toLowerCase());
+            return job.company.toLowerCase().includes(value.toLowerCase());
           case 'location':
-            return job.location.toLowerCase().includes((value as string).toLowerCase());
+            return job.location.toLowerCase().includes(value.toLowerCase());
           case 'search':
-            return job.searchText?.toLowerCase().includes((value as string).toLowerCase());
+            return job.searchText?.toLowerCase().includes(value.toLowerCase());
           default:
             return true;
         }
