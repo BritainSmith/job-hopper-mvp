@@ -5,6 +5,7 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
 import { GlobalExceptionFilter } from './common/filters/error.filter';
+import { CustomThrottlerGuard } from './common/guards/throttler.guard';
 
 export async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -17,6 +18,9 @@ export async function bootstrap() {
       transform: true,
     }),
   );
+
+  // Global rate limiting with custom error messages
+  app.useGlobalGuards(app.get(CustomThrottlerGuard));
 
   // Global logging interceptor
   app.useGlobalInterceptors(new LoggingInterceptor());

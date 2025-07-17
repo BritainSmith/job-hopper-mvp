@@ -20,6 +20,11 @@ import { JobDeduplicationService } from '../services/job-deduplication.service';
 import { DataCleaningService } from '../services/data-cleaning.service';
 import { AIService } from '../services/ai.service';
 import {
+  AIJobFilterService,
+  AIFilterResult,
+  JobRecommendationResult,
+} from '../services/ai-job-filter.service';
+import {
   JobDto,
   CreateJobDto,
   JobQueryDto,
@@ -38,9 +43,14 @@ import {
   AIStatusDto,
   BatchAIAnalysisRequestDto,
   BatchAIAnalysisResponseDto,
+  AIJobFilterRequestDto,
+  AIJobFilterResponseDto,
+  AIJobRecommendationRequestDto,
+  AIJobRecommendationResponseDto,
 } from './dto/ai.dto';
 import { IJobsController } from '../interfaces/jobs.controller.interface';
 import { JobStatus } from '@prisma/client';
+import { Throttle } from '@nestjs/throttler';
 
 @ApiTags('jobs')
 @Controller('jobs')
@@ -50,6 +60,7 @@ export class JobsController implements IJobsController {
     private jobDeduplicationService: JobDeduplicationService,
     private dataCleaningService: DataCleaningService,
     private aiService: AIService,
+    private aiJobFilterService: AIJobFilterService,
   ) {}
 
   @Get()
@@ -398,5 +409,131 @@ export class JobsController implements IJobsController {
       salary: job.salary || undefined,
       tags: job.tags || undefined,
     });
+  }
+
+  // AI-Powered Job Filtering Endpoints
+
+  @Post('ai/filter')
+
+  // @ts-expect-error Throttle decorator type mismatch in v6.4.0
+  @Throttle(3, 60)
+  @ApiOperation({
+    summary: 'Filter jobs using AI analysis',
+    description:
+      'Filter jobs based on AI insights like seniority level, skills, remote type, etc.',
+  })
+  @ApiBody({
+    type: AIJobFilterRequestDto,
+    examples: {
+      basic: {
+        summary: 'Basic AI filter',
+        value: {
+          aiFilters: {
+            seniorityLevel: 'mid',
+            requiredSkills: ['TypeScript', 'React'],
+            remoteType: 'remote',
+            jobType: 'full-time',
+            companySize: 'medium',
+            minConfidence: 0.7,
+          },
+          traditionalFilters: {
+            status: 'active',
+            company: 'Tech Corp',
+            location: 'Remote',
+            search: 'frontend',
+          },
+          pagination: {
+            limit: 10,
+            skip: 0,
+          },
+        },
+      },
+      minimal: {
+        summary: 'Minimal AI filter',
+        value: {
+          aiFilters: {
+            requiredSkills: ['Node.js'],
+          },
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Jobs filtered successfully',
+    type: AIJobFilterResponseDto,
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'Invalid filter parameters or validation errors',
+  })
+  @ApiResponse({
+    status: HttpStatus.SERVICE_UNAVAILABLE,
+    description: 'AI service not available',
+  })
+  async filterJobsWithAI(
+    @Body() request: AIJobFilterRequestDto,
+  ): Promise<AIFilterResult> {
+    return this.aiJobFilterService.filterJobsWithAI(request);
+  }
+
+  @Post('ai/recommendations')
+
+  // @ts-expect-error Throttle decorator type mismatch in v6.4.0
+  @Throttle(3, 60)
+  @ApiOperation({
+    summary: 'Get personalized job recommendations',
+    description:
+      'Get job recommendations based on user profile and AI analysis',
+  })
+  @ApiBody({
+    type: AIJobRecommendationRequestDto,
+    examples: {
+      basic: {
+        summary: 'Basic recommendation',
+        value: {
+          userProfile: {
+            preferredSeniorityLevel: 'senior',
+            preferredSkills: ['JavaScript', 'React'],
+            preferredRemoteType: 'remote',
+            preferredJobType: 'full-time',
+            preferredCompanySize: 'medium',
+            location: 'Remote',
+            experienceYears: 5,
+          },
+          limit: 5,
+          minMatchScore: 0.6,
+        },
+      },
+      minimal: {
+        summary: 'Minimal recommendation',
+        value: {
+          userProfile: {},
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Job recommendations generated successfully',
+    type: AIJobRecommendationResponseDto,
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'Invalid user profile or validation errors',
+  })
+  @ApiResponse({
+    status: HttpStatus.SERVICE_UNAVAILABLE,
+    description: 'AI service not available',
+  })
+  async getJobRecommendations(
+    @Body() request: AIJobRecommendationRequestDto,
+  ): Promise<JobRecommendationResult> {
+    // Debug log for troubleshooting
+    console.log(
+      'DEBUG: getJobRecommendations request body:',
+      JSON.stringify(request),
+    );
+    return this.aiJobFilterService.getJobRecommendations(request);
   }
 }
