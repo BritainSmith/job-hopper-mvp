@@ -7,6 +7,8 @@ import { JobsModule } from './jobs/jobs.module';
 import { WinstonConfigModule } from './config/winston.module';
 import { HealthModule } from './health/health.module';
 import { ScrapersModule } from './scrapers/scrapers.module';
+import { ThrottlerModule } from '@nestjs/throttler';
+import { CustomThrottlerGuard } from './common/guards/throttler.guard';
 import {
   databaseConfig,
   appConfig,
@@ -20,6 +22,11 @@ import { scrapersConfig } from './config/scrapers.config';
 
 @Module({
   imports: [
+    ThrottlerModule.forRoot({
+      throttlers: [
+        { ttl: 10, limit: 2 }, // 2 requests per 10 seconds
+      ],
+    }),
     ConfigModule.forRoot({
       isGlobal: true,
       load: [
@@ -40,6 +47,6 @@ import { scrapersConfig } from './config/scrapers.config';
     ScrapersModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, CustomThrottlerGuard],
 })
 export class AppModule {}

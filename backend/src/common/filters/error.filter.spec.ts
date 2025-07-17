@@ -231,6 +231,7 @@ describe('GlobalExceptionFilter', () => {
         userAgent: 'Mozilla/5.0',
         timestamp: expect.any(String),
         details: expect.any(Object),
+        validationErrors: expect.any(Array),
       });
     });
   });
