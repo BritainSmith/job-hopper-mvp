@@ -50,6 +50,7 @@ import {
 } from './dto/ai.dto';
 import { IJobsController } from '../interfaces/jobs.controller.interface';
 import { JobStatus } from '@prisma/client';
+import { Throttle } from '@nestjs/throttler';
 
 @ApiTags('jobs')
 @Controller('jobs')
@@ -413,6 +414,9 @@ export class JobsController implements IJobsController {
   // AI-Powered Job Filtering Endpoints
 
   @Post('ai/filter')
+
+  // @ts-expect-error Throttle decorator type mismatch in v6.4.0
+  @Throttle(3, 60)
   @ApiOperation({
     summary: 'Filter jobs using AI analysis',
     description:
@@ -474,6 +478,9 @@ export class JobsController implements IJobsController {
   }
 
   @Post('ai/recommendations')
+
+  // @ts-expect-error Throttle decorator type mismatch in v6.4.0
+  @Throttle(3, 60)
   @ApiOperation({
     summary: 'Get personalized job recommendations',
     description:

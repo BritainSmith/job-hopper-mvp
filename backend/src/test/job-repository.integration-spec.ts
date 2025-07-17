@@ -2,10 +2,11 @@ import { JobRepository } from '../repositories/job.repository';
 import { IntegrationTestSetup } from './integration-test.setup';
 import { TestUtils } from './test-utils';
 import { JobStatus } from '@prisma/client';
+import { PrismaService } from '../prisma/prisma.service';
 
 describe('JobRepository Integration Tests', () => {
   let jobRepository: JobRepository;
-  let prisma: any;
+  let prisma: PrismaService;
 
   beforeAll(async () => {
     const context = await IntegrationTestSetup.createTestingApp();
